@@ -113,7 +113,6 @@ def get(filename, default=None, type=None):
 
 def main():
     for type, cmd in PROG_MAP.items():
-        cmd = cmd.split()
         if not os.access(cmd[0], os.F_OK | os.X_OK):
             print 'Cannot find converter for {0}, please install: {1}'.format(type, cmd[0])
     print 'All other converters present and accounted for.'
