@@ -85,7 +85,7 @@ A feature to expect in the near future is support for file-like objects:
 
 ```python
 > import fulltext
-> f = file('existing.pdf')
+> f = file('existing.pdf', 'r')
 > fulltext.get(f, '< no content >')
 'Lorem ipsum...'
 ```
