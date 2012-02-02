@@ -41,11 +41,9 @@ not concerned with exceptions, you can simply ignore them by providing a default
 how the `dict.get()` method works.
 
 ```python
-import fulltext
-
+> import fulltext
 > fulltext.get('missing_file.pdf', '< no content >')
 '< no content >'
-
 > fulltext.get('existing.pdf', '< no content >'')
 'Lorem ipsum...'
 ```
@@ -79,3 +77,15 @@ are also removed in this step.
 
 This results in the highest word-per-byte ratio possible, allowing your full-text engine to quickly index
 the file contents.
+
+Future
+----
+
+A feature to expect in the near future is support for file-like objects:
+
+```python
+> import fulltext
+> f = file('existing.pdf')
+> fulltext.get(f, '< no content >')
+'Lorem ipsum...'
+```
