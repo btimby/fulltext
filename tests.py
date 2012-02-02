@@ -43,6 +43,12 @@ class FullTextTest(unittest.TestCase):
     def test_pdf(self):
         self.assertEqual(fulltext.get('files/test.pdf'), TEST)
 
+    def test_rtf(self):
+        self.assertEqual(fulltext.get('files/test.rtf'), TEST)
+
+    def test_xls(self):
+        self.assertEqual(fulltext.get('files/test.xls'), TEST)
+
 
 def main():
     unittest.main()
