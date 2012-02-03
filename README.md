@@ -1,3 +1,9 @@
+A [SmartFile](http://www.smartfile.com/) Open Source project.
+[Read more](http://www.smartfile.com/open-source.html) about how SmartFile uses and
+contributes to Open Source software.
+
+![SmartFile](http://www.smartfile.com/images/logo.jpg)
+
 Introduction
 ----
 
