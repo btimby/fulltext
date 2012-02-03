@@ -13,7 +13,7 @@ setup(
     name = name,
     version = versrel,
     description = 'Convert files to full-text',
-    long_description = 'A Python library for converting various document and media' \
+    long_description = 'A Python library for converting various document and media ' \
                        'formats to plain text.',
     author = 'Ben Timby',
     author_email = 'btimby@gmail.com',
