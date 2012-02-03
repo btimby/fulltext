@@ -50,8 +50,9 @@ how the `dict.get()` method works.
 
 There is also a quick way to check for the existence of all of the required tools.
 
-```bash
-$ python fulltext/__init__.py
+```python
+> import fulltext
+> fulltext.check()
 Cannot find converter for .xml, please install: /usr/bin/html2text
 Cannot find converter for .mpeg, please install: /usr/bin/exiftool
 Cannot find converter for .mpg, please install: /usr/bin/exiftool

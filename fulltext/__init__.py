@@ -111,11 +111,8 @@ def get(filename, default=None, type=None):
     return text
 
 
-def main():
+def check():
     for type, cmd in PROG_MAP.items():
         if not os.access(cmd[0], os.F_OK | os.X_OK):
             print 'Cannot find converter for {0}, please install: {1}'.format(type, cmd[0])
     print 'All other converters present and accounted for.'
-
-if __name__ == '__main__':
-    main()

@@ -22,5 +22,5 @@ setup(
     url = 'http://github.com/btimby/' + name + '/',
     download_url = download_url,
     license = 'GPLv3',
-    py_modules = ["fulltext"]
+    packages = ["fulltext"]
 )
