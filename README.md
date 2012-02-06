@@ -18,25 +18,23 @@ Supported formats
 
 The following formats are supported using the command line apps listed.
 
- *  .pdf: /usr/bin/pdftotext
- *  .doc: /usr/bin/antiword
- *  .docx: /usr/local/bin/docx2txt
- *  .xls: /usr/bin/convertxls2csv
- *  .rtf: /usr/bin/unrtf
- *  .odt: /usr/bin/odt2txt
- *  .ods: /usr/bin/odt2txt
- *  .zip: /usr/bin/zipinfo
- *  .tar.gz: /bin/tar
- *  .tar.bz2: /bin/tar
- *  .rar: /usr/bin/unrar
- *  .htm: /usr/bin/html2text
- *  .html: /usr/bin/html2text
- *  .xml: /usr/bin/html2text
- *  .jpeg: /usr/bin/exiftool
- *  .mpeg: /usr/bin/exiftool
- *  .mp3: /usr/bin/exiftool
- *  .dll: /usr/bin/strings
- *  .exe: /usr/bin/strings
+ *  application/pdf: pdftotext
+ *  application/msword: antiword
+ *  application/vnd.openxmlformats-officedocument.wordprocessingml.document: docx2txt
+ *  application/vnd.ms-excel: convertxls2csv
+ *  application/rtf: unrtf
+ *  application/vnd.oasis.opendocument.text: odt2txt
+ *  application/vnd.oasis.opendocument.spreadsheet: odt2txt
+ *  application/zip: funzip
+ *  application/x-tar, gzip: tar & gunzip
+ *  application/x-tar, bzip2: tar & bunzip2
+ *  application/rar: unrar
+ *  text/html: html2text
+ *  text/xml: html2text
+ *  image/jpeg: exiftool
+ *  video/mpeg: exiftool
+ *  audio/mpeg: exiftool
+ *  application/octet-stream: strings
 
 Usage
 ----
@@ -59,16 +57,7 @@ There is also a quick way to check for the existence of all of the required tool
 ```python
 > import fulltext
 > fulltext.check()
-Cannot find converter for .xml, please install: /usr/bin/html2text
-Cannot find converter for .mpeg, please install: /usr/bin/exiftool
-Cannot find converter for .mpg, please install: /usr/bin/exiftool
-Cannot find converter for .jpg, please install: /usr/bin/exiftool
-Cannot find converter for .mp3, please install: /usr/bin/exiftool
-Cannot find converter for .html, please install: /usr/bin/html2text
-Cannot find converter for .docx, please install: /usr/local/bin/docx2txt
-Cannot find converter for .htm, please install: /usr/bin/html2text
-Cannot find converter for .jpeg, please install: /usr/bin/exiftool
-All other converters present and accounted for.
+Cannot execute command docx2txt, please install it.
 ```
 
 Post-processing
@@ -89,3 +78,5 @@ Future
 ----
 
 Sometimes multiple tools can be used. For example, catdoc provides xls2csv, while xls2csv provides convertxls2csv. We should use whichever is present.
+
+I would like to do away with commands as tuples, and simply use strings. This is something (easyprocess)[http://pypi.python.org/pypi/EasyProcess] can do.
