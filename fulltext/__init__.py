@@ -1,5 +1,4 @@
-import os, os.path, subprocess, re, csv, time
-import textwrap
+import os, os.path, subprocess, re, csv, time, select
 # TODO: support plain text files. Just read their content.
 # TODO: support file-like objects (pipe file data to stdin).
 # TODO: use mimetypes library for figuring out file type.
@@ -60,20 +59,6 @@ class FullTextException(Exception):
     pass
 
 
-# The idea of wrapping is to remove redundant whitespace and \r\n chars.
-# We want to pack as much text as possible into as little space as possible.
-# We also don't want to break up words or hyphenated phrases.
-# We declare this here for efficiency reasons (we will use this over and over).
-WRAPPER = textwrap.TextWrapper(
-    width = 120,
-    expand_tabs = False,
-    replace_whitespace = True,
-    drop_whitespace = True,
-    break_long_words = False,
-    break_on_hyphens = False,
-)
-
-
 def get_type(filename):
     name, ext = os.path.splitext(filename)
     if ext in ('.gz', '.bz2') and name.endswith('.tar'):
@@ -103,13 +88,19 @@ def get(filename, default=None, type=None):
             return default
         raise FullTextException('Cannot execute binary: {0}'.format(cmd[0]))
     try:
-        start = time.time()
-        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        while not proc.poll():
-            if time.time() - start > PROC_TIMEOUT:
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        f = p.stdout.fileno()
+        s, b = time.time(), []
+        while True:
+            if time.time() - s >= PROC_TIMEOUT:
+                p.terminate()
                 raise FullTextException('Timeout executing command.')
-            time.sleep(1.0)
-        text = proc.communicate()[0]
+            if f in select.select([f], [], [], 0)[0]:
+                b.append(p.stdout.read())
+            if p.poll() is not None:
+                break
+            time.sleep(0.1)
+        text = ''.join(b)
     except:
         if default is not None:
             return default
@@ -117,12 +108,7 @@ def get(filename, default=None, type=None):
     post = FUNC_MAP.get(type, None)
     if post:
         text = post(text)
-    # TODO: get rid of textwrap, we undo the wrapping anyway.
-    # Replace what it DOES do for us with other code.
-    text = WRAPPER.fill(text.strip())
-    # Remove adjacent whitespace
-    text = STRIP_WHITE.sub(' ', text)
-    return text
+    return STRIP_WHITE.sub(' ', text).strip()
 
 
 def check():
