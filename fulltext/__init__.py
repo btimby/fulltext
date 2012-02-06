@@ -93,6 +93,7 @@ def get(filename, default=None, type=None):
         s, b = time.time(), []
         while True:
             if time.time() - s >= PROC_TIMEOUT:
+                p.stdout.close()
                 p.terminate()
                 raise FullTextException('Timeout executing command.')
             if f in select.select([f], [], [], 0)[0]:
