@@ -11,7 +11,7 @@ TEST = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc ipsum augu
 "Vivamus eget purus diam."
 
 
-class FullTextTest(unittest.TestCase):
+class FullText(unittest.TestCase):
     def test_missing_default(self):
         self.assertEqual(fulltext.get('non-existent-file.pdf', ''), '')
 
@@ -24,6 +24,7 @@ class FullTextTest(unittest.TestCase):
     def test_unknown(self):
         self.assertRaises(fulltext.FullTextException, fulltext.get, 'unknown-file.foobar')
 
+class FullTextFiles(unittest.TestCase):
     def test_odt(self):
         self.assertEqual(fulltext.get('files/test.odt'), TEST)
 
@@ -42,6 +43,37 @@ class FullTextTest(unittest.TestCase):
     def test_xls(self):
         self.assertEqual(fulltext.get('files/test.xls'), TEST)
 
+    def test_txt(self):
+        self.assertEqual(fulltext.get('files/test.txt'), TEST)
+
+    def test_zip(self):
+        self.assertEqual(fulltext.get('files/test.zip'), TEST)
+
+
+class FullTextFds(unittest.TestCase):
+    def test_odt(self):
+        self.assertEqual(fulltext.get(file('files/test.odt', 'r')), TEST)
+
+    def test_ods(self):
+        self.assertEqual(fulltext.get(file('files/test.ods', 'r')), TEST)
+
+    def test_doc(self):
+        self.assertEqual(fulltext.get(file('files/test.doc', 'r')), TEST)
+
+    def test_pdf(self):
+        self.assertEqual(fulltext.get(file('files/test.pdf', 'r')), TEST)
+
+    def test_rtf(self):
+        self.assertEqual(fulltext.get(file('files/test.rtf', 'r')), TEST)
+
+    def test_xls(self):
+        self.assertEqual(fulltext.get(file('files/test.xls', 'r')), TEST)
+
+    def test_txt(self):
+        self.assertEqual(fulltext.get(file('files/test.txt', 'r')), TEST)
+
+    def test_zip(self):
+        self.assertEqual(fulltext.get(file('files/test.zip', 'r')), TEST)
 
 def main():
     unittest.main()
