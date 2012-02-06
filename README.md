@@ -96,3 +96,11 @@ A feature to expect in the near future is support for file-like objects:
 > fulltext.get(f, '< no content >')
 'Lorem ipsum...'
 ```
+
+Also, currently, plain text files are not detected or handled. The library should detect
+a plain text file and perform only post-processing on it.
+
+One last change I plan is to use the mimetypes library for detection rather than using
+the file extension directly. Commands and post-processing will then be mapped to mime types.
+Then we should also allow the library user to add their own commands for support of other
+file types (much like the mimetypes library does with the add_type function).

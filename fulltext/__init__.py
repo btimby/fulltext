@@ -1,5 +1,8 @@
-import os, os.path, subprocess, re, csv
+import os, os.path, subprocess, re, csv, time
 import textwrap
+# TODO: support plain text files. Just read their content.
+# TODO: support file-like objects (pipe file data to stdin).
+# TODO: use mimetypes library for figuring out file type.
 
 PROG_MAP = {
     '.pdf':     ('/usr/bin/pdftotext', '-q', '-nopgbrk', '{0}', '-'),
@@ -28,6 +31,9 @@ PROG_MAP = {
 
 STRIP_WHITE = re.compile(r'[ \t\v\f\r\n]+')
 UNRTF = re.compile(r'.*-+\n', flags=re.MULTILINE)
+
+PROC_TIMEOUT     = 5
+"How long to wait for command exectuion."
 
 def strip_unrtf_header(text):
     """
@@ -97,7 +103,13 @@ def get(filename, default=None, type=None):
             return default
         raise FullTextException('Cannot execute binary: {0}'.format(cmd[0]))
     try:
-        text = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
+        start = time.time()
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        while not proc.poll():
+            if time.time() - start > PROC_TIMEOUT:
+                raise FullTextException('Timeout executing command.')
+            time.sleep(1.0)
+        text = proc.communicate()[0]
     except:
         if default is not None:
             return default
@@ -105,6 +117,8 @@ def get(filename, default=None, type=None):
     post = FUNC_MAP.get(type, None)
     if post:
         text = post(text)
+    # TODO: get rid of textwrap, we undo the wrapping anyway.
+    # Replace what it DOES do for us with other code.
     text = WRAPPER.fill(text.strip())
     # Remove adjacent whitespace
     text = STRIP_WHITE.sub(' ', text)
