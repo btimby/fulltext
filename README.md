@@ -79,4 +79,4 @@ Future
 
 Sometimes multiple tools can be used. For example, catdoc provides xls2csv, while xls2csv provides convertxls2csv. We should use whichever is present.
 
-I would like to do away with commands as tuples, and simply use strings. This is something (easyprocess)[http://pypi.python.org/pypi/EasyProcess] can do.
+I would like to do away with commands as tuples, and simply use strings. This is something [easyprocess](http://pypi.python.org/pypi/EasyProcess) can do.
