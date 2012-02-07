@@ -46,9 +46,9 @@ how the `dict.get()` method works.
 
 ```python
 > import fulltext
-> fulltext.get('missing_file.pdf', '< no content >')
+> fulltext.get('does-not-exist.pdf', '< no content >')
 '< no content >'
-> fulltext.get('existing.pdf', '< no content >'')
+> fulltext.get('exists.pdf', '< no content >')
 'Lorem ipsum...'
 ```
 
@@ -67,9 +67,7 @@ Some formats require additional care, this is done in the post-processing step. 
 is the tool used to convert .rtf files to text. It prints a banner including the program version
 and some document metadata. This header is removed in post-processing.
 
-All receive some post-processing. The textwrap library is used to perform some cleanup of the text.
-Then a regular expression is used to condense any adjacent whitespace into a single space. Line breaks
-are also removed in this step.
+A simple regular expression is used to convert adjacent whitespace characters to a single space.
 
 This results in the highest word-per-byte ratio possible, allowing your full-text engine to quickly index
 the file contents.
