@@ -135,12 +135,12 @@ PROG_MAP = {
         ('strings', '-n 18'),
     ),
 }
-"The command registry. Use add_commands to override this."
+"The command registry. Use add_commands() to override this."
 
 FUNC_MAP = {
     ('application/pdf', None): run_command,
     ('application/msword', None): run_command,
-    ('application/vnd.openxmlformats-officedocument.wordprocessingml.document', None): run_command,  # http://sourceforge.net/projects/docx2txt/
+    ('application/vnd.openxmlformats-officedocument.wordprocessingml.document', None): run_command,
     ('application/vnd.ms-excel', None): csv_to_text,
     ('application/rtf', None): strip_unrtf_header,
     ('application/vnd.oasis.opendocument.text', None): run_command,
@@ -156,7 +156,7 @@ FUNC_MAP = {
     ('audio/mpeg', None): run_command,
     ('application/octet-stream', None): run_command,
 }
-"The handler registry. Use add_handler to override this."
+"The handler registry. Use add_handler() to override this."
 
 def add_commands(mime, commands, encoding=None):
     """
@@ -176,7 +176,7 @@ def add_commands(mime, commands, encoding=None):
     command for use with plain text files.
 
     >>> import fulltext
-    >>> fulltext.add_commands('text/plain', (('cat', '{0}'), None))
+    >>> fulltext.add_commands('text/plain', (('cat', '{0}'), ('cat', )))
 
     The above is not yet complete, as you still need to register a handler using add_handler().
     """
@@ -191,7 +191,7 @@ def add_handler(mime, handler, encoding=None):
     Adds a function to handle files of a specific type. Most file types use the built-in
     run_command handler. This handler executes a command and reads the output in order
     to convert the file to text. If you use this handler for your file type, then you
-    must also use add_commands to register a command to handle this type.
+    must also use add_commands() to register a command to handle this type.
 
     Here is how you could register a handler for plain text files.
 
@@ -215,6 +215,7 @@ def add_type(mime, ext):
     module for now. It is here only to allow future expansion (if we don't use mimetypes
     forever.)
     """
+    assert ext.startswith('.'), 'Extension should start with a period `.`.'
     return mimetypes.add_type(mime, ext)
 
 def add(mime, ext, handler, commands=None, encoding=None):
