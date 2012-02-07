@@ -3,7 +3,7 @@
 from distutils.core import setup
 
 name = 'fulltext'
-version = '0.1'
+version = '0.2'
 release = '1'
 versrel = version + '-' + release
 download_url = 'https://github.com/downloads/btimby/' + name + \
