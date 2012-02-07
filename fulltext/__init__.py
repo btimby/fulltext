@@ -46,7 +46,7 @@ def run_command(f, type):
             return run_command(fname, type)
         i = f.read()
     # We use regular subprocess module here. No timeout is allowed with communicate()
-    # If there are problems with times, I will investigate other options, like:
+    # If there are problems with timeouts, I will investigate other options, like:
     # http://pypi.python.org/pypi/EasyProcess
     p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
     return p.communicate(i)[0]
@@ -158,7 +158,7 @@ FUNC_MAP = {
 }
 "The handler registry. Use add_handler to override this."
 
-def add_commands(mime, commands, enc=None):
+def add_commands(mime, commands, encoding=None):
     """
     Adds a set of commands to the command registry. These commands are used to extract
     text from various file types. Each command set consists of two commands. The first
@@ -182,12 +182,11 @@ def add_commands(mime, commands, enc=None):
     """
     assert isinstance(commands, tuple), 'Commands must be tuple (Command for disk file, Command for use with piping).'
     assert len(commands) == 2, 'Commands must contain two commands.'
-    assert isinstance(commands[0], tuple), 'Each command must be a tuple.'
-    assert isinstance(commands[1], tuple), 'Each command must be a tuple.'
-    assert '{0}' in command[0], 'Disk file command must contain {0}.'
-    PROG_MAP[(mime, enc)] = commands
+    assert isinstance(commands[0], tuple), 'First command must be a tuple.'
+    assert isinstance(commands[1], tuple) or commands[1] is None, 'Second command must be a tuple or None.'
+    PROG_MAP[(mime, encoding)] = commands
 
-def add_handler(mime, handler, enc=None):
+def add_handler(mime, handler, encoding=None):
     """
     Adds a function to handle files of a specific type. Most file types use the built-in
     run_command handler. This handler executes a command and reads the output in order
@@ -208,7 +207,25 @@ def add_handler(mime, handler, enc=None):
     registering text/plain is redundant.
     """
     assert callable(handler), 'Handler must be callable.'
-    FUNC_MAP[(mime, enc)] = handler
+    FUNC_MAP[(mime, encoding)] = handler
+
+def add_type(mime, ext):
+    """
+    Adds a new mime type and associated extension. This just dispatches to the mimetypes
+    module for now. It is here only to allow future expansion (if we don't use mimetypes
+    forever.)
+    """
+    return mimetypes.add_type(mime, ext)
+
+def add(mime, ext, handler, commands=None, encoding=None):
+    """
+    Shortcut command to add type, handler and optionally commands. Simply calls add_type(),
+    add_handler() and add_commands().
+    """
+    add_type(mime, ext)
+    add_handler(mime, handler, encoding=encoding)
+    if commands:
+        add_commands(mime, commands, encoding=encoding)
 
 def get_type(filename):
     """
