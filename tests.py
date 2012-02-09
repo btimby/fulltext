@@ -28,6 +28,10 @@ class FullText(unittest.TestCase):
         "Ensures an unknown file type without a default will raise an exception."
         self.assertRaises(fulltext.FullTextException, fulltext.get, 'unknown-file.foobar')
 
+    def test_default_none(self):
+        "Ensures None is a valid value to pass as default."
+        self.assertEqual(fulltext.get('unknown-file.foobar', None), None)
+
     def test_handler(self):
         "Ensures that a handler registered for a given type is executed when that type is converted."
         def test_handler(f, type):

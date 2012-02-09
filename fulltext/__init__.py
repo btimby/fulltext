@@ -240,7 +240,12 @@ class FullTextException(Exception):
     pass
 
 
-def get(f, default=None, filename=None, type=None):
+# A placeholder for a kwarg default value.
+class NoDefault(object):
+    pass
+
+
+def get(f, default=NoDefault, filename=None, type=None):
     """
     Gets text from a given file. The first parameter can be a path or a file-like object that
     has a read method. Default is a way to supress errors and just return the default text.
@@ -263,7 +268,7 @@ def get(f, default=None, filename=None, type=None):
         if filename is None:
             filename = f
         if not os.path.exists(filename):
-            if default is not None:
+            if default is not NoDefault:
                 return default
             raise FullTextException('File not found')
     if type is None:
@@ -272,7 +277,7 @@ def get(f, default=None, filename=None, type=None):
     try:
         text = handler(f, type)
     except:
-        if default is not None:
+        if default is not NoDefault:
             return default
         raise
     return STRIP_WHITE.sub(' ', text).strip()
