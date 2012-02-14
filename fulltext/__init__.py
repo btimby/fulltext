@@ -262,7 +262,7 @@ def get(f, default=NoDefault, filename=None, type=None):
     """
     if not isinstance(f, basestring) and filename is None:
         # Try to help figure out the file type.
-        filename = getattr(f, 'name', None)
+        filename = getattr(f, 'name', '')
     else:
         # If user provided filename, don't override it.
         if filename is None:
