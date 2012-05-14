@@ -82,7 +82,7 @@ PROG_MAP = {
         ('xls2csv', '{0}'),  # as provided by catdoc
         None,  # Supposedly this works, but I get segmentation fault.
     ),
-    ('application/rtf', None): (
+    ('text/rtf', None): (
         ('unrtf', '--text', '--nopict', '{0}'),
         ('unrtf', '--text', '--nopict'),
     ),
@@ -141,8 +141,8 @@ FUNC_MAP = {
     ('application/pdf', None): run_command,
     ('application/msword', None): run_command,
     ('application/vnd.openxmlformats-officedocument.wordprocessingml.document', None): run_command,
-    ('application/vnd.ms-excel', None): csv_to_text,
-    ('application/rtf', None): strip_unrtf_header,
+    ('text/vnd.ms-excel', None): csv_to_text,
+    ('text/rtf', None): strip_unrtf_header,
     ('application/vnd.oasis.opendocument.text', None): run_command,
     ('application/vnd.oasis.opendocument.spreadsheet', None): run_command,
     ('application/zip', None): run_command,
