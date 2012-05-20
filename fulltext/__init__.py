@@ -5,6 +5,7 @@ mimetypes.add_type('application/rar', '.rar')
 
 STRIP_WHITE = re.compile(r'[ \t\v\f\r\n]+')
 UNRTF = re.compile(r'.*-+\n', flags=re.MULTILINE)
+DEVNULL = os.open(os.devnull, os.O_RDWR)
 
 # http://stackoverflow.com/questions/377017/test-if-executable-exists-in-python
 def which(program):
@@ -48,7 +49,7 @@ def run_command(f, type):
     # We use regular subprocess module here. No timeout is allowed with communicate()
     # If there are problems with timeouts, I will investigate other options, like:
     # http://pypi.python.org/pypi/EasyProcess
-    p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+    p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=DEVNULL)
     return p.communicate(i)[0]
 
 def strip_unrtf_header(f, type):
