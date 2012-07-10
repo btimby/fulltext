@@ -9,13 +9,13 @@ readme = 'README.rst'
 versrel = version + '-' + release
 download_url = 'https://github.com/downloads/btimby/' + name + \
                            '/' + name + '-' + versrel + '.tar.gz'
-description = file(readme).read()
+long_description = file(readme).read()
 
 setup(
     name = name,
     version = versrel,
     description = 'Convert binary files to plain text for indexing.',
-    long_description = description,
+    long_description = long_description,
     author = 'Ben Timby',
     author_email = 'btimby@gmail.com',
     maintainer = 'Ben Timby',
