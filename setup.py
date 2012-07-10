@@ -1,11 +1,12 @@
 #!/bin/env python
 
+import os
 from distutils.core import setup
 
 name = 'fulltext'
 version = '0.3'
 release = '1'
-readme = 'README.rst'
+readme = os.path.join(os.path.dirname(__file__), 'README.rst')
 versrel = version + '-' + release
 download_url = 'https://github.com/downloads/btimby/' + name + \
                            '/' + name + '-' + versrel + '.tar.gz'
