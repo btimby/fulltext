@@ -274,7 +274,7 @@ def get(f, default=NoDefault, filename=None, type=None):
             raise FullTextException('File not found')
     if not filename:
         try:
-            filename = os.path.basename(req.url)
+            filename = os.path.basename(f.url)
         except AttributeError:
             pass
     if type is None:
