@@ -29,9 +29,12 @@ def read_content(f, type):
         f = file(f, 'r')
     return f.read()
 
-def run_command(f, type):
+def run_command(f, type, use_uno=False, **kwargs):
     "The default handler. It runs a command and reads it's output."
-    cmds = PROG_MAP[type]
+    if use_uno and type in UNO_FORMATS:
+        cmds = UNO_COMMANDS
+    else:
+        cmds = PROG_MAP[type]
     if isinstance(f, basestring):
         cmd = cmds[0]
         cmd = map(lambda x: x.format(f), cmd)
@@ -52,19 +55,32 @@ def run_command(f, type):
     p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=DEVNULL)
     return p.communicate(i)[0]
 
-def strip_unrtf_header(f, type):
+def strip_unrtf_header(f, type, **kwargs):
     "Can't find a way to turn off the stupid header in unrtf."
-    text = run_command(f, type)
+    text = run_command(f, type, **kwarg)
     parts = text.split('-----------------')
     return '-----------------'.join(parts[1:])
 
-def csv_to_text(f, type):
+def csv_to_text(f, type, **kwargs):
     "Can convert xls to csv, but this will go from csv to plain old text."
-    text = run_command(f, type)
+    text = run_command(f, type, **kwarg)
     buffer = []
     for row in csv.reader(text.splitlines(), dialect="excel"):
         buffer.append(' '.join(row))
     return ' '.join(buffer)
+
+UNO_FORMATS = (
+    ('application/pdf', None),
+    ('application/vnd.openxmlformats-officedocument.wordprocessingml.document', None),
+    ('application/rtf', None),
+    ('text/rtf', None),
+    ('application/vnd.oasis.opendocument.text', None),
+)
+
+UNO_COMMANDS = (
+    ('unoconv', '-f', 'text', '{0}'),
+    None,
+)
 
 PROG_MAP = {
     ('application/pdf', None): (
@@ -82,6 +98,10 @@ PROG_MAP = {
     ('application/vnd.ms-excel', None): (
         ('xls2csv', '{0}'),  # as provided by catdoc
         None,  # Supposedly this works, but I get segmentation fault.
+    ),
+    ('application/rtf', None): (
+        ('unrtf', '--text', '--nopict', '{0}'),
+        ('unrtf', '--text', '--nopict'),
     ),
     ('text/rtf', None): (
         ('unrtf', '--text', '--nopict', '{0}'),
@@ -144,6 +164,7 @@ FUNC_MAP = {
     ('application/vnd.openxmlformats-officedocument.wordprocessingml.document', None): run_command,
     ('text/vnd.ms-excel', None): csv_to_text,
     ('text/rtf', None): strip_unrtf_header,
+    ('application/rtf', None): strip_unrtf_header,
     ('application/vnd.oasis.opendocument.text', None): run_command,
     ('application/vnd.oasis.opendocument.spreadsheet', None): run_command,
     ('application/zip', None): run_command,
@@ -246,7 +267,7 @@ class NoDefault(object):
     pass
 
 
-def get(f, default=NoDefault, filename=None, type=None):
+def get(f, default=NoDefault, filename=None, type=None, strip_whitespace=True, use_uno=False):
     """
     Gets text from a given file. The first parameter can be a path or a file-like object that
     has a read method. Default is a way to supress errors and just return the default text.
@@ -273,7 +294,13 @@ def get(f, default=NoDefault, filename=None, type=None):
                 return default
             raise FullTextException('File not found')
     if type is None:
-        type = get_type(filename)
+        if not filename:
+            try:
+                type = (f.headers.type, None)
+            except AttributeError:
+                pass
+        else:
+            type = get_type(filename)
     handler = FUNC_MAP.get(type, read_content)
     try:
         text = handler(f, type)
@@ -281,7 +308,10 @@ def get(f, default=NoDefault, filename=None, type=None):
         if default is not NoDefault:
             return default
         raise
-    return STRIP_WHITE.sub(' ', text).strip()
+    if strip_whitespace:
+        return STRIP_WHITE.sub(' ', text).strip()
+    else:
+        return text
 
 def check():
     """
