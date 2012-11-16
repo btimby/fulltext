@@ -272,6 +272,11 @@ def get(f, default=NoDefault, filename=None, type=None):
             if default is not NoDefault:
                 return default
             raise FullTextException('File not found')
+    if not filename:
+        try:
+            filename = os.path.basename(f.url)
+        except AttributeError:
+            pass
     if type is None:
         type = get_type(filename)
     handler = FUNC_MAP.get(type, read_content)
