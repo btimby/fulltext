@@ -1,3 +1,5 @@
+import os
+import sys
 import unittest
 import fulltext
 
@@ -102,6 +104,26 @@ class FullTextFds(unittest.TestCase):
 
     def test_zip(self):
         self.assertEqual(fulltext.get(file('files/test.zip', 'r')), TEST)
+
+
+class FulleTextCheck(unittest.TestCase):
+    "Test the check function."
+
+    def test_success(self):
+        "At least verify the function executes without an error."
+        # The output can be ignored
+        stdout = sys.stdout
+        try:
+            sys.stdout = open(os.devnull, 'w')
+        except:
+            # We tried... not core to the test though.
+            pass
+        try:
+            fulltext.check()
+        except Exception, e:
+            self.fail(str(e))
+        finally:
+            sys.stdout = stdout
 
 
 def main():

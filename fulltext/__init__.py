@@ -291,7 +291,8 @@ def check():
     commands = {}
     for type, cmd in PROG_MAP.items():
         commands[cmd[0][0]] = None
-        commands[cmd[1][0]] = None
+        if cmd[1]:
+            commands[cmd[1][0]] = None
     for cmd in commands.keys():
         if which(cmd) is None:
             print 'Cannot execute command {0}, please install it.'.format(cmd)
