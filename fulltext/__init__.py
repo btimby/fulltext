@@ -162,11 +162,17 @@ FUNC_MAP = {
 def add_commands(mime, commands, encoding=None):
     """
     Adds a set of commands to the command registry. These commands are used to extract
-    text from various file types. Each command set consists of two commands. The first
-    command is used to extract text from a file on disk. The second command is used to
-    extract text from a file-like object. If suitable command can accept input via stdin
-    then the second command can be None. In this case, the file contents are written to
-    a temporary file, then the first command is used on that.
+    text from various file types.
+
+    Each command set consists of two commands. Many of the CLI programs used for
+    extraction can be fed data via a file (path) or via stdin. Fulltext accepts both
+    paths and file-like objects. In the case of a path, the first command is used by
+    simply passing along the path. In the case of a file-like, fulltext will feed it's
+    contents to the command via stdin. Some CLI programs do NOT accept data via stdin
+    in this case, leave the second command undefined, fulltext will fall back to writing
+    the file-like to a temporary file, then invoking the first command on the temp file
+    path. This is a basic optimization, that tries to avoid writing to disk when dealing
+    with buffers or remote data that does not already reside within the file system.
 
     Each command is a tuple, which should represent the program name, and any arguments
     needed to cause the program to print plain text to stdout. You need to put `{0}` at
