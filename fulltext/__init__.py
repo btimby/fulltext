@@ -300,10 +300,11 @@ def check():
     can help you determine what needs to be installed for fulltext to fully function.
     """
     commands = {}
-    for type, cmd in PROG_MAP.items():
-        commands[cmd[0][0]] = None
+    for mimetype, cmd in PROG_MAP.items():
+        commands[cmd[0][0]] = mimetype
         if cmd[1]:
-            commands[cmd[1][0]] = None
-    for cmd in commands.keys():
+            commands[cmd[1][0]] = mimetype
+    for cmd, mimetype in commands.items():
         if which(cmd) is None:
-            print 'Cannot execute command {0}, please install it.'.format(cmd)
+            print('Cannot find command {0}, for handling {1}, please install '
+                  'it.'.format(cmd, mimetype))
