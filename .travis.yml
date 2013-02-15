@@ -10,4 +10,4 @@ before_script:
   - "pep8 --exclude=migrations --ignore=E501,E225 fulltext"
   - pyflakes -x W fulltext
 script:
-  - python test.py
+  - python tests.py
