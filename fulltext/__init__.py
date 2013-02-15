@@ -17,6 +17,16 @@ UNRTF = re.compile(r'.*-+\n', flags=re.MULTILINE)
 DEVNULL = os.open(os.devnull, os.O_RDWR)
 
 
+class FullTextException(Exception):
+    pass
+
+
+class MissingCommandException(FullTextException):
+    def __init__(self, command):
+        super(MissingCommandException, self).__init__(
+            'Missing command "{0}"'.format(command))
+
+
 # http://stackoverflow.com/questions/377017/test-if-executable-exists-in-python
 def which(program):
     "Simply checks if a given program exists within PATH and is executable."
@@ -58,6 +68,8 @@ def run_command(f, type):
             os.close(fd)
             return run_command(fname, type)
         i = f.read()
+    if which(cmd[0]) is None:
+        raise MissingCommandException(cmd[0])
     # We use regular subprocess module here. No timeout is allowed with communicate()
     # If there are problems with timeouts, I will investigate other options, like:
     # http://pypi.python.org/pypi/EasyProcess
@@ -261,10 +273,6 @@ def get_type(filename):
     function for future expansion.
     """
     return mimetypes.guess_type(filename)
-
-
-class FullTextException(Exception):
-    pass
 
 
 # A placeholder for a kwarg default value.
