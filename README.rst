@@ -44,7 +44,7 @@ The following formats are supported using the command line apps listed.
 -  application/octet-stream: strings
 
 Installing tools
-------------
+----------------
 
 Fulltext uses the above command line programs to function. Therefore, it is not
 useful unless you have installed them. Many of them can be installed via your system's
