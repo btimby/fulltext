@@ -1,11 +1,21 @@
-import os, os.path, subprocess, re, csv, time, select, mimetypes, tempfile
+import os
+import re
+import csv
+import os.path
+import tempfile
+import mimetypes
+import subprocess
+
+
 # TODO: Sometimes multiple tools can be used, choose the one that is installed.
 
 mimetypes.add_type('application/rar', '.rar')
 
+
 STRIP_WHITE = re.compile(r'[ \t\v\f\r\n]+')
 UNRTF = re.compile(r'.*-+\n', flags=re.MULTILINE)
 DEVNULL = os.open(os.devnull, os.O_RDWR)
+
 
 # http://stackoverflow.com/questions/377017/test-if-executable-exists-in-python
 def which(program):
@@ -23,11 +33,13 @@ def which(program):
                 return exe_file
     return None
 
+
 def read_content(f, type):
     "A handler that simply reads a file's output. Used on unrecognized types."
     if isinstance(f, basestring):
         f = file(f, 'r')
     return f.read()
+
 
 def run_command(f, type):
     "The default handler. It runs a command and reads it's output."
@@ -52,11 +64,13 @@ def run_command(f, type):
     p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=DEVNULL)
     return p.communicate(i)[0]
 
+
 def strip_unrtf_header(f, type):
     "Can't find a way to turn off the stupid header in unrtf."
     text = run_command(f, type)
     parts = text.split('-----------------')
     return '-----------------'.join(parts[1:])
+
 
 def csv_to_text(f, type):
     "Can convert xls to csv, but this will go from csv to plain old text."
@@ -65,6 +79,7 @@ def csv_to_text(f, type):
     for row in csv.reader(text.splitlines(), dialect="excel"):
         buffer.append(' '.join(row))
     return ' '.join(buffer)
+
 
 PROG_MAP = {
     ('application/pdf', None): (
@@ -159,6 +174,7 @@ FUNC_MAP = {
 }
 "The handler registry. Use add_handler() to override this."
 
+
 def add_commands(mime, commands, encoding=None):
     """
     Adds a set of commands to the command registry. These commands are used to extract
@@ -193,6 +209,7 @@ def add_commands(mime, commands, encoding=None):
     assert isinstance(commands[1], tuple) or commands[1] is None, 'Second command must be a tuple or None.'
     PROG_MAP[(mime, encoding)] = commands
 
+
 def add_handler(mime, handler, encoding=None):
     """
     Adds a function to handle files of a specific type. Most file types use the built-in
@@ -216,6 +233,7 @@ def add_handler(mime, handler, encoding=None):
     assert callable(handler), 'Handler must be callable.'
     FUNC_MAP[(mime, encoding)] = handler
 
+
 def add_type(mime, ext):
     """
     Adds a new mime type and associated extension. This just dispatches to the mimetypes
@@ -224,6 +242,7 @@ def add_type(mime, ext):
     """
     assert ext.startswith('.'), 'Extension should start with a period `.`.'
     return mimetypes.add_type(mime, ext)
+
 
 def add(mime, ext, handler, commands=None, encoding=None):
     """
@@ -234,6 +253,7 @@ def add(mime, ext, handler, commands=None, encoding=None):
     add_handler(mime, handler, encoding=encoding)
     if commands:
         add_commands(mime, commands, encoding=encoding)
+
 
 def get_type(filename):
     """
@@ -293,6 +313,7 @@ def get(f, default=NoDefault, filename=None, type=None):
             return default
         raise
     return STRIP_WHITE.sub(' ', text).strip()
+
 
 def check():
     """
