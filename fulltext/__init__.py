@@ -97,7 +97,7 @@ PROG_MAP = {
     ),
     ('application/zip', None): (
         ('funzip', '{0}', ),
-        ('funzip'),
+        ('funzip', ),
     ),
     ('application/x-tar', 'gzip'): (
         ('tar', 'tzf', '{0}'),
