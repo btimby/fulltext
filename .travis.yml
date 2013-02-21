@@ -7,7 +7,6 @@ install:
   - pip install --timeout=30 https://github.com/dcramer/pyflakes/tarball/master
   - pip install --timeout=30 -q -e . --use-mirrors
 before_script:
-  - "pep8 --exclude=migrations --ignore=E501,E225 fulltext"
-  - pyflakes -x W fulltext
+  - make verify
 script:
   - make test

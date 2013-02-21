@@ -2,7 +2,7 @@ test:
 	python tests.py
 
 verify:
-	pyflakes fulltext
+	pyflakes -x W fulltext
 	pep8 --exclude=migrations --ignore=E501,E225 fulltext
 
 install:
