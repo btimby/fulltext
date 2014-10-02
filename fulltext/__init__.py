@@ -25,6 +25,7 @@ def which(program):
 
 def read_content(f, type):
     "A handler that simply reads a file's output. Used on unrecognized types."
+    print "Unable to recognize file type of ", f, type
     if isinstance(f, basestring):
         f = file(f, 'r')
     return f.read()
@@ -52,18 +53,19 @@ def run_command(f, type, use_uno=False, **kwargs):
     # We use regular subprocess module here. No timeout is allowed with communicate()
     # If there are problems with timeouts, I will investigate other options, like:
     # http://pypi.python.org/pypi/EasyProcess
+    print "Running ", cmd
     p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=DEVNULL)
     return p.communicate(i)[0]
 
 def strip_unrtf_header(f, type, **kwargs):
     "Can't find a way to turn off the stupid header in unrtf."
-    text = run_command(f, type, **kwarg)
+    text = run_command(f, type, **kwargs)
     parts = text.split('-----------------')
     return '-----------------'.join(parts[1:])
 
 def csv_to_text(f, type, **kwargs):
     "Can convert xls to csv, but this will go from csv to plain old text."
-    text = run_command(f, type, **kwarg)
+    text = run_command(f, type, **kwargs)
     buffer = []
     for row in csv.reader(text.splitlines(), dialect="excel"):
         buffer.append(' '.join(row))
@@ -296,11 +298,14 @@ def get(f, default=NoDefault, filename=None, type=None, strip_whitespace=True, u
     if type is None:
         if not filename:
             try:
+                print "Getting it from headers ", f.headers
                 type = (f.headers.type, None)
             except AttributeError:
                 pass
         else:
+            print "Getting it from filename ", filename
             type = get_type(filename)
+    print "Type is ", type
     handler = FUNC_MAP.get(type, read_content)
     try:
         text = handler(f, type)
