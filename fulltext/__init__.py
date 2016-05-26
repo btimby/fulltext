@@ -1,4 +1,4 @@
-import os, os.path, subprocess, re, csv, time, select, mimetypes, tempfile
+import os, os.path, subprocess, re, csv, time, select, mimetypes, tempfile, errno
 # TODO: Sometimes multiple tools can be used, choose the one that is installed.
 
 mimetypes.add_type('application/rar', '.rar')
@@ -53,8 +53,12 @@ def run_command(f, type, use_uno=False, **kwargs):
     # We use regular subprocess module here. No timeout is allowed with communicate()
     # If there are problems with timeouts, I will investigate other options, like:
     # http://pypi.python.org/pypi/EasyProcess
-    print "Running ", cmd
-    p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=DEVNULL)
+    try:
+        p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=DEVNULL)
+    except OSError as _err:
+        if _err.errno != errno.ENOENT:
+            raise
+        raise OSError(_err.errno, "Command not found", cmd[0])
     return p.communicate(i)[0]
 
 def strip_unrtf_header(f, type, **kwargs):
