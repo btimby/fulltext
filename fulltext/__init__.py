@@ -168,7 +168,7 @@ FUNC_MAP = {
     ('application/pdf', None): run_command,
     ('application/msword', None): run_command,
     ('application/vnd.openxmlformats-officedocument.wordprocessingml.document', None): run_command,
-    ('text/vnd.ms-excel', None): csv_to_text,
+    ('application/vnd.ms-excel', None): csv_to_text,
     ('text/rtf', None): strip_unrtf_header,
     ('application/rtf', None): strip_unrtf_header,
     ('application/vnd.oasis.opendocument.text', None): run_command,
