@@ -1,11 +1,31 @@
-import os, os.path, subprocess, re, csv, time, select, mimetypes, tempfile, errno
+import os
+import re
+import csv
+import os.path
+import tempfile
+import mimetypes
+import subprocess
+
+
 # TODO: Sometimes multiple tools can be used, choose the one that is installed.
 
 mimetypes.add_type('application/rar', '.rar')
 
+
 STRIP_WHITE = re.compile(r'[ \t\v\f\r\n]+')
 UNRTF = re.compile(r'.*-+\n', flags=re.MULTILINE)
 DEVNULL = os.open(os.devnull, os.O_RDWR)
+
+
+class FullTextException(Exception):
+    pass
+
+
+class MissingCommandException(FullTextException):
+    def __init__(self, command):
+        super(MissingCommandException, self).__init__(
+            'Missing command "{0}"'.format(command))
+
 
 # http://stackoverflow.com/questions/377017/test-if-executable-exists-in-python
 def which(program):
@@ -23,9 +43,9 @@ def which(program):
                 return exe_file
     return None
 
+
 def read_content(f, type):
     "A handler that simply reads a file's output. Used on unrecognized types."
-    print "Unable to recognize file type of ", f, type
     if isinstance(f, basestring):
         f = file(f, 'r')
     return f.read()
@@ -50,15 +70,12 @@ def run_command(f, type, use_uno=False, **kwargs):
             os.close(fd)
             return run_command(fname, type)
         i = f.read()
+    if which(cmd[0]) is None:
+        raise MissingCommandException(cmd[0])
     # We use regular subprocess module here. No timeout is allowed with communicate()
     # If there are problems with timeouts, I will investigate other options, like:
     # http://pypi.python.org/pypi/EasyProcess
-    try:
-        p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=DEVNULL)
-    except OSError as _err:
-        if _err.errno != errno.ENOENT:
-            raise
-        raise OSError(_err.errno, "Command not found", cmd[0])
+    p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=DEVNULL)
     return p.communicate(i)[0]
 
 def strip_unrtf_header(f, type, **kwargs):
@@ -123,7 +140,7 @@ PROG_MAP = {
     ),
     ('application/zip', None): (
         ('funzip', '{0}', ),
-        ('funzip'),
+        ('funzip', ),
     ),
     ('application/x-tar', 'gzip'): (
         ('tar', 'tzf', '{0}'),
@@ -186,14 +203,21 @@ FUNC_MAP = {
 }
 "The handler registry. Use add_handler() to override this."
 
+
 def add_commands(mime, commands, encoding=None):
     """
     Adds a set of commands to the command registry. These commands are used to extract
-    text from various file types. Each command set consists of two commands. The first
-    command is used to extract text from a file on disk. The second command is used to
-    extract text from a file-like object. If suitable command can accept input via stdin
-    then the second command can be None. In this case, the file contents are written to
-    a temporary file, then the first command is used on that.
+    text from various file types.
+
+    Each command set consists of two commands. Many of the CLI programs used for
+    extraction can be fed data via a file (path) or via stdin. Fulltext accepts both
+    paths and file-like objects. In the case of a path, the first command is used by
+    simply passing along the path. In the case of a file-like, fulltext will feed it's
+    contents to the command via stdin. Some CLI programs do NOT accept data via stdin
+    in this case, leave the second command undefined, fulltext will fall back to writing
+    the file-like to a temporary file, then invoking the first command on the temp file
+    path. This is a basic optimization, that tries to avoid writing to disk when dealing
+    with buffers or remote data that does not already reside within the file system.
 
     Each command is a tuple, which should represent the program name, and any arguments
     needed to cause the program to print plain text to stdout. You need to put `{0}` at
@@ -213,6 +237,7 @@ def add_commands(mime, commands, encoding=None):
     assert isinstance(commands[0], tuple), 'First command must be a tuple.'
     assert isinstance(commands[1], tuple) or commands[1] is None, 'Second command must be a tuple or None.'
     PROG_MAP[(mime, encoding)] = commands
+
 
 def add_handler(mime, handler, encoding=None):
     """
@@ -237,6 +262,7 @@ def add_handler(mime, handler, encoding=None):
     assert callable(handler), 'Handler must be callable.'
     FUNC_MAP[(mime, encoding)] = handler
 
+
 def add_type(mime, ext):
     """
     Adds a new mime type and associated extension. This just dispatches to the mimetypes
@@ -245,6 +271,7 @@ def add_type(mime, ext):
     """
     assert ext.startswith('.'), 'Extension should start with a period `.`.'
     return mimetypes.add_type(mime, ext)
+
 
 def add(mime, ext, handler, commands=None, encoding=None):
     """
@@ -256,16 +283,13 @@ def add(mime, ext, handler, commands=None, encoding=None):
     if commands:
         add_commands(mime, commands, encoding=encoding)
 
+
 def get_type(filename):
     """
     Gets the mimetype and encoding using the mimetypes module. Defined as a standalone
     function for future expansion.
     """
     return mimetypes.guess_type(filename)
-
-
-class FullTextException(Exception):
-    pass
 
 
 # A placeholder for a kwarg default value.
@@ -299,17 +323,13 @@ def get(f, default=NoDefault, filename=None, type=None, strip_whitespace=True, u
             if default is not NoDefault:
                 return default
             raise FullTextException('File not found')
+    if not filename:
+        try:
+            filename = os.path.basename(f.url)
+        except AttributeError:
+            pass
     if type is None:
-        if not filename:
-            try:
-                print "Getting it from headers ", f.headers
-                type = (f.headers.type, None)
-            except AttributeError:
-                pass
-        else:
-            print "Getting it from filename ", filename
-            type = get_type(filename)
-    print "Type is ", type
+        type = get_type(filename)
     handler = FUNC_MAP.get(type, read_content)
     try:
         text = handler(f, type)
@@ -322,15 +342,18 @@ def get(f, default=NoDefault, filename=None, type=None, strip_whitespace=True, u
     else:
         return text
 
+
 def check():
     """
     Checks for the existence of required tools, then reports missing tools to stdout. This
     can help you determine what needs to be installed for fulltext to fully function.
     """
     commands = {}
-    for type, cmd in PROG_MAP.items():
-        commands[cmd[0][0]] = None
-        commands[cmd[1][0]] = None
-    for cmd in commands.keys():
+    for mimetype, cmd in PROG_MAP.items():
+        commands[cmd[0][0]] = mimetype
+        if cmd[1]:
+            commands[cmd[1][0]] = mimetype
+    for cmd, mimetype in commands.items():
         if which(cmd) is None:
-            print 'Cannot execute command {0}, please install it.'.format(cmd)
+            print('Cannot find command {0}, for handling {1}, please install '
+                  'it.'.format(cmd, mimetype))

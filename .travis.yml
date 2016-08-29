@@ -1,0 +1,12 @@
+language: python
+python:
+  - "2.6"
+  - "2.7"
+install:
+  - pip install --timeout=30 pep8 --use-mirrors
+  - pip install --timeout=30 https://github.com/dcramer/pyflakes/tarball/master
+  - pip install --timeout=30 -q -e . --use-mirrors
+before_script:
+  - make verify
+script:
+  - make test

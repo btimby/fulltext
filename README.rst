@@ -1,3 +1,7 @@
+.. figure:: https://travis-ci.org/btimby/fulltext.png
+   :alt: Travis CI Status
+   :target: https://travis-ci.org/btimby/fulltext
+
 A `SmartFile`_ Open Source project. `Read more`_ about how SmartFile
 uses and contributes to Open Source software.
 
@@ -38,6 +42,25 @@ The following formats are supported using the command line apps listed.
 -  video/mpeg: exiftool
 -  audio/mpeg: exiftool
 -  application/octet-stream: strings
+
+Installing tools
+----------------
+
+Fulltext uses the above command line programs to function. Therefore, it is not
+useful unless you have installed them. Many of them can be installed via your system's
+package manager. I use Fedora, thus the following command installed most of the
+required packages.
+
+::
+
+    $ sudo yum install xls2csv odt2txt antiword poppler-utils unrtf \
+    perl-Image-ExifTool html2text binutils unrar gzip bzip2 unzip
+
+The docx2txt utility is not avaialable in a package.
+
+http://docx2txt.sourceforge.net/
+
+The package names may differ on other systems, but for the most part will be similar.
 
 Usage
 -----
