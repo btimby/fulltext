@@ -8,7 +8,7 @@ version = '0.4'
 release = '1'
 readme = os.path.join(os.path.dirname(__file__), 'README.rst')
 versrel = version + '-' + release
-long_description = file(readme).read()
+long_description = open(readme).read()
 
 setup(
     name = name,

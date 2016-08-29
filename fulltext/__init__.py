@@ -5,6 +5,7 @@ import os.path
 import tempfile
 import mimetypes
 import subprocess
+from collections import Callable
 
 
 # TODO: Sometimes multiple tools can be used, choose the one that is installed.
@@ -46,7 +47,7 @@ def which(program):
 
 def read_content(f, type):
     "A handler that simply reads a file's output. Used on unrecognized types."
-    if isinstance(f, basestring):
+    if isinstance(f, str):
         f = file(f, 'r')
     return f.read()
 
@@ -56,9 +57,9 @@ def run_command(f, type, use_uno=False, **kwargs):
         cmds = UNO_COMMANDS
     else:
         cmds = PROG_MAP[type]
-    if isinstance(f, basestring):
+    if isinstance(f, str):
         cmd = cmds[0]
-        cmd = map(lambda x: x.format(f), cmd)
+        cmd = [x.format(f) for x in cmd]
         i = None
     else:
         assert hasattr(f, 'read'), 'File-like object must have read() method.'
@@ -259,7 +260,7 @@ def add_handler(mime, handler, encoding=None):
     But, since the default action is to read the content of an unrecognized file type,
     registering text/plain is redundant.
     """
-    assert callable(handler), 'Handler must be callable.'
+    assert isinstance(handler, Callable), 'Handler must be callable.'
     FUNC_MAP[(mime, encoding)] = handler
 
 
@@ -312,7 +313,7 @@ def get(f, default=NoDefault, filename=None, type=None, strip_whitespace=True, u
 
     Any file whose type cannot be determined will simply be read then post processed.
     """
-    if not isinstance(f, basestring) and filename is None:
+    if not isinstance(f, str) and filename is None:
         # Try to help figure out the file type.
         filename = getattr(f, 'name', '')
     else:

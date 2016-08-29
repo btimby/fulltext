@@ -148,7 +148,7 @@ class FullTextCheck(unittest.TestCase):
             pass
         try:
             fulltext.check()
-        except Exception, e:
+        except Exception as e:
             self.fail(str(e))
         finally:
             sys.stdout = stdout
