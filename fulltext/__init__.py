@@ -16,6 +16,7 @@ mimetypes.add_type('application/rar', '.rar')
 STRIP_WHITE = re.compile(r'[ \t\v\f\r\n]+')
 UNRTF = re.compile(r'.*-+\n', flags=re.MULTILINE)
 DEVNULL = os.open(os.devnull, os.O_RDWR)
+TRY_ENCODINGS = ["utf-8", "latin_1", "ascii"]
 
 
 class FullTextException(Exception):
@@ -45,11 +46,24 @@ def which(program):
     return None
 
 
+def decode_content(content):
+    for encoding in TRY_ENCODINGS:
+        try:
+            return content.decode(encoding)
+            break
+        except UnicodeError:
+            pass
+        except AttributeError:
+            break
+    return content
+
+
 def read_content(f, type):
     "A handler that simply reads a file's output. Used on unrecognized types."
     if isinstance(f, str):
-        f = file(f, 'r')
-    return f.read()
+        with open(f, 'r') as fo:
+            return decode_content(fo.read())
+    return decode_content(f.read())
 
 def run_command(f, type, use_uno=False, **kwargs):
     "The default handler. It runs a command and reads it's output."
@@ -77,7 +91,7 @@ def run_command(f, type, use_uno=False, **kwargs):
     # If there are problems with timeouts, I will investigate other options, like:
     # http://pypi.python.org/pypi/EasyProcess
     p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=DEVNULL)
-    return p.communicate(i)[0]
+    return decode_content(p.communicate(i)[0])
 
 def strip_unrtf_header(f, type, **kwargs):
     "Can't find a way to turn off the stupid header in unrtf."
