@@ -5,6 +5,7 @@ import os.path
 import tempfile
 import mimetypes
 import subprocess
+from collections import Callable
 
 
 # TODO: Sometimes multiple tools can be used, choose the one that is installed.
@@ -15,6 +16,7 @@ mimetypes.add_type('application/rar', '.rar')
 STRIP_WHITE = re.compile(r'[ \t\v\f\r\n]+')
 UNRTF = re.compile(r'.*-+\n', flags=re.MULTILINE)
 DEVNULL = os.open(os.devnull, os.O_RDWR)
+TRY_ENCODINGS = ["utf-8", "latin_1", "ascii"]
 
 
 class FullTextException(Exception):
@@ -44,19 +46,34 @@ def which(program):
     return None
 
 
+def decode_content(content):
+    for encoding in TRY_ENCODINGS:
+        try:
+            return content.decode(encoding)
+            break
+        except UnicodeError:
+            pass
+        except AttributeError:
+            break
+    return content
+
+
 def read_content(f, type):
     "A handler that simply reads a file's output. Used on unrecognized types."
-    if isinstance(f, basestring):
-        f = file(f, 'r')
-    return f.read()
+    if isinstance(f, str):
+        with open(f, 'r') as fo:
+            return decode_content(fo.read())
+    return decode_content(f.read())
 
-
-def run_command(f, type):
+def run_command(f, type, use_uno=False, **kwargs):
     "The default handler. It runs a command and reads it's output."
-    cmds = PROG_MAP[type]
-    if isinstance(f, basestring):
+    if use_uno and type in UNO_FORMATS:
+        cmds = UNO_COMMANDS
+    else:
+        cmds = PROG_MAP[type]
+    if isinstance(f, str):
         cmd = cmds[0]
-        cmd = map(lambda x: x.format(f), cmd)
+        cmd = [x.format(f) for x in cmd]
         i = None
     else:
         assert hasattr(f, 'read'), 'File-like object must have read() method.'
@@ -74,24 +91,34 @@ def run_command(f, type):
     # If there are problems with timeouts, I will investigate other options, like:
     # http://pypi.python.org/pypi/EasyProcess
     p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=DEVNULL)
-    return p.communicate(i)[0]
+    return decode_content(p.communicate(i)[0])
 
-
-def strip_unrtf_header(f, type):
+def strip_unrtf_header(f, type, **kwargs):
     "Can't find a way to turn off the stupid header in unrtf."
-    text = run_command(f, type)
+    text = run_command(f, type, **kwargs)
     parts = text.split('-----------------')
     return '-----------------'.join(parts[1:])
 
-
-def csv_to_text(f, type):
+def csv_to_text(f, type, **kwargs):
     "Can convert xls to csv, but this will go from csv to plain old text."
-    text = run_command(f, type)
+    text = run_command(f, type, **kwargs)
     buffer = []
     for row in csv.reader(text.splitlines(), dialect="excel"):
         buffer.append(' '.join(row))
     return ' '.join(buffer)
 
+UNO_FORMATS = (
+    ('application/pdf', None),
+    ('application/vnd.openxmlformats-officedocument.wordprocessingml.document', None),
+    ('application/rtf', None),
+    ('text/rtf', None),
+    ('application/vnd.oasis.opendocument.text', None),
+)
+
+UNO_COMMANDS = (
+    ('unoconv', '-f', 'text', '{0}'),
+    None,
+)
 
 PROG_MAP = {
     ('application/pdf', None): (
@@ -111,6 +138,10 @@ PROG_MAP = {
         None,  # Supposedly this works, but I get segmentation fault.
     ),
     ('application/rtf', None): (
+        ('unrtf', '--text', '--nopict', '{0}'),
+        ('unrtf', '--text', '--nopict'),
+    ),
+    ('text/rtf', None): (
         ('unrtf', '--text', '--nopict', '{0}'),
         ('unrtf', '--text', '--nopict'),
     ),
@@ -170,6 +201,7 @@ FUNC_MAP = {
     ('application/msword', None): run_command,
     ('application/vnd.openxmlformats-officedocument.wordprocessingml.document', None): run_command,
     ('application/vnd.ms-excel', None): csv_to_text,
+    ('text/rtf', None): strip_unrtf_header,
     ('application/rtf', None): strip_unrtf_header,
     ('application/vnd.oasis.opendocument.text', None): run_command,
     ('application/vnd.oasis.opendocument.spreadsheet', None): run_command,
@@ -242,7 +274,7 @@ def add_handler(mime, handler, encoding=None):
     But, since the default action is to read the content of an unrecognized file type,
     registering text/plain is redundant.
     """
-    assert callable(handler), 'Handler must be callable.'
+    assert isinstance(handler, Callable), 'Handler must be callable.'
     FUNC_MAP[(mime, encoding)] = handler
 
 
@@ -280,7 +312,7 @@ class NoDefault(object):
     pass
 
 
-def get(f, default=NoDefault, filename=None, type=None):
+def get(f, default=NoDefault, filename=None, type=None, strip_whitespace=True, use_uno=False):
     """
     Gets text from a given file. The first parameter can be a path or a file-like object that
     has a read method. Default is a way to supress errors and just return the default text.
@@ -295,7 +327,7 @@ def get(f, default=NoDefault, filename=None, type=None):
 
     Any file whose type cannot be determined will simply be read then post processed.
     """
-    if not isinstance(f, basestring) and filename is None:
+    if not isinstance(f, str) and filename is None:
         # Try to help figure out the file type.
         filename = getattr(f, 'name', '')
     else:
@@ -320,7 +352,10 @@ def get(f, default=NoDefault, filename=None, type=None):
         if default is not NoDefault:
             return default
         raise
-    return STRIP_WHITE.sub(' ', text).strip()
+    if strip_whitespace:
+        return STRIP_WHITE.sub(' ', text).strip()
+    else:
+        return text
 
 
 def check():
