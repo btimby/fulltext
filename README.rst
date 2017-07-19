@@ -22,45 +22,35 @@ results to pack as much text into as little space as possible.
 Supported formats
 -----------------
 
-The following formats are supported using the command line apps listed.
-
--  application/pdf: pdftotext
--  application/msword: antiword
--  application/vnd.openxmlformats-officedocument.wordprocessingml.document:
-   docx2txt
--  application/vnd.ms-excel: convertxls2csv
--  application/rtf: unrtf
--  application/vnd.oasis.opendocument.text: odt2txt
--  application/vnd.oasis.opendocument.spreadsheet: odt2txt
--  application/zip: funzip
--  application/x-tar, gzip: tar & gunzip
--  application/x-tar, bzip2: tar & bunzip2
--  application/rar: unrar
--  text/html: html2text
--  text/xml: html2text
--  image/jpeg: exiftool
--  video/mpeg: exiftool
--  audio/mpeg: exiftool
--  application/octet-stream: strings
+csv - ``csv``
+doc - ``/bin/antiword``
+docx - ``docx2txt``
+html - ``BeautifulSoup``, ``lxml``
+ods - stdlib, ``lxml``
+odt - stdlib, ``lxml``
+pdf - ``/bin/pdf2text``
+rtf - ``/bin/unrtf``
+text - stdlib
+xls - ``xlrd``
+xlsx - ``xlrd``
+zip - stdlib
 
 Installing tools
 ----------------
 
-Fulltext uses the above command line programs to function. Therefore, it is not
-useful unless you have installed them. Many of them can be installed via your system's
-package manager. I use Fedora, thus the following command installed most of the
-required packages.
+Fulltext uses a number of pure Python libraries. Fulltext also uses the
+command line tools: antiword, pdf2text and unrtf.
 
 ::
 
-    $ sudo yum install xls2csv odt2txt antiword poppler-utils unrtf \
-    perl-Image-ExifTool html2text binutils unrar gzip bzip2 unzip
+    $ sudo yum install antiword unrtf  poppler-utils
 
-The docx2txt utility is not avaialable in a package.
+Or for debian-based systems:
 
-http://docx2txt.sourceforge.net/
+::
 
-The package names may differ on other systems, but for the most part will be similar.
+    $ sudo apt-get install antiword unrtf  poppler-utils
+
 
 Usage
 -----
@@ -79,39 +69,9 @@ like how the ``dict.get()`` method works.
     > fulltext.get('exists.pdf', '< no content >'')
     'Lorem ipsum...'
 
-There is also a quick way to check for the existence of all of the
-required tools.
-
-::
-
-    > import fulltext
-    > fulltext.check()
-    Cannot execute command docx2txt, please install it.
-
-Post-processing
----------------
-
-Some formats require additional care, this is done in the
-post-processing step. For example, unrtf is the tool used to convert
-.rtf files to text. It prints a banner including the program version and
-some document metadata. This header is removed in post-processing.
-
-A simple regular expression is used to convert adjacent whitespace characters
-to a single space.
-
-This results in the highest word-per-byte ratio possible, allowing your
-full-text engine to quickly index the file contents.
-
-Future
-------
-
-Sometimes multiple tools can be used. For example, catdoc provides
-xls2csv, while xls2csv provides convertxls2csv. We should use whichever
-is present.
-
-I would like to do away with commands as tuples, and simply use strings.
-This is something `easyprocess`_ can do.
-
-.. _SmartFile: http://www.smartfile.com/
-.. _Read more: http://www.smartfile.com/open-source.html
-.. _easyprocess: http://pypi.python.org/pypi/EasyProcess
+You can pass a file-like object or a path to ``.get()`` Fulltext will try to
+do the right thing, using memory buffers or temp files depending on the
+backend. To write a new backend, just create a file ``be/<extension>.py`` and
+define at least a ``_get_file()`` function. If you can support ``_get_path()``
+more efficiently than the default implementation that uses ``_get_file()`` then
+define that function as well.

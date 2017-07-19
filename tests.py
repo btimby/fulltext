@@ -5,14 +5,14 @@ import fulltext
 
 from functools import wraps
 
-TEST = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc ipsum augue, iaculis quis auctor eu, adipiscing non est. " \
-"Nullam id sem diam, eget varius dui. Etiam sollicitudin sapien nec odio elementum sit amet luctus magna volutpat. Ut " \
-"commodo nulla neque. Aliquam erat volutpat. Integer et nunc augue. Pellentesque habitant morbi tristique senectus et " \
-"netus et malesuada fames ac turpis egestas. Quisque at enim nulla, vel tincidunt urna. Nam leo augue, elementum ut " \
-"viverra eget, scelerisque in purus. In arcu orci, porta nec aliquet quis, pretium a sem. In fermentum nisl id diam " \
-"luctus viverra. Nullam semper, metus at euismod vulputate, orci odio dignissim urna, quis iaculis neque lacus ut " \
-"tortor. Ut a justo non dolor venenatis accumsan. Proin dolor eros, aliquam id condimentum et, aliquam quis metus. " \
-"Vivamus eget purus diam."
+TEST = u"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc ipsum augue, iaculis quis auctor eu, adipiscing non est. " \
+u"Nullam id sem diam, eget varius dui. Etiam sollicitudin sapien nec odio elementum sit amet luctus magna volutpat. Ut " \
+u"commodo nulla neque. Aliquam erat volutpat. Integer et nunc augue. Pellentesque habitant morbi tristique senectus et " \
+u"netus et malesuada fames ac turpis egestas. Quisque at enim nulla, vel tincidunt urna. Nam leo augue, elementum ut " \
+u"viverra eget, scelerisque in purus. In arcu orci, porta nec aliquet quis, pretium a sem. In fermentum nisl id diam " \
+u"luctus viverra. Nullam semper, metus at euismod vulputate, orci odio dignissim urna, quis iaculis neque lacus ut " \
+u"tortor. Ut a justo non dolor venenatis accumsan. Proin dolor eros, aliquam id condimentum et, aliquam quis metus. " \
+u"Vivamus eget purus diam."
 
 
 def allow_missing_command(f):
@@ -32,7 +32,7 @@ class FullText(unittest.TestCase):
 
     def test_missing(self):
         "Ensures a missing file without a default raises an exception."
-        self.assertRaises(fulltext.FullTextException, fulltext.get, 'non-existent-file.pdf')
+        self.assertRaises(Exception, fulltext.get, 'non-existent-file.pdf')
 
     def test_unknown_default(self):
         "Ensures an unknown file type will return default value instead of exception."
@@ -40,26 +40,11 @@ class FullText(unittest.TestCase):
 
     def test_unknown(self):
         "Ensures an unknown file type without a default will raise an exception."
-        self.assertRaises(fulltext.FullTextException, fulltext.get, 'unknown-file.foobar')
+        self.assertRaises(Exception, fulltext.get, 'unknown-file.foobar')
 
     def test_default_none(self):
         "Ensures None is a valid value to pass as default."
         self.assertEqual(fulltext.get('unknown-file.foobar', None), None)
-
-    def test_handler(self):
-        "Ensures that a handler registered for a given type is executed when that type is converted."
-        def test_handler(f, type):
-            return TEST
-        fulltext.add('application/test', '.test', test_handler)
-        self.assertEqual(fulltext.get('files/test.test'), TEST)
-        self.assertEqual(fulltext.get(file('files/test.test', 'r')), TEST)
-
-    def test_command(self):
-        """Ensures that commands registered for a given type are executed by the `run_command` handler
-        when that type is converted."""
-        fulltext.add('application/test', '.test', fulltext.run_command, (('echo', TEST), ('echo', TEST), ))
-        self.assertEqual(fulltext.get('files/test.test'), TEST)
-        self.assertEqual(fulltext.get(file('files/test.test', 'r')), TEST)
 
 
 class FullTextFiles(unittest.TestCase):
@@ -132,26 +117,6 @@ class FullTextFds(unittest.TestCase):
     @allow_missing_command
     def test_zip(self):
         self.assertEqual(fulltext.get(file('files/test.zip', 'r')), TEST)
-
-
-class FullTextCheck(unittest.TestCase):
-    "Test the check function."
-
-    def test_success(self):
-        "At least verify the function executes without an error."
-        # The output can be ignored
-        stdout = sys.stdout
-        try:
-            sys.stdout = open(os.devnull, 'w')
-        except:
-            # We tried... not core to the test though.
-            pass
-        try:
-            fulltext.check()
-        except Exception, e:
-            self.fail(str(e))
-        finally:
-            sys.stdout = stdout
 
 
 def main():
