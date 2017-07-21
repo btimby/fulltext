@@ -45,5 +45,4 @@ def _get_file(f, **kwargs):
     return text.getvalue()
 
 
-def _get_path(path, **kwargs):
-    return _get_file(path, **kwargs)
+_get_path = _get_file

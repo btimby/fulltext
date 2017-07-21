@@ -118,7 +118,7 @@ def get(path_or_file, default=SENTINAL, mime=None, name=None, **kwargs):
             ext = mime.partition('/')[2]
         else:
             ext = ''
-        backend_name = ext.replace('-', '_')
+        backend_name = ext.replace('-', '_').lower()
 
     if not backend_name in BACKENDS:
         LOGGER.warning('Falling back to text backend')

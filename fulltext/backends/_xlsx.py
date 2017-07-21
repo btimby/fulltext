@@ -6,6 +6,9 @@ except ImportError:
     from StringIO import StringIO
 
 
+EXTENSIONS = ('xls', 'xlsx')
+
+
 def _get_path(path, **kwargs):
     text = StringIO()
     wb = xlrd.open_workbook(path)

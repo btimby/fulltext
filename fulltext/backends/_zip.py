@@ -19,5 +19,4 @@ def _get_file(f, **kwargs):
         text.write(get(z.open(name, 'r'), name=name))
     return text.getvalue()
 
-def _get_path(path, **kwargs):
-    return _get_file(path, **kwargs)
+_get_path = _get_file
