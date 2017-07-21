@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 import zipfile
-import xml.etree.ElementTree as ET
+from lxml import etree
 
 from fulltext.util import StringIO
 
@@ -15,7 +15,6 @@ def _qn(ns):
     }
     one, _, two = ns.partition(':')
     return '{{{}}}{}'.format(nsmap[one], two)
-
 
 def _to_string(text, elem):
     if elem.text is not None:
@@ -31,15 +30,16 @@ def _to_string(text, elem):
             _to_string(text, c)
     text.write(u'\n')
 
-
 def _get_file(f, **kwargs):
     text = StringIO()
-    z = zipfile.ZipFile(f, 'r')
-    xml = ET.fromstring(z.read('content.xml'))
 
-    for c in xml.iter():
-        if c.tag in (_qn('text:p'), _qn('text:h')):
-            _to_string(text, c)
+    with zipfile.ZipFile(f, 'r') as z:
+        with z.open('content.xml', 'r') as c:
+            xml = etree.parse(c)
+
+            for c in xml.iter():
+                if c.tag in (_qn('text:p'), _qn('text:h')):
+                    _to_string(text, c)
 
     return text.getvalue()
 
