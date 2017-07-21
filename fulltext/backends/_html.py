@@ -11,6 +11,5 @@ EXTENSIONS = ('htm', 'html')
 
 
 def _get_file(f, **kwargs):
-    text = StringIO()
-    bs = BeautifulSoup(f, 'lxml')
+    text, bs = StringIO(), BeautifulSoup(f, 'lxml')
 
