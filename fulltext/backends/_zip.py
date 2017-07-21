@@ -10,6 +10,9 @@ except ImportError:
     from StringIO import StringIO
 
 
+EXTENSIONS = ('zip', )
+
+
 def _get_file(f, **kwargs):
     text, z = StringIO(), zipfile.ZipFile(f, 'r')
     for name in sorted(z.namelist()):

@@ -3,6 +3,9 @@ from __future__ import absolute_import
 from fulltext.util import run
 
 
+EXTENSIONS = ('pdf', )
+
+
 def _get_file(f, **kwargs):
     cmd = ['pdftotext']
     

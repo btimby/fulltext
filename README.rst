@@ -22,18 +22,18 @@ results to pack as much text into as little space as possible.
 Supported formats
 -----------------
 
-csv - ``csv``
-doc - ``/bin/antiword``
-docx - ``docx2txt``
-html - ``BeautifulSoup``, ``lxml``
-ods - stdlib, ``lxml``
-odt - stdlib, ``lxml``
-pdf - ``/bin/pdf2text``
-rtf - ``/bin/unrtf``
-text - stdlib
-xls - ``xlrd``
-xlsx - ``xlrd``
-zip - stdlib
+ - csv - ``csv``
+ - doc - ``/bin/antiword``
+ - docx - ``docx2txt``
+ - html - ``BeautifulSoup``, ``lxml``
+ - ods - stdlib, ``lxml``
+ - odt - stdlib, ``lxml``
+ - pdf - ``/bin/pdf2text``
+ - rtf - ``/bin/unrtf``
+ - text - stdlib
+ - xls - ``xlrd``
+ - xlsx - ``xlrd``
+ - zip - stdlib
 
 Installing tools
 ----------------

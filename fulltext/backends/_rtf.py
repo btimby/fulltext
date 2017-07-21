@@ -6,6 +6,9 @@ import tempfile
 from fulltext.util import run
 
 
+EXTENSIONS = ('rtf', )
+
+
 def _get_file(f, **kwargs):
     text = run('unrtf', '--text', '--nopict', stdin=f)
     return text.partition('-----------------')[2]

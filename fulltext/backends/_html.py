@@ -1,4 +1,6 @@
-import csv
+import re
+
+from bs4 import BeautifulSoup
 
 try:
     from io import StringIO
@@ -6,8 +8,10 @@ except ImportError:
     from StringIO import StringIO
 
 
+EXTENSIONS = ('htm', 'html')
+
+
 def _get_file(f, **kwargs):
     text = StringIO()
-    for r in csv.reader(f.readlines(), dialect='excel'):
-        text.write(' '.join(r))
-    return text.getvalue()
+    bs = BeautifulSoup(f, 'lxml')
+
