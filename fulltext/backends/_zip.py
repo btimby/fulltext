@@ -3,11 +3,7 @@ from __future__ import absolute_import
 import zipfile
 
 from fulltext import get
-
-try:
-    from io import StringIO
-except ImportError:
-    from StringIO import StringIO
+from fulltext.util import StringIO
 
 
 EXTENSIONS = ('zip', )

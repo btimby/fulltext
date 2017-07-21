@@ -1,9 +1,8 @@
+from __future__ import absolute_import
+
 import xlrd
 
-try:
-    from io import StringIO
-except ImportError:
-    from StringIO import StringIO
+from fulltext.util import StringIO
 
 
 EXTENSIONS = ('xls', 'xlsx')

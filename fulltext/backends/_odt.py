@@ -1,10 +1,9 @@
+from __future__ import absolute_import
+
 import zipfile
 import xml.etree.ElementTree as ET
 
-try:
-    from io import StringIO
-except ImportError:
-    from StringIO import StringIO
+from fulltext.util import StringIO
 
 
 EXTENSIONS = ('ods', 'odt')
