@@ -131,10 +131,12 @@ def get(path_or_file, default=SENTINAL, mime=None, name=None, **kwargs):
             if not name:
                 name = basename(path_or_file)
 
-            text = _get_path(backend, path_or_file, mime=mime, name=name, **kwargs)
+            text = _get_path(
+                backend, path_or_file, mime=mime, name=name, **kwargs)
 
         else:
-            text = _get_file(backend, path_or_file, mime=mime, name=name, **kwargs)
+            text = _get_file(
+                backend, path_or_file, mime=mime, name=name, **kwargs)
 
     except Exception as e:
         LOGGER.exception(e)

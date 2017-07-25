@@ -22,18 +22,18 @@ results to pack as much text into as little space as possible.
 Supported formats
 -----------------
 
- - csv - ``csv``
- - doc - ``/bin/antiword``
- - docx - ``docx2txt``
- - html - ``BeautifulSoup``, ``lxml``
- - ods - stdlib, ``lxml``
- - odt - stdlib, ``lxml``
- - pdf - ``/bin/pdf2text``
- - rtf - ``/bin/unrtf``
- - text - stdlib
- - xls - ``xlrd``
- - xlsx - ``xlrd``
- - zip - stdlib
+* csv - ``csv``
+* doc - ``/bin/antiword``
+* docx - ``docx2txt``
+* html - ``BeautifulSoup``, ``lxml``
+* ods - stdlib, ``lxml``
+* odt - stdlib, ``lxml``
+* pdf - ``/bin/pdf2text``
+* rtf - ``/bin/unrtf``
+* text - stdlib
+* xls - ``xlrd``
+* xlsx - ``xlrd``
+* zip - stdlib
 
 Installing tools
 ----------------
@@ -43,13 +43,13 @@ command line tools: antiword, pdf2text and unrtf.
 
 ::
 
-    $ sudo yum install antiword unrtf  poppler-utils
+    $ sudo yum install antiword unrtf poppler-utils
 
 Or for debian-based systems:
 
 ::
 
-    $ sudo apt-get install antiword unrtf  poppler-utils
+    $ sudo apt-get install antiword unrtf poppler-utils
 
 
 Usage

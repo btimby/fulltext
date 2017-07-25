@@ -13,8 +13,10 @@ EXTENSIONS = ('htm', 'html')
 def _visible(elem):
     if elem.parent.name in ['style', 'script', '[document]', 'head', 'title']:
         return False
+
     elif re.match('<!--.*-->', str(elem.encode('utf8'))):
         return False
+
     return True
 
 

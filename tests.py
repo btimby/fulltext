@@ -4,14 +4,19 @@ import unittest
 import fulltext
 
 
-TEXT = u"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc ipsum augue, iaculis quis auctor eu, adipiscing non est. " \
-u"Nullam id sem diam, eget varius dui. Etiam sollicitudin sapien nec odio elementum sit amet luctus magna volutpat. Ut " \
-u"commodo nulla neque. Aliquam erat volutpat. Integer et nunc augue. Pellentesque habitant morbi tristique senectus et " \
-u"netus et malesuada fames ac turpis egestas. Quisque at enim nulla, vel tincidunt urna. Nam leo augue, elementum ut " \
-u"viverra eget, scelerisque in purus. In arcu orci, porta nec aliquet quis, pretium a sem. In fermentum nisl id diam " \
-u"luctus viverra. Nullam semper, metus at euismod vulputate, orci odio dignissim urna, quis iaculis neque lacus ut " \
-u"tortor. Ut a justo non dolor venenatis accumsan. Proin dolor eros, aliquam id condimentum et, aliquam quis metus. " \
-u"Vivamus eget purus diam."
+TEXT = u"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc ipsum" \
+       u" augue, iaculis quis auctor eu, adipiscing non est. Nullam id sem " \
+       u"diam, eget varius dui. Etiam sollicitudin sapien nec odio elementum" \
+       u" sit amet luctus magna volutpat. Ut commodo nulla neque. Aliquam " \
+       u"erat volutpat. Integer et nunc augue. Pellentesque habitant morbi " \
+       u"tristique senectus et netus et malesuada fames ac turpis egestas. " \
+       u"Quisque at enim nulla, vel tincidunt urna. Nam leo augue, elementum" \
+       u" ut viverra eget, scelerisque in purus. In arcu orci, porta nec " \
+       u"aliquet quis, pretium a sem. In fermentum nisl id diam luctus " \
+       u"viverra. Nullam semper, metus at euismod vulputate, orci odio " \
+       u"dignissim urna, quis iaculis neque lacus ut tortor. Ut a justo non " \
+       u"dolor venenatis accumsan. Proin dolor eros, aliquam id condimentum " \
+       u"et, aliquam quis metus. Vivamus eget purus diam."
 
 FORMATS = (
     'txt', 'odt', 'doc', 'docx', 'pptx', 'ods', 'xls', 'xlsx', 'html',
