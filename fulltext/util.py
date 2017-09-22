@@ -17,6 +17,39 @@ except ImportError:
 # TODO: Sometimes multiple tools can be used, choose the one that is installed.
 
 
+class CommandLineError(Exception):
+    """The traceback of all CommandLineError's is supressed when the
+    errors occur on the command line to provide a useful command line
+    interface.
+    """
+    def render(self, msg):
+        return msg % vars(self)
+
+
+class ShellError(CommandLineError):
+    """This error is raised when a shell.run returns a non-zero exit code
+    (meaning the command failed).
+    """
+    def __init__(self, command, exit_code, stdout, stderr):
+        self.command = command
+        self.exit_code = exit_code
+        self.stdout = stdout
+        self.stderr = stderr
+        self.executable = self.command.split()[0]
+
+    def failed_message(self):
+        return (
+            "The command `%(command)s` failed with exit code %(exit_code)d\n"
+            "------------- stdout -------------\n"
+            "%(stdout)s"
+            "------------- stderr -------------\n"
+            "%(stderr)s"
+        ) % vars(self)
+
+    def __str__(self):
+        return self.failed_message()
+
+
 # http://stackoverflow.com/questions/377017/test-if-executable-exists-in-python
 def which(program):
     "Simply checks if a given program exists within PATH and is executable."
@@ -55,8 +88,6 @@ def run(*cmd, **kwargs):
 
     # if pipe is busted, raise an error (unlike Fabric)
     if pipe.returncode != 0:
-        raise exceptions.ShellError(
-            ' '.join(args), pipe.returncode, stdout, stderr,
-        )
+        raise ShellError(' '.join(cmd), pipe.returncode, stdout, stderr)
 
     return stdout

@@ -8,6 +8,8 @@ import glob
 import shutil
 import tempfile
 
+from six import string_types
+
 from os.path import join as pathjoin
 from os.path import (
     basename, splitext, dirname
@@ -106,7 +108,7 @@ def get(path_or_file, default=SENTINAL, mime=None, name=None, **kwargs):
     if not name:
         name = getattr(path_or_file, 'name', None)
 
-    if not name and isinstance(path_or_file, (str, unicode)):
+    if not name and isinstance(path_or_file, string_types):
         name = basename(path_or_file)
 
     try:
@@ -127,7 +129,7 @@ def get(path_or_file, default=SENTINAL, mime=None, name=None, **kwargs):
     backend = BACKENDS[backend_name]
 
     try:
-        if isinstance(path_or_file, (str, unicode)):
+        if isinstance(path_or_file, string_types):
             if not name:
                 name = basename(path_or_file)
 
