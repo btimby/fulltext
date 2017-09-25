@@ -3,6 +3,7 @@ python:
   - "2.7"
   - "3.5"
 install:
+  - apt-get install unrtf antiword
   - pip install --timeout=30 pep8
   - pip install --timeout=30 https://github.com/dcramer/pyflakes/tarball/master
   - pip install --timeout=30 -r requirements.txt
