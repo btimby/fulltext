@@ -124,9 +124,9 @@ def get(path_or_file, default=SENTINAL, mime=None, name=None, **kwargs):
 
     if backend_name not in BACKENDS:
         LOGGER.warning('Falling back to text backend')
-        backend_name = 'text'
-
-    backend = BACKENDS[backend_name]
+        backend = BACKENDS['text']
+    else:
+        backend = BACKENDS[backend_name]
 
     try:
         if isinstance(path_or_file, string_types):
