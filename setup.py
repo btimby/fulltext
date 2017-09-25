@@ -1,7 +1,8 @@
 #!/bin/env python
 
 import os
-from distutils.core import setup
+from setuptools import find_packages
+from setuptools import setup
 
 name = 'fulltext'
 version = '0.4'
@@ -21,7 +22,7 @@ setup(
     maintainer_email = 'btimby@gmail.com',
     url = 'http://github.com/btimby/' + name + '/',
     license = 'GPLv3',
-    packages = ["fulltext"],
+    packages = find_packages(),
     classifiers = (
           'Development Status :: 4 - Beta',
           'Intended Audience :: Developers',
