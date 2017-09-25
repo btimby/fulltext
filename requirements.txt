@@ -4,4 +4,3 @@ docx2txt
 lxml
 python-pptx
 six
-

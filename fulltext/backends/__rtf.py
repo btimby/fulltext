@@ -1,9 +1,16 @@
 from __future__ import absolute_import
 
-from fulltext.util import run
+import logging
+
+from fulltext.util import run, which
 
 
+LOGGER = logging.getLogger(__name__)
 EXTENSIONS = ('rtf', )
+
+
+if which('unrtf') is None:
+    LOGGER.warning('CLI tool "unrtf" is required for .rtf backend.')
 
 
 def _get_file(f, **kwargs):

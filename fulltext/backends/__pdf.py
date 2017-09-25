@@ -1,9 +1,16 @@
 from __future__ import absolute_import
 
-from fulltext.util import run
+import logging
+
+from fulltext.util import run, which
 
 
+LOGGER = logging.getLogger(__name__)
 EXTENSIONS = ('pdf', )
+
+
+if which('pdftotext') is None:
+    LOGGER.warning('CLI tool "pdftotext" is required for .pdf backend.')
 
 
 def _get_file(f, **kwargs):
