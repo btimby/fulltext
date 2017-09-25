@@ -27,7 +27,7 @@ SENTINAL = object()
 BACKENDS = {}
 
 
-def import_backends():
+def _import_backends():
     paths = [pathjoin(dirname(__file__), 'backends')]
     if FULLTEXT_PATH:
         paths.extend(FULLTEXT_PATH.split(';'))
@@ -54,7 +54,7 @@ class MissingCommandException(AssertionError):
 def _get_path(backend, path, **kwargs):
     """
     Handle a path.
-    
+
     Called by `get()` when provided a path. This function will prefer the
     backend's `_get_path()` if one is provided Otherwise, it will open the
     given path then use `_get_file()`.
@@ -151,4 +151,4 @@ def get(path_or_file, default=SENTINAL, mime=None, name=None, **kwargs):
 
 
 # Some backends use this module, so import them last.
-import_backends()
+_import_backends()

@@ -1,18 +1,14 @@
 import os
-import re
-import csv
 import os.path
-import tempfile
-import mimetypes
 import subprocess
 import errno
 
 from fulltext import MissingCommandException
 
 try:
-    from io import StringIO
+    from StringIO import StringIO  # noqa
 except ImportError:
-    from StringIO import StringIO
+    from io import StringIO  # noqa
 
 # TODO: Sometimes multiple tools can be used, choose the one that is installed.
 

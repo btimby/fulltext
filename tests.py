@@ -1,7 +1,7 @@
-import os
-import sys
 import unittest
 import fulltext
+
+from six import add_metaclass
 
 
 TEXT = u"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc ipsum" \
@@ -46,34 +46,35 @@ class FullText(unittest.TestCase):
         self.assertEqual(fulltext.get('unknown-file.foobar', None), None)
 
 
-class TestFormats(type):
+class FullTextFilesMeta(type):
     "Tests various file types using disk file method."
 
-    def __new__(mcs, name, bases, dict):
+    def __new__(cls, name, bases, attrs):
+        for fmt in FORMATS:
+            path = 'files/test.%s' % fmt
+            attrs['test_%s_path' % fmt] = cls._test_path(path, fmt)
+            attrs['test_%s_file' % fmt] = cls._test_file(path, fmt)
+        return super(FullTextFilesMeta, cls).__new__(cls, name, bases, attrs)
 
-        def _test_file(path, format):
-            def _test(self):
-                with open(path, 'rb') as f:
-                    text = fulltext.get(f, backend=format)
-                    self.assertEqual(text, TEXT)
-            return _test
-
-        def _test_path(path, format):
-            def _test(self):
-                text = fulltext.get(path, backend=format)
+    @classmethod
+    def _test_file(cls, path, fmt):
+        def inner(self):
+            with open(path, 'rb') as f:
+                text = fulltext.get(f, backend=fmt)
                 self.assertEqual(text, TEXT)
-            return _test
+        return inner
 
-        for f in FORMATS:
-            path = 'files/test.%s' % f
-            dict['test_%s_path' % f] = _test_path(path, f)
-            dict['test_%s_file' % f] = _test_file(path, f)
+    @classmethod
+    def _test_path(cls, path, fmt):
+        def inner(self):
+            text = fulltext.get(path, backend=fmt)
+            self.assertEqual(text, TEXT)
+        return inner
 
-        return type.__new__(mcs, name, bases, dict)
 
-
+@add_metaclass(FullTextFilesMeta)
 class FullTextFiles(unittest.TestCase):
-    __metaclass__ = TestFormats
+    pass
 
 
 if __name__ == '__main__':
