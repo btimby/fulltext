@@ -22,7 +22,10 @@ def _get_file(f, **kwargs):
         if not text:
             break
 
-        text = text.decode(enc, 'replace')
+        try:
+            text = text.decode(enc, 'replace')
+        except AttributeError:
+            pass
         text = NON_ASCII_SUB.sub(' ', text)
         buffer.write(text)
 

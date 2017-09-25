@@ -23,6 +23,7 @@ FULLTEXT_TEMP = os.environ.get('FULLTEXT_TEMP', tempfile.gettempdir())
 FULLTEXT_PATH = os.environ.get('FULLTEXT_PATH', '')
 
 STRIP_WHITE = re.compile(r'[ \t\v\f]+')
+STRIP_EOL = re.compile(r'[\r\n]+')
 SENTINAL = object()
 BACKENDS = {}
 
@@ -71,7 +72,7 @@ def _get_path(backend, path, **kwargs):
         return backend._get_path(path, **kwargs)
 
     elif callable(getattr(backend, '_get_file', None)):
-        with open(path, 'rb') as f:
+        with open(path, 'r') as f:
             return backend._get_file(f, **kwargs)
 
     else:
@@ -155,7 +156,9 @@ def get(path_or_file, default=SENTINAL, mime=None, name=None, **kwargs):
         raise
 
     else:
-        return STRIP_WHITE.sub(' ', text).strip()
+        text = STRIP_WHITE.sub(' ', text)
+        text = STRIP_EOL.sub('\n', text)
+        return text.strip()
 
 
 # Some backends use this module, so import them last.
