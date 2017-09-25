@@ -22,7 +22,7 @@ LOGGER.addHandler(logging.NullHandler())
 FULLTEXT_TEMP = os.environ.get('FULLTEXT_TEMP', tempfile.gettempdir())
 FULLTEXT_PATH = os.environ.get('FULLTEXT_PATH', '')
 
-STRIP_WHITE = re.compile(r'[ \t\v\f\r\n]+')
+STRIP_WHITE = re.compile(r'[ \t\v\f]+')
 SENTINAL = object()
 BACKENDS = {}
 
