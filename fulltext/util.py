@@ -5,11 +5,6 @@ import errno
 
 from fulltext import MissingCommandException
 
-try:
-    from StringIO import StringIO  # noqa
-except ImportError:
-    from io import StringIO  # noqa
-
 # TODO: Sometimes multiple tools can be used, choose the one that is installed.
 
 

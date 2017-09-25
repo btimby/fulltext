@@ -122,7 +122,7 @@ def get(path_or_file, default=SENTINAL, mime=None, name=None, **kwargs):
             ext = ''
         backend_name = ext.replace('-', '_').lower()
 
-    if not backend_name in BACKENDS:
+    if backend_name not in BACKENDS:
         LOGGER.warning('Falling back to text backend')
         backend_name = 'text'
 
