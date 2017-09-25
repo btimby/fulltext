@@ -1,8 +1,5 @@
 from __future__ import absolute_import
 
-import re
-import tempfile
-
 from fulltext.util import run
 
 

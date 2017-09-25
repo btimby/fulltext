@@ -18,7 +18,7 @@ def _get_path(path, **kwargs):
                 v = ws.cell_value(x, y)
                 if v:
                     if isinstance(v, (int, float)):
-                        v = unicode(str(v))
+                        v = str(v)
                     text.write(v)
                     text.write(u' ')
             text.write(u'\n')

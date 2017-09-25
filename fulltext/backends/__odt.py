@@ -16,6 +16,7 @@ def _qn(ns):
     one, _, two = ns.partition(':')
     return '{{{}}}{}'.format(nsmap[one], two)
 
+
 def _to_string(text, elem):
     if elem.text is not None:
         try:
@@ -32,6 +33,7 @@ def _to_string(text, elem):
         else:
             _to_string(text, c)
     text.write(u'\n')
+
 
 def _get_file(f, **kwargs):
     text = StringIO()
