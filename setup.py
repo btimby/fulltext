@@ -4,32 +4,32 @@ import os
 from setuptools import find_packages
 from setuptools import setup
 
-name = 'fulltext'
-version = '0.4'
-release = '1'
-readme = os.path.join(os.path.dirname(__file__), 'README.rst')
-versrel = version + '-' + release
-long_description = file(readme).read()
+NAME = 'fulltext'
+VERSION = '0.5'
+README = os.path.join(os.path.dirname(__file__), 'README.rst')
+
+with open(README) as f:
+    DESCRIPTION = f.read()
 
 with open('requirements.txt') as f:
-    required = f.read().splitlines()
+    REQUIRED = f.read().splitlines()
 
-required = [r for r in required if not r.startswith('git')]
+REQUIRED = [r for r in REQUIRED if not r.startswith('git')]
 
 
 setup(
-    name=name,
-    version=versrel,
+    name=NAME,
+    version=VERSION,
     description='Convert binary files to plain text for indexing.',
-    long_description=long_description,
+    long_description=DESCRIPTION,
     author='Ben Timby',
     author_email='btimby@gmail.com',
     maintainer='Ben Timby',
     maintainer_email='btimby@gmail.com',
-    url='http://github.com/btimby/' + name + '/',
+    url='http://github.com/btimby/' + NAME + '/',
     license='GPLv3',
     packages=find_packages(),
-    install_requires=required,
+    install_requires=REQUIRED,
     classifiers=(
           'Development Status :: 4 - Beta',
           'Intended Audience :: Developers',
