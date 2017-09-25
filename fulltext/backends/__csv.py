@@ -10,6 +10,7 @@ EXTENSIONS = ('csv', )
 
 def _get_file(f, **kwargs):
     text = StringIO()
-    for r in csv.reader(f.readlines(), dialect='excel'):
-        text.write(' '.join(r))
+    for row in csv.reader(f.readlines(), dialect='excel'):
+        text.write(' '.join(row))
+        text.write('\n')
     return text.getvalue()
