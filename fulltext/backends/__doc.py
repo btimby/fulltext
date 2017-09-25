@@ -21,6 +21,7 @@ def _get_file(f, **kwargs):
     text = run('antiword', '-', stdin=f).decode('utf8')
     return text
 
+
 def _get_path(path, **kwargs):
     text = run('antiword', path).decode('utf8')
     return text
