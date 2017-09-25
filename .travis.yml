@@ -5,6 +5,7 @@ python:
 install:
   - pip install --timeout=30 pep8
   - pip install --timeout=30 https://github.com/dcramer/pyflakes/tarball/master
+  - pip install --timeout=30 -r requirements.txt
   - pip install --timeout=30 -q -e .
 before_script:
   - make verify
