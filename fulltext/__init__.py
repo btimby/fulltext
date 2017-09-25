@@ -32,12 +32,20 @@ def _import_backends():
     if FULLTEXT_PATH:
         paths.extend(FULLTEXT_PATH.split(';'))
 
-    for p in paths:
-        for f in glob.iglob(pathjoin(p, '*.py')):
-            name = splitext(basename(f))[0]
-            module = imp.load_source(name, f)
-            extensions = getattr(module, 'EXTENSIONS', (name, ))
+    for path in paths:
+        for filename in glob.iglob(pathjoin(path, '*.py')):
+            module_name = splitext(basename(filename))[0]
+            try:
+                module = imp.load_source(module_name, filename)
+            except ImportError as e:
+                LOGGER.warning(
+                    'Backend %s disabled due to missing dependency %s',
+                    module_name, e.message.split()[-1])
+            extensions = getattr(module, 'EXTENSIONS', (module_name, ))
             for ext in extensions:
+                if ext in BACKENDS:
+                    LOGGER.warning('Backend %s overrides %s for %s',
+                                   module, BACKENDS[ext], ext)
                 BACKENDS[ext] = module
 
     LOGGER.info('Loaded backends: %s', ', '.join(BACKENDS.keys()))
