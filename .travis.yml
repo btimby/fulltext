@@ -10,6 +10,6 @@ install:
   - pip install --timeout=30 pyflakes
   - pip install --timeout=30 -q -e .
 before_script:
-  - make verify
+  - make check
 script:
   - make test
