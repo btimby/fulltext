@@ -1,7 +1,7 @@
 test:
 	python tests.py
 
-verify:
+check:
 	pyflakes fulltext
 	pep8 --exclude=migrations --ignore=E501,E225 fulltext
 
