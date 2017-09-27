@@ -7,7 +7,10 @@ from fulltext.util import run, which
 
 
 LOGGER = logging.getLogger(__name__)
+LOGGER.addHandler(logging.NullHandler())
+
 EXTENSIONS = ('doc', )
+
 # Antiword wraps our output, any single newline is wrapped, multiple newlines
 # are preserved, and will be folded by fulltext later.
 STRIP_EOL = re.compile(r'\r?\n')
