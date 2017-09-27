@@ -1,6 +1,8 @@
 import unittest
 import fulltext
 
+from fulltext.util import ShellError
+
 from six import add_metaclass
 
 
@@ -36,7 +38,7 @@ class FullText(unittest.TestCase):
 
     def test_missing(self):
         "Ensures a missing file without a default raises an exception."
-        self.assertRaises(Exception, fulltext.get, 'non-existent-file.pdf')
+        self.assertRaises(ShellError, fulltext.get, 'non-existent-file.pdf')
 
     def test_unknown_default(self):
         "Ensures an unknown file type will return default value instead of exception."
@@ -44,7 +46,7 @@ class FullText(unittest.TestCase):
 
     def test_unknown(self):
         "Ensures an unknown file type without a default will raise an exception."
-        self.assertRaises(Exception, fulltext.get, 'unknown-file.foobar')
+        self.assertRaises(IOError, fulltext.get, 'unknown-file.foobar')
 
     def test_default_none(self):
         "Ensures None is a valid value to pass as default."

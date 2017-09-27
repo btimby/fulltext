@@ -43,6 +43,13 @@ def _import_backends():
                 LOGGER.warning(
                     'Backend %s disabled due to missing dependency %s',
                     module_name, e.message.split()[-1])
+            has_get_path = callable(getattr(module, '_get_path', None))
+            has_get_file = callable(getattr(module, '_get_file', None))
+            if not (has_get_path or has_get_file):
+                LOGGER.warning(
+                    'Backend %s defines neither `_get_path()` nor '
+                    '`_get_file()`, disabled', module)
+                continue
             extensions = getattr(module, 'EXTENSIONS', (module_name, ))
             for ext in extensions:
                 if ext in BACKENDS:
@@ -70,14 +77,14 @@ def _get_path(backend, path, **kwargs):
     given path then use `_get_file()`.
     """
     if callable(getattr(backend, '_get_path', None)):
+        # Prefer _get_path() if present.
         return backend._get_path(path, **kwargs)
 
     elif callable(getattr(backend, '_get_file', None)):
+        # Fallback to _get_file(). No warning here since the performance hit
+        # is minimal.
         with open(path, 'r') as f:
             return backend._get_file(f, **kwargs)
-
-    else:
-        BackendError('Backend must provide `_get_path()` or `_get_file()`')
 
 
 def _get_file(backend, f, **kwargs):
@@ -89,10 +96,13 @@ def _get_file(backend, f, **kwargs):
     data to a temporary file and call `_get_path()`.
     """
     if callable(getattr(backend, '_get_file', None)):
+        # Prefer _get_file() if present.
         return backend._get_file(f, **kwargs)
 
     elif callable(getattr(backend, '_get_path', None)):
-        LOGGER.warning("Using disk, backend does not provde `_get_file()`")
+        # Fallback to _get_path(). Warn user since this is potentially
+        # expensive.
+        LOGGER.warning("Using disk, backend does not provide `_get_file()`")
 
         ext = ''
         if 'ext' in kwargs:
@@ -102,9 +112,6 @@ def _get_file(backend, f, **kwargs):
             shutil.copyfileobj(f, t)
             t.flush()
             return backend._get_path(t.name, **kwargs)
-
-    else:
-        BackendError('Backend must provide `_get_path()` or `_get_file()`')
 
 
 def get(path_or_file, default=SENTINAL, mime=None, name=None, **kwargs):
@@ -140,9 +147,6 @@ def get(path_or_file, default=SENTINAL, mime=None, name=None, **kwargs):
 
     try:
         if isinstance(path_or_file, string_types):
-            if not name:
-                name = basename(path_or_file)
-
             text = _get_path(
                 backend, path_or_file, mime=mime, name=name, **kwargs)
 
