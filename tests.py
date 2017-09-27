@@ -33,23 +33,31 @@ FORMATS = (
 
 class FullText(unittest.TestCase):
     def test_missing_default(self):
-        "Ensures a missing file will return default value instead of exception."
-        self.assertEqual(fulltext.get('non-existent-file.pdf', 'canary'), 'canary')
+        "Ensure a missing file returns default instead of exception."
+        self.assertEqual(fulltext.get('non-existent-file.pdf', 'canary'),
+                         'canary')
 
     def test_missing(self):
-        "Ensures a missing file without a default raises an exception."
+        "Ensure a missing file without a default raises an exception."
+        # In this case we hit the pdf backend which runs a command, the
+        # command fails because the file does not exist resulting in
+        # ShellError.
         self.assertRaises(ShellError, fulltext.get, 'non-existent-file.pdf')
 
     def test_unknown_default(self):
-        "Ensures an unknown file type will return default value instead of exception."
-        self.assertEqual(fulltext.get('unknown-file.foobar', 'canary'), 'canary')
+        "Ensure unknown file type returns default instead of exception."
+        self.assertEqual(fulltext.get('unknown-file.foobar', 'canary'),
+                         'canary')
 
     def test_unknown(self):
-        "Ensures an unknown file type without a default will raise an exception."
+        "Ensure unknown file type without a default raises an exception."
+        # This is nearly a duplicate of test_missing, but in this case we hit
+        # the default text backend, which attempts to open the file resulting
+        # in an IOError.
         self.assertRaises(IOError, fulltext.get, 'unknown-file.foobar')
 
     def test_default_none(self):
-        "Ensures None is a valid value to pass as default."
+        "Ensure None is a valid value to pass as default."
         self.assertEqual(fulltext.get('unknown-file.foobar', None), None)
 
 
