@@ -45,17 +45,18 @@ Installing tools
 ----------------
 
 Fulltext uses a number of pure Python libraries. Fulltext also uses the
-command line tools: antiword, pdf2text and unrtf.
+command line tools: antiword, pdf2text and unrtf. To install the required
+libraries and CLI tools, you can use your package manager.
 
 .. code:: bash
 
-    $ sudo yum install antiword unrtf poppler-utils
+    $ sudo yum install antiword unrtf poppler-utils libjpeg-dev
 
 Or for debian-based systems:
 
 .. code:: bash
 
-    $ sudo apt-get install antiword unrtf poppler-utils
+    $ sudo apt-get install antiword unrtf poppler-utils libjpeg-dev
 
 
 Usage
