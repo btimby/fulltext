@@ -30,8 +30,9 @@ BACKENDS = {}
 
 def _import_backends():
     paths = [pathjoin(dirname(__file__), 'backends')]
+
     if FULLTEXT_PATH:
-        paths.extend(FULLTEXT_PATH.split(';'))
+        paths.extend(FULLTEXT_PATH.split(os.pathsep))
 
     for path in paths:
         for filename in glob.iglob(pathjoin(path, '*.py')):

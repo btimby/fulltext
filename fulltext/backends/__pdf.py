@@ -13,18 +13,7 @@ if which('pdftotext') is None:
     LOGGER.warning('CLI tool "pdftotext" is required for .pdf backend.')
 
 
-def _get_file(f, **kwargs):
-    cmd = ['pdftotext']
-
-    if kwargs.get('layout', None):
-        cmd.append('-layout')
-
-    cmd.extend(['-', '-'])
-
-    return run(*cmd, stdin=f)
-
-
-def _get_path(path, **kwargs):
+def _cmd(path, **kwargs):
     cmd = ['pdftotext']
 
     if kwargs.get('layout', None):
@@ -32,4 +21,12 @@ def _get_path(path, **kwargs):
 
     cmd.extend([path, '-'])
 
-    return run(*cmd)
+    return cmd
+
+
+def _get_file(f, **kwargs):
+    return run(*_cmd('-', **kwargs), stdin=f)
+
+
+def _get_path(path, **kwargs):
+    return run(*_cmd(path, **kwargs))
