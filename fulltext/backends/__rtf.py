@@ -13,11 +13,13 @@ if which('unrtf') is None:
     LOGGER.warning('CLI tool "unrtf" is required for .rtf backend.')
 
 
-def _get_file(f, **kwargs):
-    text = run('unrtf', '--text', '--nopict', stdin=f)
+def _strip(text):
     return text.partition(b'-----------------')[2].decode('utf8')
+
+
+def _get_file(f, **kwargs):
+    return _strip(run('unrtf', '--text', '--nopict', stdin=f))
 
 
 def _get_path(path, **kwargs):
-    text = run('unrtf', '--text', '--nopict', path)
-    return text.partition(b'-----------------')[2].decode('utf8')
+    return _strip(run('unrtf', '--text', '--nopict', path))
