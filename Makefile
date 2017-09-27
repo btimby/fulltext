@@ -1,8 +1,8 @@
 test:
 	python tests.py
 
-verify:
-	pyflakes -x W fulltext
+check:
+	pyflakes fulltext
 	pep8 --exclude=migrations --ignore=E501,E225 fulltext
 
 install:

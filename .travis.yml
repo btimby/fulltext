@@ -1,12 +1,15 @@
 language: python
 python:
-  - "2.6"
   - "2.7"
+  - "3.5"
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install -y unrtf antiword poppler-utils libjpeg-dev
 install:
-  - pip install --timeout=30 pep8 --use-mirrors
-  - pip install --timeout=30 https://github.com/dcramer/pyflakes/tarball/master
-  - pip install --timeout=30 -q -e . --use-mirrors
+  - pip install --timeout=30 pep8
+  - pip install --timeout=30 pyflakes
+  - pip install --timeout=30 -q -e .
 before_script:
-  - make verify
+  - make check
 script:
   - make test

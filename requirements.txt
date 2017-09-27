@@ -1,0 +1,6 @@
+xlrd
+bs4
+docx2txt
+lxml
+python-pptx
+six

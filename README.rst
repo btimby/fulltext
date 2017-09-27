@@ -2,76 +2,72 @@
    :alt: Travis CI Status
    :target: https://travis-ci.org/btimby/fulltext
 
-A `SmartFile`_ Open Source project. `Read more`_ about how SmartFile
-uses and contributes to Open Source software.
-
-.. figure:: http://www.smartfile.com/images/logo.jpg
+.. figure:: https://www.smartfile.com/assets/img/smartfile-logo-new.png
    :alt: SmartFile
+
+A `SmartFile`_ Open Source project.
 
 Introduction
 ------------
 
-Fulltext is meant to be used for full-text indexing of file contents for
-search applications.
+Fulltext extracts texts from various document formats. It can be used as the
+first part of search indexing, document analysis etc.
 
-Fulltext is a library that makes converting various file formats to
-plain text simple. Mostly it is a wrapper around shell tools. It will
-execute the shell program, scrape it's results and then post-process the
-results to pack as much text into as little space as possible.
+Fulltext differs from other libraries in that it tries to use file data in the
+form it is given. For most backends, a file-like object or path can be handled
+directly, removing the need to write temporary files.
+
+Fulltext uses native python libraries when possible and utilizes CLI tools
+when necessary, for example, the following CLI tools are required.
+
+ * antiword - Legacy .doc (Word) format.
+ * unrtf - .rtf format.
+ * pdf2text (poppler-utils) - .pdf format.
 
 Supported formats
 -----------------
 
-The following formats are supported using the command line apps listed.
-
--  application/pdf: pdftotext
--  application/msword: antiword
--  application/vnd.openxmlformats-officedocument.wordprocessingml.document:
-   docx2txt
--  application/vnd.ms-excel: convertxls2csv
--  application/rtf: unrtf
--  application/vnd.oasis.opendocument.text: odt2txt
--  application/vnd.oasis.opendocument.spreadsheet: odt2txt
--  application/zip: funzip
--  application/x-tar, gzip: tar & gunzip
--  application/x-tar, bzip2: tar & bunzip2
--  application/rar: unrar
--  text/html: html2text
--  text/xml: html2text
--  image/jpeg: exiftool
--  video/mpeg: exiftool
--  audio/mpeg: exiftool
--  application/octet-stream: strings
+* csv - Uses Python ``csv`` module.
+* doc - Uses ``/bin/antiword`` CLI tool.
+* docx - Uses Python ``docx2txt`` module.
+* html - Uses Python ``BeautifulSoup`` module.
+* ods - Uses Python ``lxml``, ``zipfile`` modules.
+* odt - Uses Python ``lxml``, ``zipfile`` modules.
+* pdf - Uses ``/bin/pdf2text`` CLI tool.
+* rtf - Uses ``/bin/unrtf`` CLI tool.
+* text - Default backend that uses various Python stdlib modules to extract
+         strings from arbitrary (possibly) binary files.
+* xls - Uses Python ``xlrd`` module.
+* xlsx - Uses Python ``xlrd`` module.
+* zip - Uses Python ``zipfile`` module.
 
 Installing tools
 ----------------
 
-Fulltext uses the above command line programs to function. Therefore, it is not
-useful unless you have installed them. Many of them can be installed via your system's
-package manager. I use Fedora, thus the following command installed most of the
-required packages.
+Fulltext uses a number of pure Python libraries. Fulltext also uses the
+command line tools: antiword, pdf2text and unrtf. To install the required
+libraries and CLI tools, you can use your package manager.
 
-::
+.. code:: bash
 
-    $ sudo yum install xls2csv odt2txt antiword poppler-utils unrtf \
-    perl-Image-ExifTool html2text binutils unrar gzip bzip2 unzip
+    $ sudo yum install antiword unrtf poppler-utils libjpeg-dev
 
-The docx2txt utility is not avaialable in a package.
+Or for debian-based systems:
 
-http://docx2txt.sourceforge.net/
+.. code:: bash
 
-The package names may differ on other systems, but for the most part will be similar.
+    $ sudo apt-get install antiword unrtf poppler-utils libjpeg-dev
+
 
 Usage
 -----
 
-To use the library, simply pass a filename to the ``.get()`` module
-function. A second optional argument ``default`` can provide a string to
-be returned in case of error. This way, if you are not concerned with
-exceptions, you can simply ignore them by providing a default. This is
-like how the ``dict.get()`` method works.
+Fulltext uses a simple dictionary-style interface. A single public function
+``fulltext.get()`` is provided. This function takes an optional default
+parameter which when supplied will supress errors and return that default if
+text could not be extracted.
 
-::
+.. code:: python
 
     > import fulltext
     > fulltext.get('does-not-exist.pdf', '< no content >')
@@ -79,39 +75,51 @@ like how the ``dict.get()`` method works.
     > fulltext.get('exists.pdf', '< no content >'')
     'Lorem ipsum...'
 
-There is also a quick way to check for the existence of all of the
-required tools.
+You can pass a file-like object or a path to ``.get()`` Fulltext will try to
+do the right thing, using memory buffers or temp files depending on the
+backend.
 
-::
 
-    > import fulltext
-    > fulltext.check()
-    Cannot execute command docx2txt, please install it.
-
-Post-processing
+Custom backends
 ---------------
 
-Some formats require additional care, this is done in the
-post-processing step. For example, unrtf is the tool used to convert
-.rtf files to text. It prints a banner including the program version and
-some document metadata. This header is removed in post-processing.
+To write a new backend, you need to do two things. First, create a python
+module that implements the interface that Fulltext expects. Second, define an
+environment variable that informs Fulltext where to find your module.
 
-A simple regular expression is used to convert adjacent whitespace characters
-to a single space.
+.. code:: python
 
-This results in the highest word-per-byte ratio possible, allowing your
-full-text engine to quickly index the file contents.
+    # Tell Fulltext what file extensions your backend supports.
+    EXTENSIONS = ('foo', 'bar')
 
-Future
-------
 
-Sometimes multiple tools can be used. For example, catdoc provides
-xls2csv, while xls2csv provides convertxls2csv. We should use whichever
-is present.
+    def _get_file(f, **kwargs):
+        # Extract text from a file-like object. This should be defined when
+        # possible.
+        pass
 
-I would like to do away with commands as tuples, and simply use strings.
-This is something `easyprocess`_ can do.
 
-.. _SmartFile: http://www.smartfile.com/
-.. _Read more: http://www.smartfile.com/open-source.html
-.. _easyprocess: http://pypi.python.org/pypi/EasyProcess
+    def _get_path(path, **kwargs):
+        # Extract text from a path. This should only be defined if it can be
+        # done more efficiently than having Python open() and read() the file,
+        # passing it to _get_file().
+        pass
+
+If you only implement ``_get_file`` Fulltext will open any paths and pass them
+to that function. Therefore if possible, define at least this function. If
+working with file-like objects is not possible and you only define
+``_get_path`` then Fulltext will save any file-like objects to a temporary
+file and use that function. Sometimes it is advantageous to define both
+functions in cases when you can do each efficiently.
+
+If you have questions about writing a backend, see the `backends/`_ directory
+for some examples.
+
+.. _backends/: fulltext/backends/
+
+Once written, simply define an environment variable ``FULLTEXT_PATH`` to
+contain paths to your backend modules.
+
+.. code:: bash
+
+    FULLTEXT_PATH=/path/to/my/module;/path/to/other/module python myprogram.py
