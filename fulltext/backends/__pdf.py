@@ -6,6 +6,8 @@ from fulltext.util import run, which
 
 
 LOGGER = logging.getLogger(__name__)
+LOGGER.addHandler(logging.NullHandler())
+
 EXTENSIONS = ('pdf', )
 
 
