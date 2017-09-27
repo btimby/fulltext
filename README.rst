@@ -48,13 +48,13 @@ Installing tools
 Fulltext uses a number of pure Python libraries. Fulltext also uses the
 command line tools: antiword, pdf2text and unrtf.
 
-::
+.. code:: bash
 
     $ sudo yum install antiword unrtf poppler-utils
 
 Or for debian-based systems:
 
-::
+.. code:: bash
 
     $ sudo apt-get install antiword unrtf poppler-utils
 
@@ -67,7 +67,7 @@ Fulltext uses a simple dictionary-style interface. A single public function
 parameter which when supplied will supress errors and return that default if
 text could not be extracted.
 
-::
+.. code:: python
 
     > import fulltext
     > fulltext.get('does-not-exist.pdf', '< no content >')
@@ -87,7 +87,7 @@ To write a new backend, you need to do two things. First, create a python
 module that implements the interface that Fulltext expects. Second, define an
 environment variable that informs Fulltext where to find your module.
 
-::
+.. code:: python
 
     # Tell Fulltext what file extensions your backend supports.
     EXTENSIONS = ('foo', 'bar')
@@ -116,3 +116,10 @@ If you have questions about writing a backend, see the `backends/`_ directory
 for some examples.
 
 .. _backends/: fulltext/backends/
+
+Once written, simply define an environment variable ``FULLTEXT_PATH`` to
+contain paths to your backend modules.
+
+.. code:: bash
+
+    FULLTEXT_PATH=/path/to/my/module;/path/to/other/module python myprogram.py
