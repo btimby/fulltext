@@ -2,11 +2,10 @@
    :alt: Travis CI Status
    :target: https://travis-ci.org/btimby/fulltext
 
-A `SmartFile`_ Open Source project. `Read more`_ about how SmartFile
-uses and contributes to Open Source software.
-
 .. figure:: https://www.smartfile.com/assets/img/smartfile-logo-new.png
    :alt: SmartFile
+
+A `SmartFile`_ Open Source project.
 
 Introduction
 ------------
