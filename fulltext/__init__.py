@@ -8,12 +8,12 @@ import glob
 import shutil
 import tempfile
 
-from six import string_types
-
 from os.path import join as pathjoin
 from os.path import (
     basename, splitext, dirname
 )
+
+from six import string_types
 
 
 LOGGER = logging.getLogger(__name__)
@@ -42,13 +42,16 @@ def _import_backends():
             except ImportError as e:
                 LOGGER.warning(
                     'Backend %s disabled due to missing dependency %s',
-                    module_name, e.message.split()[-1])
+                    module_name, e.args[0])
             has_get_path = callable(getattr(module, '_get_path', None))
             has_get_file = callable(getattr(module, '_get_file', None))
             if not (has_get_path or has_get_file):
-                LOGGER.warning(
-                    'Backend %s defines neither `_get_path()` nor '
-                    '`_get_file()`, disabled', module)
+                if module_name != '__init__':
+                    # No worries, __init__ is part of a package, is often left
+                    # empty.
+                    LOGGER.warning(
+                        'Backend %s defines neither `_get_path()` nor '
+                        '`_get_file()`, disabled', module)
                 continue
             extensions = getattr(module, 'EXTENSIONS', (module_name, ))
             for ext in extensions:
