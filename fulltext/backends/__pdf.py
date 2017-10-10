@@ -27,8 +27,8 @@ def _cmd(path, **kwargs):
 
 
 def _get_file(f, **kwargs):
-    return run(*_cmd('-', **kwargs), stdin=f)
+    return run(*_cmd('-', **kwargs), stdin=f).decode('utf-8')
 
 
 def _get_path(path, **kwargs):
-    return run(*_cmd(path, **kwargs))
+    return run(*_cmd(path, **kwargs)).decode('utf-8')
