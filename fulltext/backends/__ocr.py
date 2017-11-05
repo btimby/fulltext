@@ -1,6 +1,6 @@
-#sudo apt-get install tesseract-ocr
-#sudo pip3 install pytesseract
-#sudo apt-get install tesseract-ocr-[lang]
+# sudo apt-get install tesseract-ocr
+# sudo pip3 install pytesseract
+# sudo apt-get install tesseract-ocr-[lang]
 
 from fulltext.util import which
 import pytesseract
@@ -14,6 +14,7 @@ EXTENSIONS = ('jpg', 'jpeg', 'bmp', 'png', 'gif')
 if which('tesseract') is None:
     LOGGER.warning('CLI tool "tesseract" is required for image files backend.')
 
+
 def read(img, **kargs):
     lang = kargs.get('lang', 'eng')
 
@@ -26,7 +27,7 @@ def read(img, **kargs):
         exif = None
 
     if exif:
-        orientation_key = 274 # cf ExifTags
+        orientation_key = 274  # cf ExifTags
         if orientation_key in exif:
             orientation = exif[orientation_key]
             rotate_values = {
@@ -41,7 +42,7 @@ def read(img, **kargs):
     if degree:
         im = im.rotate(degree)
 
-    return pytesseract.image_to_string(im, lang = lang)
+    return pytesseract.image_to_string(im, lang=lang)
 
     
 def _get_file(path_or_file, **kwargs):
