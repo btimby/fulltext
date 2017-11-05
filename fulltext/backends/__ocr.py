@@ -44,7 +44,7 @@ def read(img, **kargs):
 
     return pytesseract.image_to_string(im, lang=lang)
 
-    
+
 def _get_file(path_or_file, **kwargs):
     return read(path_or_file, **kwargs)
 
