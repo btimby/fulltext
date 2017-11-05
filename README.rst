@@ -23,6 +23,7 @@ when necessary, for example, the following CLI tools are required.
  * antiword - Legacy .doc (Word) format.
  * unrtf - .rtf format.
  * pdf2text (poppler-utils) - .pdf format.
+ * pyhwp - .hwp format
 
 Supported formats
 -----------------
@@ -40,6 +41,7 @@ Supported formats
 * xls - Uses Python ``xlrd`` module.
 * xlsx - Uses Python ``xlrd`` module.
 * zip - Uses Python ``zipfile`` module.
+* hwp - Uses Python ``pyhwp`` module as CLI tool.
 
 Installing tools
 ----------------
@@ -58,6 +60,11 @@ Or for debian-based systems:
 
     $ sudo apt-get install antiword unrtf poppler-utils libjpeg-dev
 
+Also if you want to extract from .hwp file, you need to install pyhwp but note that this CLI tool is only working with Python2(2.6 and 2.7).
+
+.. code:: bash
+
+    $ sudo pip2 install --pre pyhwp
 
 Usage
 -----
