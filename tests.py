@@ -113,13 +113,11 @@ OCR_TEXT = (
 @add_metaclass(FullTextFilesMeta)
 class FullTextFiles(unittest.TestCase):
     def test_png_file(self):
-        "Antidoc performs wrapping, so we need to allow newlines."
         with open('files/test.png', 'rb') as f:
             text = fulltext.get(f)
             self.assertEqual(text, OCR_TEXT)
 
-    def test_png_path(self):
-        "Antidoc performs wrapping, so we need to allow newlines."
+    def test_png_path(self):        
         text = fulltext.get('files/test.png')
         self.assertEqual(text, OCR_TEXT)
 				
