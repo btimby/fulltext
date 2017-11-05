@@ -5,6 +5,9 @@
 from fulltext.util import which
 import pytesseract
 from PIL import Image
+import logging
+
+LOGGER = logging.getLogger(__name__)
 
 EXTENSIONS = ('jpg', 'jpeg', 'bmp', 'png', 'gif')
 
