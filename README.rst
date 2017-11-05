@@ -42,6 +42,7 @@ Supported formats
 * xlsx - Uses Python ``xlrd`` module.
 * zip - Uses Python ``zipfile`` module.
 * hwp - Uses Python ``pyhwp`` module as CLI tool.
+* jpg, jpeg, png, bmp, gif - Use ``/usr/bin/tesseract`` CLI tool and ``pytesseract`` module.
 
 Installing tools
 ----------------
@@ -52,13 +53,13 @@ libraries and CLI tools, you can use your package manager.
 
 .. code:: bash
 
-    $ sudo yum install antiword unrtf poppler-utils libjpeg-dev
+    $ sudo yum install antiword unrtf poppler-utils libjpeg-dev tesseract-ocr
 
 Or for debian-based systems:
 
 .. code:: bash
 
-    $ sudo apt-get install antiword unrtf poppler-utils libjpeg-dev
+    $ sudo apt-get install antiword unrtf poppler-utils libjpeg-dev tesseract-ocr
 
 Also if you want to extract from .hwp file, you need to install pyhwp but note that this CLI tool is only working with Python2(2.6 and 2.7).
 
