@@ -100,6 +100,29 @@ class FullTextFiles(unittest.TestCase):
         text = fulltext.get('files/test.doc', backend='doc')
         self.assertEqual(text, TEXT_WITH_NEWLINES)
 
+OCR_TEXT = (
+	"Sherlock Holmes and Doctor Watson lived at 2211) Baker Street between 1881-1904,\n"
+	"according to the stories written by Sir Arthur Conan Doyle. The famous lst ﬂoor study\n"
+	"overlooking Baker Street is still faithfully maintained as it was kept in Victorian\n"
+	"Times.\n"
+	"Step back in time, and when you visit London, remember to visit the world's most\n"
+	"famous address!"
+)
+
+				
+@add_metaclass(FullTextFilesMeta)
+class FullTextFiles(unittest.TestCase):
+    def test_png_file(self):
+        "Antidoc performs wrapping, so we need to allow newlines."
+        with open('files/test.png', 'rb') as f:
+            text = fulltext.get(f)
+            self.assertEqual(text, OCR_TEXT)
+
+    def test_png_path(self):
+        "Antidoc performs wrapping, so we need to allow newlines."
+        text = fulltext.get('files/test.png')
+        self.assertEqual(text, OCR_TEXT)
+				
 
 if __name__ == '__main__':
     unittest.main()

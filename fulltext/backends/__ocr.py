@@ -2,6 +2,7 @@
 #sudo pip3 install pytesseract
 #sudo apt-get install tesseract-ocr-[lang]
 
+from fulltext.util import which
 import pytesseract
 from PIL import Image
 
