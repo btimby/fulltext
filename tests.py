@@ -103,12 +103,12 @@ class FullTextFiles(unittest.TestCase):
         self.assertEqual(text, TEXT_WITH_NEWLINES)
 
 OCR_TEXT = (
-	"Sherlock Holmes and Doctor Watson lived at 2211) Baker Street between 1881-1904,\n"
-	"according to the stories written by Sir Arthur Conan Doyle. The famous lst ﬂoor study\n"
-	"overlooking Baker Street is still faithfully maintained as it was kept in Victorian\n"
-	"Times.\n"
-	"Step back in time, and when you visit London, remember to visit the world's most\n"
-	"famous address!"
+	u"Sherlock Holmes and Doctor Watson lived at 2211) Baker Street between 1881-1904,\n"
+	u"according to the stories written by Sir Arthur Conan Doyle. The famous lst ﬂoor study\n"
+	u"overlooking Baker Street is still faithfully maintained as it was kept in Victorian\n"
+	u"Times.\n"
+	u"Step back in time, and when you visit London, remember to visit the world's most\n"
+	u"famous address!"
 )
 
 				
