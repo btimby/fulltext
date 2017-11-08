@@ -5,5 +5,3 @@ lxml
 python-pptx
 six
 html2text
-pytesseract
-Pillow
