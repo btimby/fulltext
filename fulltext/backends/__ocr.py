@@ -28,7 +28,7 @@ def read(img, **kargs):
     rotate = kargs.get('rotate', 0)
 
     im = Image.open(img)
-    
+
     if not rotate:
         try:
             exif = im._getexif()
