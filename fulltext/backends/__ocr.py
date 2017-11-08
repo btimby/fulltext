@@ -11,7 +11,7 @@ LOGGER = logging.getLogger(__name__)
 
 EXTENSIONS = ('jpg', 'jpeg', 'bmp', 'png', 'gif')
 
-ORIENTATION_KEY = 274  # cf ExifTags
+EXIF_ORIENTATION = 274  # cf ExifTags
 
 EXIF_ROTATION = {
     3: 180,
@@ -36,7 +36,7 @@ def read(img, **kargs):
             # No EXIF data, no rotation necessary.
             pass
         else:
-            rotate = EXIF_ROTATION.get(exif.get(EXIF_ORIENTATION, None), None)
+            rotate = EXIF_ROTATION.get(exif.get(EXIF_ORIENTATION, None), 0)
 
     if rotate:
         im = im.rotate(rotate)
