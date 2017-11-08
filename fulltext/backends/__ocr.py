@@ -11,36 +11,35 @@ LOGGER = logging.getLogger(__name__)
 
 EXTENSIONS = ('jpg', 'jpeg', 'bmp', 'png', 'gif')
 
+ORIENTATION_KEY = 274  # cf ExifTags
+
+EXIF_ROTATION = {
+    3: 180,
+    6: 270,
+    8: 90
+}
+
 if which('tesseract') is None:
     LOGGER.warning('CLI tool "tesseract" is required for image files backend.')
 
 
 def read(img, **kargs):
     lang = kargs.get('lang', 'eng')
+    rotate = kargs.get('rotate', 0)
 
     im = Image.open(img)
+    
+    if not rotate:
+        try:
+            exif = im._getexif()
+        except AttributeError:
+            # No EXIF data, no rotation necessary.
+            pass
+        else:
+            rotate = EXIF_ROTATION.get(exif.get(EXIF_ORIENTATION, None), None)
 
-    degree = 0
-    try:
-        exif = im._getexif()
-    except AttributeError:
-        exif = None
-
-    if exif:
-        orientation_key = 274  # cf ExifTags
-        if orientation_key in exif:
-            orientation = exif[orientation_key]
-            rotate_values = {
-                3: 180,
-                6: 270,
-                8: 90
-            }
-            if orientation in rotate_values:
-                # Rotate and save the picture
-                degree = rotate_values[orientation]
-
-    if degree:
-        im = im.rotate(degree)
+    if rotate:
+        im = im.rotate(rotate)
 
     return pytesseract.image_to_string(im, lang=lang)
 
