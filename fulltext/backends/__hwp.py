@@ -22,7 +22,7 @@ def _cmd(path, **kwargs):
 
 
 def to_text_with_backend(html):
-    return __html._get_file (html)
+    return __html._get_file(html)
 
 
 def _get_path(path, **kwargs):
