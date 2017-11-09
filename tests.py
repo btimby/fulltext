@@ -27,7 +27,7 @@ TEXT = TEXT_WITH_NEWLINES.replace('\n', ' ')
 
 FORMATS = (
     'txt', 'odt', 'docx', 'pptx', 'ods', 'xls', 'xlsx', 'html', 'xml', 'zip',
-    'txt', 'rtf', 'test', 'unsupported.doc'
+    'txt', 'rtf', 'test',
 )
 
 
@@ -89,16 +89,30 @@ class FullTextFilesMeta(type):
 
 @add_metaclass(FullTextFilesMeta)
 class FullTextFiles(unittest.TestCase):
+    def assertStartsWith(self, prefix, body):
+        self.assertTrue(body.startswith(prefix))
+
     def test_doc_file(self):
-        "Antidoc performs wrapping, so we need to allow newlines."
+        "Antiword performs wrapping, so we need to allow newlines."
         with open('files/test.doc', 'rb') as f:
             text = fulltext.get(f, backend='doc')
             self.assertEqual(text, TEXT_WITH_NEWLINES)
 
     def test_doc_path(self):
-        "Antidoc performs wrapping, so we need to allow newlines."
+        "Antiword performs wrapping, so we need to allow newlines."
         text = fulltext.get('files/test.doc', backend='doc')
         self.assertEqual(text, TEXT_WITH_NEWLINES)
+
+    def test_doc_file(self):
+        "Antiword does not support older Word documents."
+        with open('files/test.old.doc', 'rb') as f:
+            text = fulltext.get(f, backend='doc')
+            self.assertStartsWith('eZ-Audit', text)
+
+    def test_doc_path(self):
+        "Antiword does not support older Word documents."
+        text = fulltext.get('files/test.old.doc', backend='doc')
+        self.assertStartsWith('eZ-Audit', text)
 
 
 if __name__ == '__main__':
