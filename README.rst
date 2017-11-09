@@ -40,6 +40,7 @@ Supported formats
 * xls - Uses Python ``xlrd`` module.
 * xlsx - Uses Python ``xlrd`` module.
 * zip - Uses Python ``zipfile`` module.
+* jpg, jpeg, png, bmp, gif - Use ``/usr/bin/tesseract`` CLI tool and ``pytesseract`` module.
 
 Installing tools
 ----------------
@@ -50,14 +51,13 @@ libraries and CLI tools, you can use your package manager.
 
 .. code:: bash
 
-    $ sudo yum install antiword unrtf poppler-utils libjpeg-dev
+    $ sudo yum install antiword unrtf poppler-utils libjpeg-dev tesseract-ocr
 
 Or for debian-based systems:
 
 .. code:: bash
 
-    $ sudo apt-get install antiword unrtf poppler-utils libjpeg-dev
-
+    $ sudo apt-get install antiword unrtf poppler-utils libjpeg-dev tesseract-ocr
 
 Usage
 -----

@@ -25,9 +25,19 @@ TEXT_WITH_NEWLINES = u"Lorem ipsum\ndolor sit amet, consectetur adipiscing e" \
 
 TEXT = TEXT_WITH_NEWLINES.replace('\n', ' ')
 
+TEXT_FOR_OCR = (
+	(
+		u"Sherlock Holmes and Doctor Watson lived at 2211) Baker Street between 1881-1904,\n"
+	),
+	(
+		u"Step back in time, and when you visit London, remember to visit the world's most\n"
+		u"famous address!"
+	)
+)
+
 FORMATS = (
     'txt', 'odt', 'docx', 'pptx', 'ods', 'xls', 'xlsx', 'html', 'xml', 'zip',
-    'txt', 'rtf', 'test',
+    'txt', 'rtf', 'test'
 )
 
 
@@ -113,6 +123,17 @@ class FullTextFiles(unittest.TestCase):
         "Antiword does not support older Word documents."
         text = fulltext.get('files/test.old.doc', backend='doc')
         self.assertStartsWith('eZ-Audit', text)
+
+    def test_png_file(self):
+        with open('files/test.png', 'rb') as f:
+            text = fulltext.get(f)
+            self.assertTrue(text.startswith (TEXT_FOR_OCR[0]))
+            self.assertTrue(text.endswith (TEXT_FOR_OCR[1]))
+
+    def test_png_path(self):        
+        text = fulltext.get('files/test.png')
+        self.assertTrue(text.startswith (TEXT_FOR_OCR[0]))
+        self.assertTrue(text.endswith (TEXT_FOR_OCR[1]))
 
 
 if __name__ == '__main__':
