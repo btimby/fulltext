@@ -63,14 +63,6 @@ def _import_backends():
     LOGGER.info('Loaded backends: %s', ', '.join(BACKENDS.keys()))
 
 
-class BackendError(AssertionError):
-    pass
-
-
-class MissingCommandException(AssertionError):
-    pass
-
-
 def _get_path(backend, path, **kwargs):
     """
     Handle a path.

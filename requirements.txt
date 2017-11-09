@@ -4,5 +4,6 @@ docx2txt
 lxml
 python-pptx
 six
+docopt
 pytesseract
 Pillow

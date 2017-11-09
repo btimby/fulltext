@@ -5,9 +5,9 @@ import errno
 from os.path import isfile, dirname
 from os.path import join as pathjoin
 
-from fulltext import MissingCommandException
 
-# TODO: Sometimes multiple tools can be used, choose the one that is installed.
+class BackendError(AssertionError):
+    pass
 
 
 class CommandLineError(Exception):
@@ -17,6 +17,10 @@ class CommandLineError(Exception):
     """
     def render(self, msg):
         return msg % vars(self)
+
+
+class MissingCommandException(CommandLineError):
+    pass
 
 
 class ShellError(CommandLineError):
