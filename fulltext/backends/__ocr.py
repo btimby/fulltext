@@ -2,12 +2,17 @@
 # sudo pip3 install pytesseract
 # sudo apt-get install tesseract-ocr-[lang]
 
-from fulltext.util import which
-import pytesseract
-from PIL import Image
 import logging
 
+from PIL import Image
+
+import pytesseract
+
+from fulltext.util import which, MissingCommandException
+
+
 LOGGER = logging.getLogger(__name__)
+LOGGER.addHandler(logging.NullHandler())
 
 EXTENSIONS = ('jpg', 'jpeg', 'bmp', 'png', 'gif')
 
@@ -25,23 +30,29 @@ if which('tesseract') is None:
 
 def read(img, **kargs):
     lang = kargs.get('lang', 'eng')
-    rotate = kargs.get('rotate', 0)
+    rotate = kargs.get('rotate', None)
 
     im = Image.open(img)
 
-    if not rotate:
+    if rotate is None:
         try:
             exif = im._getexif()
+
         except AttributeError:
             # No EXIF data, no rotation necessary.
             pass
+
         else:
             rotate = EXIF_ROTATION.get(exif.get(EXIF_ORIENTATION, None), 0)
 
     if rotate:
         im = im.rotate(rotate)
 
-    return pytesseract.image_to_string(im, lang=lang)
+    try:
+        return pytesseract.image_to_string(im, lang=lang)
+
+    except FileNotFoundError:
+        raise MissingCommandException('tesseract')
 
 
 def _get_file(path_or_file, **kwargs):

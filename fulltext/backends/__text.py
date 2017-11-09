@@ -26,6 +26,7 @@ def _get_file(f, **kwargs):
             text = text.decode(enc, 'replace')
         except AttributeError:
             pass
+
         text = NON_ASCII_SUB.sub(' ', text)
         buffer.write(text)
 

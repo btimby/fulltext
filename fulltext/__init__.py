@@ -16,7 +16,7 @@ from os.path import (
 from six import string_types
 
 
-LOGGER = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__file__)
 LOGGER.addHandler(logging.NullHandler())
 
 FULLTEXT_TEMP = os.environ.get('FULLTEXT_TEMP', tempfile.gettempdir())
@@ -43,6 +43,7 @@ def _import_backends():
                 LOGGER.warning(
                     'Backend %s disabled due to missing dependency %s',
                     module_name, e.args[0])
+
             has_get_path = callable(getattr(module, '_get_path', None))
             has_get_file = callable(getattr(module, '_get_file', None))
             if not (has_get_path or has_get_file):
@@ -53,6 +54,7 @@ def _import_backends():
                         'Backend %s defines neither `_get_path()` nor '
                         '`_get_file()`, disabled', module)
                 continue
+
             extensions = getattr(module, 'EXTENSIONS', (module_name, ))
             for ext in extensions:
                 if ext in BACKENDS:
