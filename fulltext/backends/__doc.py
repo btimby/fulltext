@@ -1,6 +1,5 @@
 from __future__ import absolute_import
 
-import re
 import logging
 
 from fulltext.util import run, which, ShellError, MissingCommandException
@@ -22,7 +21,7 @@ def _get_file(f, **kwargs):
     try:
         return run('antiword', '-', stdin=f).decode('utf8')
     except ShellError as e:
-        if not b'not a Word Document' in e.stderr:
+        if b'not a Word Document' not in e.stderr:
             raise
         LOGGER.warning('.doc file unsupported format')
     except MissingCommandException:
@@ -40,7 +39,7 @@ def _get_path(path, **kwargs):
     try:
         return run('antiword', path).decode('utf8')
     except ShellError as e:
-        if not b'not a Word Document' in e.stderr:
+        if b'not a Word Document' not in e.stderr:
             raise
         LOGGER.warning('.doc file unsupported format')
     except MissingCommandException:
