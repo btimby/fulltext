@@ -78,7 +78,7 @@ def _get_path(backend, path, **kwargs):
     elif callable(getattr(backend, '_get_file', None)):
         # Fallback to _get_file(). No warning here since the performance hit
         # is minimal.
-        with open(path, 'r') as f:
+        with open(path, 'rb') as f:
             return backend._get_file(f, **kwargs)
 
 
