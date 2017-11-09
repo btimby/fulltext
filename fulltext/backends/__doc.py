@@ -3,7 +3,7 @@ from __future__ import absolute_import
 import re
 import logging
 
-from fulltext.util import run, which, ShellError
+from fulltext.util import run, which, ShellError, MissingCommandException
 
 
 LOGGER = logging.getLogger(__name__)
@@ -24,6 +24,9 @@ def _get_file(f, **kwargs):
     except ShellError as e:
         if not b'not a Word Document' in e.stderr:
             raise
+        LOGGER.warning('.doc file unsupported format')
+    except MissingCommandException:
+        LOGGER.warning('CLI tool "antiword" missing, using "abiword"')
 
     f.seek(0)
 
@@ -39,6 +42,9 @@ def _get_path(path, **kwargs):
     except ShellError as e:
         if not b'not a Word Document' in e.stderr:
             raise
+        LOGGER.warning('.doc file unsupported format')
+    except MissingCommandException:
+        LOGGER.warning('CLI tool "antiword" missing, using "abiword"')
 
     # Try abiword, slower, but supports more formats.
     return run('abiword', '--to=txt', '--to-name=fd://1', path).decode('utf8')

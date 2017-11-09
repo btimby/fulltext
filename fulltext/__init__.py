@@ -15,6 +15,8 @@ from os.path import (
     basename, splitext, dirname
 )
 
+from fulltext.util import BackendError, MissingCommandException
+
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
@@ -58,14 +60,6 @@ def _import_backends():
                 BACKENDS[ext] = module
 
     LOGGER.info('Loaded backends: %s', ', '.join(BACKENDS.keys()))
-
-
-class BackendError(AssertionError):
-    pass
-
-
-class MissingCommandException(AssertionError):
-    pass
 
 
 def _get_path(backend, path, **kwargs):
