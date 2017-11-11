@@ -29,13 +29,13 @@ if which('pdftotext') is None:
 
 def _run_server():
     global UNOCONV_SERVER
-		
+
     UNOCONV_SERVER = subprocess.call("unoconv -l", shell=True)
 
 
 def __start():
     if UNOCONV_SERVER is not None:
-		    return
+        return
     threading.Thread(target = _run_server).start()
     # wait for server
     time.sleep(2)
@@ -57,8 +57,8 @@ def _get_temp():
     return os.path.join(fulltext.FULLTEXT_TEMP, next(tempfile._get_candidate_names()))
 
 
-def _get_path(path, **kwargs):    		
-		# unoconv's --stdout option doesn't work, why?
+def _get_path(path, **kwargs):        
+    # unoconv's --stdout option doesn't work, why?
     out = _get_temp() + '.html'
     __start()
     try:
