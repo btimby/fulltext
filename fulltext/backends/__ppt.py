@@ -12,16 +12,39 @@ from fulltext.backends import __html
 
 import fulltext
 
+import time
+import subprocess
+import threading
+import signal
+
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 EXTENSIONS = ('ppt',)
-
+UNOCONV_SERVER = None
 
 if which('pdftotext') is None:
     LOGGER.warning('CLI tool "unoconv" is required for .ppt backend.')
 
+		
+def _run_server():
+    global UNOCONV_SERVER
+		
+    UNOCONV_SERVER = subprocess.call("unoconv -l", shell=True)
+		
 
+def __start ():
+    if UNOCONV_SERVER is not None:
+		    return
+    threading.Thread(target = _run_server).start()
+    # wait for server
+    time.sleep(2)
+
+
+def __shutdown ():
+    os.kill (UNOCONV_SERVER, signal.SIGTERM)
+		
+				
 def _cmd(path, out, **kwargs):
     cmd = ['unoconv']
 
@@ -34,8 +57,8 @@ def _get_temp():
     return os.path.join(fulltext.FULLTEXT_TEMP, next(tempfile._get_candidate_names()))
 
 
-def _get_path(path, **kwargs):
-    # unoconv's --stdout option doesn't work, why?
+def _get_path(path, **kwargs):    		
+		# unoconv's --stdout option doesn't work, why?
     out = _get_temp() + '.html'
 
     try:
