@@ -4,6 +4,9 @@ docx2txt
 lxml
 python-pptx
 six
+<<<<<<< HEAD
 docopt
 pytesseract
 Pillow
+=======
+>>>>>>> myfork/hwp
