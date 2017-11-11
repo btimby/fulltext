@@ -60,7 +60,7 @@ def _get_temp():
 def _get_path(path, **kwargs):
     # unoconv's --stdout option doesn't work, why?
     out = _get_temp() + '.html'
-    __start()
+
     try:
         r = run(*_cmd(path, out, **kwargs)).decode('utf-8')
 
@@ -81,7 +81,7 @@ def _get_path(path, **kwargs):
         r = __html._get_file(f.read())
 
     os.remove(out)
-    __shutdown
+
     return r.replace('\n', ' ')
 
 
