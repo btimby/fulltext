@@ -26,14 +26,14 @@ UNOCONV_SERVER = None
 if which('pdftotext') is None:
     LOGGER.warning('CLI tool "unoconv" is required for .ppt backend.')
 
-		
+
 def _run_server():
     global UNOCONV_SERVER
 		
     UNOCONV_SERVER = subprocess.call("unoconv -l", shell=True)
-		
 
-def __start ():
+
+def __start():
     if UNOCONV_SERVER is not None:
 		    return
     threading.Thread(target = _run_server).start()
@@ -41,10 +41,10 @@ def __start ():
     time.sleep(2)
 
 
-def __shutdown ():
-    os.kill (UNOCONV_SERVER, signal.SIGTERM)
-		
-				
+def __shutdown():
+    os.kill(UNOCONV_SERVER, signal.SIGTERM)
+
+
 def _cmd(path, out, **kwargs):
     cmd = ['unoconv']
 
@@ -60,7 +60,7 @@ def _get_temp():
 def _get_path(path, **kwargs):    		
 		# unoconv's --stdout option doesn't work, why?
     out = _get_temp() + '.html'
-
+    __start()
     try:
         r = run(*_cmd(path, out, **kwargs)).decode('utf-8')
 
@@ -81,6 +81,7 @@ def _get_path(path, **kwargs):
         r = __html._get_file(f.read())
 
     os.remove(out)
+    __shutdown
     return r.replace('\n', ' ')
 
 
