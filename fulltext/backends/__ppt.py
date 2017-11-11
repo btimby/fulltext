@@ -34,7 +34,7 @@ def _get_temp():
     return os.path.join(fulltext.FULLTEXT_TEMP, next(tempfile._get_candidate_names()))
 
 
-def _get_path(path, **kwargs):    
+def _get_path(path, **kwargs):
     # unoconv's --stdout option doesn't work, why?
     out = _get_temp() + '.html'
 
