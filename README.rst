@@ -5,6 +5,8 @@
 .. figure:: https://www.smartfile.com/assets/img/smartfile-logo-new.png
    :alt: SmartFile
 
+.. _SmartFile: https://www.smartfile.com
+
 A `SmartFile`_ Open Source project.
 
 Introduction
@@ -39,6 +41,7 @@ Supported formats
          strings from arbitrary (possibly) binary files.
 * xls - Uses Python ``xlrd`` module.
 * xlsx - Uses Python ``xlrd`` module.
+* pptx - Use Python ``pptx`` module
 * zip - Uses Python ``zipfile`` module.
 * jpg, jpeg, png, bmp, gif - Use ``/usr/bin/tesseract`` CLI tool and ``pytesseract`` module.
 
