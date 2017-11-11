@@ -39,6 +39,7 @@ Supported formats
          strings from arbitrary (possibly) binary files.
 * xls - Uses Python ``xlrd`` module.
 * xlsx - Uses Python ``xlrd`` module.
+* ppt - Uses ``/usr/bin/unoconv`` CLI tool.
 * zip - Uses Python ``zipfile`` module.
 * jpg, jpeg, png, bmp, gif - Use ``/usr/bin/tesseract`` CLI tool and ``pytesseract`` module.
 
@@ -51,7 +52,7 @@ libraries and CLI tools, you can use your package manager.
 
 .. code:: bash
 
-    $ sudo yum install antiword unrtf poppler-utils libjpeg-dev tesseract-ocr
+    $ sudo yum install antiword unrtf poppler-utils libjpeg-dev tesseract-ocr unoconv
 
 Or for debian-based systems:
 
