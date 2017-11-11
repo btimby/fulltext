@@ -5,7 +5,6 @@ from fulltext.util import ShellError
 
 from six import add_metaclass
 
-
 TEXT_WITH_NEWLINES = u"Lorem ipsum\ndolor sit amet, consectetur adipiscing e" \
                      u"lit. Nunc ipsum augue, iaculis quis\nauctor eu, adipi" \
                      u"scing non est. Nullam id sem diam, eget varius dui. E" \
@@ -37,7 +36,7 @@ TEXT_FOR_OCR = (
 
 FORMATS = (
     'txt', 'odt', 'docx', 'pptx', 'ods', 'xls', 'xlsx', 'html', 'xml', 'zip',
-    'txt', 'rtf', 'test'
+    'txt', 'rtf', 'test', 'ppt'
 )
 
 
