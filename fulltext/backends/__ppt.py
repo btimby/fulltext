@@ -36,7 +36,7 @@ def _run_server():
 def __start():
     if UNOCONV_SERVER is not None:
         return
-    threading.Thread(target = _run_server).start()
+    threading.Thread(target=_run_server).start()
     # wait for server
     time.sleep(2)
 
