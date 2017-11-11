@@ -37,7 +37,7 @@ TEXT_FOR_OCR = (
 
 FORMATS = (
     'txt', 'odt', 'docx', 'pptx', 'ods', 'xls', 'xlsx', 'html', 'xml', 'zip',
-    'txt', 'rtf', 'test'
+    'txt', 'rtf', 'test', 'ppt'
 )
 
 
