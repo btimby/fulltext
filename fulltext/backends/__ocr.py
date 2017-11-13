@@ -2,6 +2,7 @@
 # sudo pip3 install pytesseract
 # sudo apt-get install tesseract-ocr-[lang]
 
+import errno
 import logging
 
 from PIL import Image
@@ -51,8 +52,10 @@ def read(img, **kargs):
     try:
         return pytesseract.image_to_string(im, lang=lang)
 
-    except FileNotFoundError:
-        raise MissingCommandException('tesseract')
+    except IOError as e:
+        if e.errno == errno.ENOENT:
+            raise MissingCommandException('tesseract')
+        raise
 
 
 def _get_file(path_or_file, **kwargs):
