@@ -48,7 +48,7 @@ def __shutdown():
 def _cmd(path, out, **kwargs):
     cmd = ['unoconv']
 
-    cmd.extend(['-f', 'html', '-o', out, path])
+    cmd.extend(['-nf', 'html', '-o', out, path])
 
     return cmd
 
