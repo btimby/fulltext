@@ -7,3 +7,6 @@ six
 docopt
 pytesseract
 Pillow
+pycodestyle
+pyflakes
+

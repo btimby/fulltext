@@ -76,6 +76,10 @@ def run(*cmd, **kwargs):
             stdin=stdin,
             stdout=subprocess.PIPE, stderr=subprocess.PIPE,
         )
+    except IOError as e:
+        if e.errno == errno.ENOENT:
+            raise MissingCommandException(cmd[0])
+        raise
     except OSError as e:
         if e.errno == errno.ENOENT:
             # File not found.

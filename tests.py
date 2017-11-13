@@ -1,5 +1,6 @@
 import unittest
 import fulltext
+import logging
 
 from fulltext.util import ShellError
 
@@ -26,13 +27,15 @@ TEXT_WITH_NEWLINES = u"Lorem ipsum\ndolor sit amet, consectetur adipiscing e" \
 TEXT = TEXT_WITH_NEWLINES.replace('\n', ' ')
 
 TEXT_FOR_OCR = (
-	(
-		u"Sherlock Holmes and Doctor Watson lived at 2211) Baker Street between 1881-1904,\n"
-	),
-	(
-		u"Step back in time, and when you visit London, remember to visit the world's most\n"
-		u"famous address!"
-	)
+    (
+        u"Sherlock Holmes and Doctor Watson lived at 2211) Baker Street " \
+        u"between 1881-1904,\n"
+    ),
+    (
+        u"Step back in time, and when you visit London, remember to visit "
+        u"the world's most\n"
+        u"famous address!"
+    )
 )
 
 FORMATS = (
