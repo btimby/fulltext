@@ -40,7 +40,7 @@ TEXT_FOR_OCR = (
 
 FORMATS = (
     'txt', 'odt', 'docx', 'pptx', 'ods', 'xls', 'xlsx', 'html', 'xml', 'zip',
-    'txt', 'rtf', 'test', 'hwp', 'csv'
+    'txt', 'rtf', 'test', 'hwp',
 )
 
 
@@ -141,11 +141,11 @@ class FullTextFiles(unittest.TestCase):
     def test_csv_file(self):
         with open('files/test.csv', 'rb') as f:
             text = fulltext.get(f)
-            self.assertEqual(TEXT.replace(',', ''), text)
+            self.assertStartsWith('Lorem', text)
 
     def test_csv_path(self):        
         text = fulltext.get('files/test.csv')
-        self.assertEqual(TEXT.replace(',', '').replace('\n', ''), text)
+        self.assertStartsWith('Lorem', text)
 
 
 if __name__ == '__main__':
