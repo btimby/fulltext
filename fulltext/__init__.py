@@ -43,6 +43,7 @@ def _import_backends():
                 LOGGER.warning(
                     'Backend %s disabled due to missing dependency %s',
                     module_name, e.args[0])
+                continue
 
             has_get_path = callable(getattr(module, '_get_path', None))
             has_get_file = callable(getattr(module, '_get_file', None))
