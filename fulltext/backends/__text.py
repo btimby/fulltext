@@ -1,7 +1,5 @@
 from __future__ import absolute_import
 
-import sys
-import re
 import string
 
 from six import StringIO
@@ -17,7 +15,6 @@ except ImportError:
 
 
 EXTENSIONS = ('txt', 'text')
-ENCODING = sys.getfilesystemencoding()
 BUFFER_MAX = 1024 * 1024
 
 DELETE = bytes([
@@ -28,7 +25,6 @@ TRANSLATE = maketrans(b'\r\n', b'  ')
 
 def _get_file(f, **kwargs):
     buffer = StringIO()
-    enc = kwargs.get('encoding', ENCODING)
 
     while True:
         text = f.read(BUFFER_MAX)
@@ -41,5 +37,5 @@ def _get_file(f, **kwargs):
 
         # Emulate the `strings` CLI tool.
         buffer.write(text)
-    
+
     return buffer.getvalue()

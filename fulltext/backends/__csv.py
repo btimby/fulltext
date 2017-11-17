@@ -9,7 +9,7 @@ EXTENSIONS = ('csv', )
 
 
 def readlines(f):
-    for line in  f.readlines():
+    for line in f.readlines():
         yield line.decode('utf8')
 
 
