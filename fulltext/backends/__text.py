@@ -2,19 +2,33 @@ from __future__ import absolute_import
 
 import sys
 import re
+import string
 
 from six import StringIO
 
+try:
+    from string import maketrans
+
+    def bytes(chars):
+        return ''.join(map(chr, chars))
+
+except ImportError:
+    maketrans = bytes.maketrans
+
 
 EXTENSIONS = ('txt', 'text')
-BUFFER_MAX = 8192
 ENCODING = sys.getfilesystemencoding()
-NON_ASCII_SUB = re.compile('[\x00-\x1F\x7F-\xFF]')
+BUFFER_MAX = 1024 * 1024
+
+DELETE = bytes([
+    i for i in range(256) if chr(i) not in string.printable
+])
+TRANSLATE = maketrans(b'\r\n', b'  ')
 
 
 def _get_file(f, **kwargs):
     buffer = StringIO()
-    enc = kwargs.get('enc', ENCODING)
+    enc = kwargs.get('encoding', ENCODING)
 
     while True:
         text = f.read(BUFFER_MAX)
@@ -22,12 +36,10 @@ def _get_file(f, **kwargs):
         if not text:
             break
 
-        try:
-            text = text.decode(enc, 'replace')
-        except AttributeError:
-            pass
+        text = text.translate(TRANSLATE, DELETE)
+        text = text.decode('ascii', 'ignore')
 
-        text = NON_ASCII_SUB.sub(' ', text)
+        # Emulate the `strings` CLI tool.
         buffer.write(text)
-
+    
     return buffer.getvalue()
