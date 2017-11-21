@@ -90,6 +90,7 @@ class FullTextFilesMeta(type):
             with open(path, 'rb') as f:
                 text = fulltext.get(f, backend=fmt)
                 self.assertEqual(text, TEXT)
+                self.assertIsInstance(text, u"".__class__)
         return inner
 
     @classmethod
