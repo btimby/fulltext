@@ -98,6 +98,7 @@ class FullTextFilesMeta(type):
         def inner(self):
             text = fulltext.get(path, backend=fmt)
             self.assertEqual(text, TEXT)
+            self.assertIsInstance(text, u"".__class__)
         return inner
 
 
@@ -111,42 +112,50 @@ class FullTextFiles(unittest.TestCase):
         with open('files/test.doc', 'rb') as f:
             text = fulltext.get(f, backend='doc')
             self.assertEqual(text, TEXT_WITH_NEWLINES)
+            self.assertIsInstance(text, u"".__class__)
 
     def test_doc_path(self):
         "Antiword performs wrapping, so we need to allow newlines."
         text = fulltext.get('files/test.doc', backend='doc')
         self.assertEqual(text, TEXT_WITH_NEWLINES)
+        self.assertIsInstance(text, u"".__class__)
 
     def test_old_doc_file(self):
         "Antiword does not support older Word documents."
         with open('files/test.old.doc', 'rb') as f:
             text = fulltext.get(f, backend='doc')
             self.assertStartsWith('eZ-Audit', text)
+            self.assertIsInstance(text, u"".__class__)
 
     def test_old_doc_path(self):
         "Antiword does not support older Word documents."
         text = fulltext.get('files/test.old.doc', backend='doc')
         self.assertStartsWith('eZ-Audit', text)
+        self.assertIsInstance(text, u"".__class__)
 
     def test_png_file(self):
         with open('files/test.png', 'rb') as f:
             text = fulltext.get(f)
             self.assertTrue(text.startswith (TEXT_FOR_OCR[0]))
             self.assertTrue(text.endswith (TEXT_FOR_OCR[1]))
+            self.assertIsInstance(text, u"".__class__)
 
     def test_png_path(self):        
         text = fulltext.get('files/test.png')
         self.assertTrue(text.startswith (TEXT_FOR_OCR[0]))
         self.assertTrue(text.endswith (TEXT_FOR_OCR[1]))
+        self.assertIsInstance(text, u"".__class__)
 
     def test_csv_file(self):
         with open('files/test.csv', 'rb') as f:
             text = fulltext.get(f)
             self.assertStartsWith('Lorem', text)
+            self.assertIsInstance(text, u"".__class__)
 
     def test_csv_path(self):        
         text = fulltext.get('files/test.csv')
         self.assertStartsWith('Lorem', text)
+        self.assertIsInstance(text, u"".__class__)
 
 
 if __name__ == '__main__':
