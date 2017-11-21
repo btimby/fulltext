@@ -16,6 +16,6 @@ def readlines(f):
 def _get_file(f, **kwargs):
     text = StringIO()
     for row in csv.reader(readlines(f), dialect='excel'):
-        text.write(' '.join(row))
-        text.write('\n')
+        text.write(u' '.join(row))
+        text.write(u'\n')
     return text.getvalue()
