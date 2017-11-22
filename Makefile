@@ -3,7 +3,9 @@ test:
 
 check:
 	pyflakes fulltext
-	pep8 --exclude=migrations --ignore=E501,E225 fulltext
+	pycodestyle --exclude=migrations --ignore=E501,E225 fulltext
+
+lint: check
 
 install:
 	python setup.py install

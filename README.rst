@@ -44,6 +44,7 @@ Supported formats
 * pptx - Use Python ``pptx`` module
 * zip - Uses Python ``zipfile`` module.
 * jpg, jpeg, png, bmp, gif - Use ``/usr/bin/tesseract`` CLI tool and ``pytesseract`` module.
+* hwp - Uses Python ``pyhwp`` module as CLI tool.
 
 Installing tools
 ----------------
@@ -60,7 +61,7 @@ Or for debian-based systems:
 
 .. code:: bash
 
-    $ sudo apt-get install antiword unrtf poppler-utils libjpeg-dev tesseract-ocr
+    $ sudo apt-get install antiword unrtf poppler-utils libjpeg-dev
 
 Usage
 -----

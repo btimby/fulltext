@@ -8,9 +8,14 @@ from six import StringIO
 EXTENSIONS = ('csv', )
 
 
+def readlines(f):
+    for line in  f.readlines():
+        yield line.decode('utf8')
+
+
 def _get_file(f, **kwargs):
     text = StringIO()
-    for row in csv.reader(f.readlines(), dialect='excel'):
+    for row in csv.reader(readlines(f), dialect='excel'):
         text.write(' '.join(row))
         text.write('\n')
     return text.getvalue()
