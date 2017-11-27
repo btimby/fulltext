@@ -75,17 +75,18 @@ class FullText(BaseTestCase):
 
 
 class TestPathAndFile(object):
+    text = TEXT
 
     def test_file(self):
         path = 'files/test.%s' % self.ext
         with open(path, 'rb') as f:
             text = fulltext.get(f, backend=self.ext)
-            self.assertSequenceEqual(TEXT, text)
+            self.assertSequenceEqual(self.text, text)
 
     def test_path(self):
         path = 'files/test.%s' % self.ext
         text = fulltext.get(path, backend=self.ext)
-        self.assertSequenceEqual(TEXT, text)
+        self.assertSequenceEqual(self.text, text)
 
 
 class TestTxt(BaseTestCase, TestPathAndFile):
@@ -136,6 +137,11 @@ class TestTest(BaseTestCase, TestPathAndFile):
     ext = "test"
 
 
+class TestCsv(BaseTestCase, TestPathAndFile):
+    ext = "csv"
+    text = TEXT.replace(',', '')
+
+
 @unittest.skipIf(not which('pyhwp'), "pyhwp not installed")
 class TestHwp(BaseTestCase, TestPathAndFile):
     ext = "hwp"
@@ -166,17 +172,6 @@ class FullTextFiles(BaseTestCase):
         text = fulltext.get('files/test.png')
         self.assertStartsWith(TEXT_FOR_OCR[0], text)
         self.assertEndsWith(TEXT_FOR_OCR[1], text)
-        self.assertIsInstance(text, u"".__class__)
-
-    def test_csv_file(self):
-        with open('files/test.csv', 'rb') as f:
-            text = fulltext.get(f)
-            self.assertStartsWith('Lorem', text)
-            self.assertIsInstance(text, u"".__class__)
-
-    def test_csv_path(self):
-        text = fulltext.get('files/test.csv')
-        self.assertStartsWith('Lorem', text)
         self.assertIsInstance(text, u"".__class__)
 
 
