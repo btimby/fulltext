@@ -1,10 +1,8 @@
 import unittest
 import fulltext
-import logging
 
 from fulltext.util import ShellError
-
-from six import add_metaclass
+from fulltext.util import which
 
 
 TEXT_WITH_NEWLINES = u"Lorem ipsum\ndolor sit amet, consectetur adipiscing e" \
@@ -28,7 +26,7 @@ TEXT = TEXT_WITH_NEWLINES.replace('\n', ' ')
 
 TEXT_FOR_OCR = (
     (
-        u"Sherlock Holmes and Doctor Watson lived at 2211) Baker Street " \
+        u"Sherlock Holmes and Doctor Watson lived at 2211) Baker Street "
         u"between 1881-1904,\n"
     ),
     (
@@ -38,13 +36,9 @@ TEXT_FOR_OCR = (
     )
 )
 
-FORMATS = (
-    'txt', 'odt', 'docx', 'pptx', 'ods', 'xls', 'xlsx', 'html', 'xml', 'zip',
-    'txt', 'rtf', 'test', 'hwp',
-)
-
 
 class FullText(unittest.TestCase):
+
     def test_missing_default(self):
         "Ensure a missing file returns default instead of exception."
         self.assertEqual(fulltext.get('non-existent-file.pdf', 'canary'),
@@ -74,33 +68,68 @@ class FullText(unittest.TestCase):
         self.assertEqual(fulltext.get('unknown-file.foobar', None), None)
 
 
-class FullTextFilesMeta(type):
-    "Tests various file types using disk file method."
+class Base(object):
 
-    def __new__(cls, name, bases, attrs):
-        for fmt in FORMATS:
-            path = 'files/test.%s' % fmt
-            attrs['test_%s_path' % fmt] = cls._test_path(path, fmt)
-            attrs['test_%s_file' % fmt] = cls._test_file(path, fmt)
-        return super(FullTextFilesMeta, cls).__new__(cls, name, bases, attrs)
-
-    @classmethod
-    def _test_file(cls, path, fmt):
-        def inner(self):
-            with open(path, 'rb') as f:
-                text = fulltext.get(f, backend=fmt)
-                self.assertEqual(text, TEXT)
-        return inner
-
-    @classmethod
-    def _test_path(cls, path, fmt):
-        def inner(self):
-            text = fulltext.get(path, backend=fmt)
+    def test_file(self):
+        path = 'files/test.%s' % self.ext
+        with open(path, 'rb') as f:
+            text = fulltext.get(f, backend=self.ext)
             self.assertEqual(text, TEXT)
-        return inner
+
+    def test_path(self):
+        path = 'files/test.%s' % self.ext
+        text = fulltext.get(path, backend=self.ext)
+        self.assertEqual(text, TEXT)
 
 
-@add_metaclass(FullTextFilesMeta)
+class TestTxt(unittest.TestCase, Base):
+    ext = "txt"
+
+
+class TestOdt(unittest.TestCase, Base):
+    ext = "odt"
+
+
+class TestDocx(unittest.TestCase, Base):
+    ext = "docx"
+
+
+class TestOds(unittest.TestCase, Base):
+    ext = "ods"
+
+
+class TestXls(unittest.TestCase, Base):
+    ext = "xls"
+
+
+class TestXlsx(unittest.TestCase, Base):
+    ext = "xlsx"
+
+
+class TestHtml(unittest.TestCase, Base):
+    ext = "html"
+
+
+class TestXml(unittest.TestCase, Base):
+    ext = "xml"
+
+
+class TestZip(unittest.TestCase, Base):
+    ext = "zip"
+
+
+class TestRtf(unittest.TestCase, Base):
+    ext = "rtf"
+
+
+class TestTest(unittest.TestCase, Base):
+    ext = "test"
+
+@unittest.skipIf(not which('pyhwp'), "pyhwp not installed")
+class TestHwp(unittest.TestCase, Base):
+    ext = "hwp"
+
+
 class FullTextFiles(unittest.TestCase):
     def assertStartsWith(self, prefix, body):
         self.assertTrue(body.startswith(prefix))
@@ -130,23 +159,23 @@ class FullTextFiles(unittest.TestCase):
     def test_png_file(self):
         with open('files/test.png', 'rb') as f:
             text = fulltext.get(f)
-            self.assertTrue(text.startswith (TEXT_FOR_OCR[0]))
-            self.assertTrue(text.endswith (TEXT_FOR_OCR[1]))
+            self.assertTrue(text.startswith(TEXT_FOR_OCR[0]))
+            self.assertTrue(text.endswith(TEXT_FOR_OCR[1]))
 
-    def test_png_path(self):        
+    def test_png_path(self):
         text = fulltext.get('files/test.png')
-        self.assertTrue(text.startswith (TEXT_FOR_OCR[0]))
-        self.assertTrue(text.endswith (TEXT_FOR_OCR[1]))
+        self.assertTrue(text.startswith(TEXT_FOR_OCR[0]))
+        self.assertTrue(text.endswith(TEXT_FOR_OCR[1]))
 
     def test_csv_file(self):
         with open('files/test.csv', 'rb') as f:
             text = fulltext.get(f)
             self.assertStartsWith('Lorem', text)
 
-    def test_csv_path(self):        
+    def test_csv_path(self):
         text = fulltext.get('files/test.csv')
         self.assertStartsWith('Lorem', text)
 
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(verbosity=2)
