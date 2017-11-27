@@ -7,6 +7,7 @@ import os
 import glob
 import shutil
 import tempfile
+import warnings
 
 from os.path import join as pathjoin
 from os.path import (
@@ -40,9 +41,10 @@ def _import_backends():
             try:
                 module = imp.load_source(module_name, filename)
             except ImportError as e:
-                LOGGER.warning(
-                    'Backend %s disabled due to missing dependency %s',
+                msg = 'Backend %s disabled due to missing dependency; %s' % (
                     module_name, e.args[0])
+                LOGGER.warning(msg)
+                warnings.warn(msg, UserWarning)
                 continue
 
             has_get_path = callable(getattr(module, '_get_path', None))
