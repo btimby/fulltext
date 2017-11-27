@@ -2,6 +2,13 @@ PYTHON = python
 
 # In not in a virtualenv, add --user options for install commands.
 INSTALL_OPTS = `$(PYTHON) -c "import sys; print('' if hasattr(sys, 'real_prefix') else '--user')"`
+# List of development third party libs.
+PY_DEPS = \
+	docx2txt \
+	python-pptx \
+	pytesseract \
+	xlrd
+
 
 test:  ## Run tests-
 	$(PYTHON) tests.py
@@ -14,6 +21,9 @@ lint: check
 
 install:  ## Install this package as current user in "edit" mode.
 	PYTHONWARNINGS=all $(PYTHON) setup.py develop $(INSTALL_OPTS)
+
+install-deps:  ## Install third party libs.
+	$(PYTHON) -m pip install $(INSTALL_OPTS) --upgrade $(PY_DEPS)
 
 publish:  ## Upload package on PYPI.
 	$(PYTHON) setup.py register
