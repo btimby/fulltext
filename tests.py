@@ -24,13 +24,6 @@ TEXT_WITH_NEWLINES = u"Lorem ipsum\ndolor sit amet, consectetur adipiscing e" \
 
 TEXT = TEXT_WITH_NEWLINES.replace('\n', ' ')
 
-TEXT_FOR_OCR = (
-    u"Sherlock Holmes and Doctor Watson lived at 2211) Baker Street " \
-    u"between 1881-1904,",
-    u"Step back in time, and when you visit London, remember to visit " \
-    u"the world's most famous address!"
-)
-
 
 class BaseTestCase(unittest.TestCase):
     def assertStartsWith(self, prefix, body):
@@ -142,6 +135,10 @@ class TestCsv(BaseTestCase, TestPathAndFile):
     text = TEXT.replace(',', '')
 
 
+class TestPng(BaseTestCase, TestPathAndFile):
+    ext = "png"
+
+
 @unittest.skipIf(not which('pyhwp'), "pyhwp not installed")
 class TestHwp(BaseTestCase, TestPathAndFile):
     ext = "hwp"
@@ -159,19 +156,6 @@ class FullTextFiles(BaseTestCase):
         "Antiword does not support older Word documents."
         text = fulltext.get('files/test.old.doc', backend='doc')
         self.assertStartsWith('eZ-Audit', text)
-        self.assertIsInstance(text, u"".__class__)
-
-    def test_png_file(self):
-        with open('files/test.png', 'rb') as f:
-            text = fulltext.get(f)
-            self.assertStartsWith(TEXT_FOR_OCR[0], text)
-            self.assertEndsWith(TEXT_FOR_OCR[1], text)
-            self.assertIsInstance(text, u"".__class__)
-
-    def test_png_path(self):
-        text = fulltext.get('files/test.png')
-        self.assertStartsWith(TEXT_FOR_OCR[0], text)
-        self.assertEndsWith(TEXT_FOR_OCR[1], text)
         self.assertIsInstance(text, u"".__class__)
 
 
