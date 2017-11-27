@@ -1,6 +1,7 @@
 import unittest
 import fulltext
 import logging
+import difflib
 
 from fulltext.util import ShellError
 
@@ -27,28 +28,43 @@ TEXT_WITH_NEWLINES = u"Lorem ipsum\ndolor sit amet, consectetur adipiscing e" \
 TEXT = TEXT_WITH_NEWLINES.replace('\n', ' ')
 
 TEXT_FOR_OCR = (
-    (
-        u"Sherlock Holmes and Doctor Watson lived at 2211) Baker Street " \
-        u"between 1881-1904,\n"
-    ),
-    (
-        u"Step back in time, and when you visit London, remember to visit "
-        u"the world's most\n"
-        u"famous address!"
-    )
+    u"Sherlock Holmes and Doctor Watson lived at 2211) Baker Street " \
+    u"between 1881-1904,",
+    u"Step back in time, and when you visit London, remember to visit " \
+    u"the world's most famous address!"
 )
 
-FORMATS = (
+FORMATS = frozenset((
     'txt', 'odt', 'docx', 'pptx', 'ods', 'xls', 'xlsx', 'html', 'xml', 'zip',
-    'txt', 'rtf', 'test', 'hwp',
-)
+    'rtf', 'test', 'hwp', 'doc',
+))
 
 
-class FullText(unittest.TestCase):
+class BaseTestCase(unittest.TestCase):
+    def assertMultiLineEqual(self, a, b, msg=None):
+        if a != b:
+            if msg is None:
+                msg = '\n' + ''.join(
+                    difflib.unified_diff(a.splitlines(True),
+                                         b.splitlines(True)))
+            raise AssertionError(msg)
+
+    def assertStartsWith(self, prefix, body):
+        if not body.startswith(prefix):
+            msg = '"%s" != "%s"' % (body[:len(prefix)], prefix)
+            raise AssertionError(msg)
+
+    def assertEndsWith(self, postfix, body):
+        if not body.endswith(postfix):
+            msg = '"%s" != "%s"' % (body[0 - len(postfix):], postfix)
+            raise AssertionError(msg)
+
+
+class FullText(BaseTestCase):
     def test_missing_default(self):
         "Ensure a missing file returns default instead of exception."
-        self.assertEqual(fulltext.get('non-existent-file.pdf', 'canary'),
-                         'canary')
+        self.assertEqual(fulltext.get('non-existent-file.pdf', 'sentinal'),
+                         'sentinal')
 
     def test_missing(self):
         "Ensure a missing file without a default raises an exception."
@@ -59,8 +75,8 @@ class FullText(unittest.TestCase):
 
     def test_unknown_default(self):
         "Ensure unknown file type returns default instead of exception."
-        self.assertEqual(fulltext.get('unknown-file.foobar', 'canary'),
-                         'canary')
+        self.assertEqual(fulltext.get('unknown-file.foobar', 'sentinal'),
+                         'sentinal')
 
     def test_unknown(self):
         "Ensure unknown file type without a default raises an exception."
@@ -89,7 +105,7 @@ class FullTextFilesMeta(type):
         def inner(self):
             with open(path, 'rb') as f:
                 text = fulltext.get(f, backend=fmt)
-                self.assertEqual(text, TEXT)
+                self.assertMultiLineEqual(TEXT, text)
                 self.assertIsInstance(text, u"".__class__)
         return inner
 
@@ -97,29 +113,13 @@ class FullTextFilesMeta(type):
     def _test_path(cls, path, fmt):
         def inner(self):
             text = fulltext.get(path, backend=fmt)
-            self.assertEqual(text, TEXT)
+            self.assertMultiLineEqual(TEXT, text)
             self.assertIsInstance(text, u"".__class__)
         return inner
 
 
 @add_metaclass(FullTextFilesMeta)
-class FullTextFiles(unittest.TestCase):
-    def assertStartsWith(self, prefix, body):
-        self.assertTrue(body.startswith(prefix))
-
-    def test_doc_file(self):
-        "Antiword performs wrapping, so we need to allow newlines."
-        with open('files/test.doc', 'rb') as f:
-            text = fulltext.get(f, backend='doc')
-            self.assertEqual(text, TEXT_WITH_NEWLINES)
-            self.assertIsInstance(text, u"".__class__)
-
-    def test_doc_path(self):
-        "Antiword performs wrapping, so we need to allow newlines."
-        text = fulltext.get('files/test.doc', backend='doc')
-        self.assertEqual(text, TEXT_WITH_NEWLINES)
-        self.assertIsInstance(text, u"".__class__)
-
+class FullTextFiles(BaseTestCase):
     def test_old_doc_file(self):
         "Antiword does not support older Word documents."
         with open('files/test.old.doc', 'rb') as f:
@@ -136,14 +136,14 @@ class FullTextFiles(unittest.TestCase):
     def test_png_file(self):
         with open('files/test.png', 'rb') as f:
             text = fulltext.get(f)
-            self.assertTrue(text.startswith (TEXT_FOR_OCR[0]))
-            self.assertTrue(text.endswith (TEXT_FOR_OCR[1]))
+            self.assertStartsWith(TEXT_FOR_OCR[0], text)
+            self.assertEndsWith(TEXT_FOR_OCR[1], text)
             self.assertIsInstance(text, u"".__class__)
 
     def test_png_path(self):        
         text = fulltext.get('files/test.png')
-        self.assertTrue(text.startswith (TEXT_FOR_OCR[0]))
-        self.assertTrue(text.endswith (TEXT_FOR_OCR[1]))
+        self.assertStartsWith(TEXT_FOR_OCR[0], text)
+        self.assertEndsWith(TEXT_FOR_OCR[1], text)
         self.assertIsInstance(text, u"".__class__)
 
     def test_csv_file(self):

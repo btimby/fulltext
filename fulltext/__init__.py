@@ -162,7 +162,7 @@ def get(path_or_file, default=SENTINAL, mime=None, name=None, **kwargs):
 
     else:
         text = STRIP_WHITE.sub(' ', text)
-        text = STRIP_EOL.sub('\n', text)
+        text = STRIP_EOL.sub(' ', text)
         return text.strip()
 
 
