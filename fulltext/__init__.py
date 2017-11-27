@@ -56,7 +56,9 @@ def _import_backends():
                         '`_get_file()`, disabled', module)
                 continue
 
-            extensions = getattr(module, 'EXTENSIONS', (module_name, ))
+            extensions = getattr(
+                module, 'EXTENSIONS', (module_name.lstrip('_'), ))
+
             for ext in extensions:
                 if ext in BACKENDS:
                     LOGGER.warning('Backend %s overrides %s for %s',
@@ -138,8 +140,8 @@ def get(path_or_file, default=SENTINAL, mime=None, name=None, **kwargs):
         backend_name = ext.replace('-', '_').lower()
 
     if backend_name not in BACKENDS:
-        LOGGER.warning('Falling back to text backend')
-        backend = BACKENDS['text']
+        LOGGER.warning('Falling back to binary backend')
+        backend = BACKENDS['bin']
     else:
         backend = BACKENDS[backend_name]
 
@@ -160,7 +162,7 @@ def get(path_or_file, default=SENTINAL, mime=None, name=None, **kwargs):
 
     else:
         text = STRIP_WHITE.sub(' ', text)
-        text = STRIP_EOL.sub('\n', text)
+        text = STRIP_EOL.sub(' ', text)
         return text.strip()
 
 

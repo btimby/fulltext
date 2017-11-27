@@ -25,24 +25,30 @@ TEXT_WITH_NEWLINES = u"Lorem ipsum\ndolor sit amet, consectetur adipiscing e" \
 TEXT = TEXT_WITH_NEWLINES.replace('\n', ' ')
 
 TEXT_FOR_OCR = (
-    (
-        u"Sherlock Holmes and Doctor Watson lived at 2211) Baker Street "
-        u"between 1881-1904,\n"
-    ),
-    (
-        u"Step back in time, and when you visit London, remember to visit "
-        u"the world's most\n"
-        u"famous address!"
-    )
+    u"Sherlock Holmes and Doctor Watson lived at 2211) Baker Street " \
+    u"between 1881-1904,",
+    u"Step back in time, and when you visit London, remember to visit " \
+    u"the world's most famous address!"
 )
 
 
-class FullText(unittest.TestCase):
+class BaseTestCase(unittest.TestCase):
+    def assertStartsWith(self, prefix, body):
+        if not body.startswith(prefix):
+            msg = '"%s" != "%s"' % (body[:len(prefix)], prefix)
+            raise AssertionError(msg)
 
+    def assertEndsWith(self, postfix, body):
+        if not body.endswith(postfix):
+            msg = '"%s" != "%s"' % (body[0 - len(postfix):], postfix)
+            raise AssertionError(msg)
+
+
+class FullText(BaseTestCase):
     def test_missing_default(self):
         "Ensure a missing file returns default instead of exception."
-        self.assertEqual(fulltext.get('non-existent-file.pdf', 'canary'),
-                         'canary')
+        self.assertEqual(fulltext.get('non-existent-file.pdf', 'sentinal'),
+                         'sentinal')
 
     def test_missing(self):
         "Ensure a missing file without a default raises an exception."
@@ -53,8 +59,8 @@ class FullText(unittest.TestCase):
 
     def test_unknown_default(self):
         "Ensure unknown file type returns default instead of exception."
-        self.assertEqual(fulltext.get('unknown-file.foobar', 'canary'),
-                         'canary')
+        self.assertEqual(fulltext.get('unknown-file.foobar', 'sentinal'),
+                         'sentinal')
 
     def test_unknown(self):
         "Ensure unknown file type without a default raises an exception."
@@ -68,113 +74,105 @@ class FullText(unittest.TestCase):
         self.assertEqual(fulltext.get('unknown-file.foobar', None), None)
 
 
-class Base(object):
+class TestPathAndFile(object):
+    text = TEXT
 
     def test_file(self):
         path = 'files/test.%s' % self.ext
         with open(path, 'rb') as f:
             text = fulltext.get(f, backend=self.ext)
-            self.assertEqual(text, TEXT)
+            self.assertSequenceEqual(self.text, text)
 
     def test_path(self):
         path = 'files/test.%s' % self.ext
         text = fulltext.get(path, backend=self.ext)
-        self.assertEqual(text, TEXT)
+        self.assertSequenceEqual(self.text, text)
 
 
-class TestTxt(unittest.TestCase, Base):
+class TestTxt(BaseTestCase, TestPathAndFile):
     ext = "txt"
 
 
-class TestOdt(unittest.TestCase, Base):
+class TestOdt(BaseTestCase, TestPathAndFile):
     ext = "odt"
 
 
-class TestDocx(unittest.TestCase, Base):
+class TestDoc(BaseTestCase, TestPathAndFile):
+    ext = "doc"
+
+
+class TestDocx(BaseTestCase, TestPathAndFile):
     ext = "docx"
 
 
-class TestOds(unittest.TestCase, Base):
+class TestOds(BaseTestCase, TestPathAndFile):
     ext = "ods"
 
 
-class TestXls(unittest.TestCase, Base):
+class TestXls(BaseTestCase, TestPathAndFile):
     ext = "xls"
 
 
-class TestXlsx(unittest.TestCase, Base):
+class TestXlsx(BaseTestCase, TestPathAndFile):
     ext = "xlsx"
 
 
-class TestHtml(unittest.TestCase, Base):
+class TestHtml(BaseTestCase, TestPathAndFile):
     ext = "html"
 
 
-class TestXml(unittest.TestCase, Base):
+class TestXml(BaseTestCase, TestPathAndFile):
     ext = "xml"
 
 
-class TestZip(unittest.TestCase, Base):
+class TestZip(BaseTestCase, TestPathAndFile):
     ext = "zip"
 
 
-class TestRtf(unittest.TestCase, Base):
+class TestRtf(BaseTestCase, TestPathAndFile):
     ext = "rtf"
 
 
-class TestTest(unittest.TestCase, Base):
+class TestTest(BaseTestCase, TestPathAndFile):
     ext = "test"
 
+
+class TestCsv(BaseTestCase, TestPathAndFile):
+    ext = "csv"
+    text = TEXT.replace(',', '')
+
+
 @unittest.skipIf(not which('pyhwp'), "pyhwp not installed")
-class TestHwp(unittest.TestCase, Base):
+class TestHwp(BaseTestCase, TestPathAndFile):
     ext = "hwp"
 
 
-class FullTextFiles(unittest.TestCase):
-    def assertStartsWith(self, prefix, body):
-        self.assertTrue(body.startswith(prefix))
-
-    def test_doc_file(self):
-        "Antiword performs wrapping, so we need to allow newlines."
-        with open('files/test.doc', 'rb') as f:
-            text = fulltext.get(f, backend='doc')
-            self.assertEqual(text, TEXT_WITH_NEWLINES)
-
-    def test_doc_path(self):
-        "Antiword performs wrapping, so we need to allow newlines."
-        text = fulltext.get('files/test.doc', backend='doc')
-        self.assertEqual(text, TEXT_WITH_NEWLINES)
-
+class FullTextFiles(BaseTestCase):
     def test_old_doc_file(self):
         "Antiword does not support older Word documents."
         with open('files/test.old.doc', 'rb') as f:
             text = fulltext.get(f, backend='doc')
             self.assertStartsWith('eZ-Audit', text)
+            self.assertIsInstance(text, u"".__class__)
 
     def test_old_doc_path(self):
         "Antiword does not support older Word documents."
         text = fulltext.get('files/test.old.doc', backend='doc')
         self.assertStartsWith('eZ-Audit', text)
+        self.assertIsInstance(text, u"".__class__)
 
     def test_png_file(self):
         with open('files/test.png', 'rb') as f:
             text = fulltext.get(f)
-            self.assertTrue(text.startswith(TEXT_FOR_OCR[0]))
-            self.assertTrue(text.endswith(TEXT_FOR_OCR[1]))
+            self.assertStartsWith(TEXT_FOR_OCR[0], text)
+            self.assertEndsWith(TEXT_FOR_OCR[1], text)
+            self.assertIsInstance(text, u"".__class__)
 
     def test_png_path(self):
         text = fulltext.get('files/test.png')
-        self.assertTrue(text.startswith(TEXT_FOR_OCR[0]))
-        self.assertTrue(text.endswith(TEXT_FOR_OCR[1]))
-
-    def test_csv_file(self):
-        with open('files/test.csv', 'rb') as f:
-            text = fulltext.get(f)
-            self.assertStartsWith('Lorem', text)
-
-    def test_csv_path(self):
-        text = fulltext.get('files/test.csv')
-        self.assertStartsWith('Lorem', text)
+        self.assertStartsWith(TEXT_FOR_OCR[0], text)
+        self.assertEndsWith(TEXT_FOR_OCR[1], text)
+        self.assertIsInstance(text, u"".__class__)
 
 
 if __name__ == '__main__':

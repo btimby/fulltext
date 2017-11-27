@@ -1,20 +1,28 @@
+"""
+This backend is used for text files.
+
+It attempts to read the file (which is opened in binary mode) and decode it
+using the default filesystem encoding. The encoding scheme can be controlled
+via the `encoding` kwarg.
+
+Any decoding issues are ignored.
+"""
+
 from __future__ import absolute_import
 
 import sys
-import re
 
 from six import StringIO
 
 
 EXTENSIONS = ('txt', 'text')
-BUFFER_MAX = 8192
+BUFFER_MAX = 1024 * 1024
 ENCODING = sys.getfilesystemencoding()
-NON_ASCII_SUB = re.compile('[\x00-\x1F\x7F-\xFF]')
 
 
 def _get_file(f, **kwargs):
+    encoding = kwargs.pop('encoding', ENCODING)
     buffer = StringIO()
-    enc = kwargs.get('enc', ENCODING)
 
     while True:
         text = f.read(BUFFER_MAX)
@@ -22,12 +30,9 @@ def _get_file(f, **kwargs):
         if not text:
             break
 
-        try:
-            text = text.decode(enc, 'replace')
-        except AttributeError:
-            pass
+        text = text.decode(encoding, 'ignore')
 
-        text = NON_ASCII_SUB.sub(' ', text)
+        # Emulate the `strings` CLI tool.
         buffer.write(text)
 
     return buffer.getvalue()
