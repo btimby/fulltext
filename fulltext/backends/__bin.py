@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+import re
 import string
 
 from six import StringIO
@@ -21,6 +22,9 @@ DELETE = bytes([
 ])
 TRANSLATE = maketrans(b'\r\n', b'  ')
 
+STRIP_PUNCTUATION = re.compile(
+    r'\W*\w*[!"#$%&\'()*+,-./:;<=>?@[\]^_`{|}~]{2,}\w*\W*')
+
 
 def _get_file(f, **kwargs):
     buffer = StringIO()
@@ -31,10 +35,13 @@ def _get_file(f, **kwargs):
         if not text:
             break
 
+        # Emulate the `strings` CLI tool.
         text = text.translate(TRANSLATE, DELETE)
         text = text.decode('ascii', 'ignore')
 
-        # Emulate the `strings` CLI tool.
+        # Remove any "words" that consist mainly of punctuation.
+        text = STRIP_PUNCTUATION.sub(' ', text)
+
         buffer.write(text)
 
     return buffer.getvalue()
