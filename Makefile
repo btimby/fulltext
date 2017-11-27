@@ -7,23 +7,27 @@ PY_DEPS = \
 	docx2txt \
 	python-pptx \
 	pytesseract \
-	xlrd
+	xlrd \
+	flake8 \
 
 
-test:  ## Run tests-
+
+test:  ## Run tests.
 	$(PYTHON) tests.py
 
 check:  ## Run linters.
-	pyflakes fulltext
-	pycodestyle --exclude=migrations --ignore=E501,E225 fulltext
+	@git ls-files | grep \\.py$ | xargs $(PYTHON) -m flake8
 
 lint: check
 
 install:  ## Install this package as current user in "edit" mode.
 	PYTHONWARNINGS=all $(PYTHON) setup.py develop $(INSTALL_OPTS)
 
-install-deps:  ## Install third party libs.
+pydeps:  ## Install third party python libs.
 	$(PYTHON) -m pip install $(INSTALL_OPTS) --upgrade $(PY_DEPS)
+
+sysdeps:  ## Install system deps.
+	sudo apt-get install -y unrtf antiword poppler-utils libjpeg-dev tesseract-ocr abiword
 
 publish:  ## Upload package on PYPI.
 	$(PYTHON) setup.py register

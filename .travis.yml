@@ -4,8 +4,8 @@ python:
   - "3.5"
 before_install:
   - sudo apt-get -qq update
-  - sudo apt-get install -y unrtf antiword poppler-utils libjpeg-dev tesseract-ocr abiword
-  - sudo pip2 install --pre pyhwp
+  - make sysdeps
+  - make pydeps
 install:
   - pip install --timeout=30 pep8
   - pip install --timeout=30 pyflakes

@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 import logging
 
-from fulltext.util import run, which, ShellError, MissingCommandException
+from fulltext.util import run, which, ShellError, MissingCommandException, warn
 
 
 LOGGER = logging.getLogger(__name__)
@@ -11,10 +11,10 @@ LOGGER.addHandler(logging.NullHandler())
 EXTENSIONS = ('doc', )
 
 if which('antiword') is None:
-    LOGGER.warning('CLI tool "antiword" is required for .doc backend.')
+    warn('CLI tool "antiword" is required for .doc backend.')
 
 if which('abiword') is None:
-    LOGGER.warning('CLI tool "abiword" is optional for .doc backend.')
+    warn('CLI tool "abiword" is optional for .doc backend.')
 
 
 def _get_file(f, **kwargs):
