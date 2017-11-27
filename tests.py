@@ -1,6 +1,5 @@
 import unittest
 import fulltext
-import difflib
 
 from fulltext.util import ShellError
 from fulltext.util import which
