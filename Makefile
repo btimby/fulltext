@@ -2,15 +2,18 @@ PYTHON = python
 
 # In not in a virtualenv, add --user options for install commands.
 INSTALL_OPTS = `$(PYTHON) -c "import sys; print('' if hasattr(sys, 'real_prefix') else '--user')"`
-# List of development third party libs.
-PY_DEPS = \
+PYDEPS = \
 	docx2txt \
-	python-pptx \
-	pytesseract \
-	xlrd \
 	flake8 \
-
-
+	pytesseract \
+	python-pptx \
+	xlrd
+SYSDEPS = \
+	antiword \
+	libjpeg-dev \
+	poppler-utils \
+	tesseract-ocr abiword \
+	unrtf
 
 test:  ## Run tests.
 	$(PYTHON) tests.py
@@ -24,10 +27,10 @@ install:  ## Install this package as current user in "edit" mode.
 	PYTHONWARNINGS=all $(PYTHON) setup.py develop $(INSTALL_OPTS)
 
 pydeps:  ## Install third party python libs.
-	$(PYTHON) -m pip install $(INSTALL_OPTS) --upgrade $(PY_DEPS)
+	$(PYTHON) -m pip install $(INSTALL_OPTS) --upgrade $(PYDEPS)
 
-sysdeps:  ## Install system deps.
-	sudo apt-get install -y unrtf antiword poppler-utils libjpeg-dev tesseract-ocr abiword
+sysdeps:  ## Install system deps (Ubuntu).
+	sudo apt-get install -y $(SYSDEPS)
 
 publish:  ## Upload package on PYPI.
 	$(PYTHON) setup.py register
