@@ -3,6 +3,7 @@ import fulltext
 import logging
 
 from fulltext.util import ShellError
+from fulltext.util import which
 
 from six import add_metaclass
 
@@ -38,13 +39,16 @@ TEXT_FOR_OCR = (
     )
 )
 
-FORMATS = (
+FORMATS = [
     'txt', 'odt', 'docx', 'pptx', 'ods', 'xls', 'xlsx', 'html', 'xml', 'zip',
-    'txt', 'rtf', 'test', 'hwp',
-)
+    'txt', 'rtf', 'test',
+]
+if which('pyhwp'):
+    FORMATS.append('hwp')
 
 
 class FullText(unittest.TestCase):
+
     def test_missing_default(self):
         "Ensure a missing file returns default instead of exception."
         self.assertEqual(fulltext.get('non-existent-file.pdf', 'canary'),
@@ -133,7 +137,7 @@ class FullTextFiles(unittest.TestCase):
             self.assertTrue(text.startswith (TEXT_FOR_OCR[0]))
             self.assertTrue(text.endswith (TEXT_FOR_OCR[1]))
 
-    def test_png_path(self):        
+    def test_png_path(self):
         text = fulltext.get('files/test.png')
         self.assertTrue(text.startswith (TEXT_FOR_OCR[0]))
         self.assertTrue(text.endswith (TEXT_FOR_OCR[1]))
@@ -143,10 +147,10 @@ class FullTextFiles(unittest.TestCase):
             text = fulltext.get(f)
             self.assertStartsWith('Lorem', text)
 
-    def test_csv_path(self):        
+    def test_csv_path(self):
         text = fulltext.get('files/test.csv')
         self.assertStartsWith('Lorem', text)
 
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(verbosity=2)
