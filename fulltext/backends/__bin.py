@@ -1,7 +1,5 @@
 from __future__ import absolute_import
 
-import sys
-import re
 import string
 
 from six import StringIO
@@ -38,5 +36,5 @@ def _get_file(f, **kwargs):
 
         # Emulate the `strings` CLI tool.
         buffer.write(text)
-    
+
     return buffer.getvalue()

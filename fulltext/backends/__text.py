@@ -11,7 +11,6 @@ Any decoding issues are ignored.
 from __future__ import absolute_import
 
 import sys
-import string
 
 from six import StringIO
 
