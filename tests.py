@@ -1,11 +1,9 @@
 import unittest
 import fulltext
-import logging
 import difflib
 
 from fulltext.util import ShellError
-
-from six import add_metaclass
+from fulltext.util import which
 
 
 TEXT_WITH_NEWLINES = u"Lorem ipsum\ndolor sit amet, consectetur adipiscing e" \
@@ -33,11 +31,6 @@ TEXT_FOR_OCR = (
     u"Step back in time, and when you visit London, remember to visit " \
     u"the world's most famous address!"
 )
-
-FORMATS = frozenset((
-    'txt', 'odt', 'docx', 'pptx', 'ods', 'xls', 'xlsx', 'html', 'xml', 'zip',
-    'rtf', 'test', 'hwp', 'doc',
-))
 
 
 class BaseTestCase(unittest.TestCase):
@@ -90,35 +83,73 @@ class FullText(BaseTestCase):
         self.assertEqual(fulltext.get('unknown-file.foobar', None), None)
 
 
-class FullTextFilesMeta(type):
-    "Tests various file types using disk file method."
+class TestPathAndFile(object):
 
-    def __new__(cls, name, bases, attrs):
-        for fmt in FORMATS:
-            path = 'files/test.%s' % fmt
-            attrs['test_%s_path' % fmt] = cls._test_path(path, fmt)
-            attrs['test_%s_file' % fmt] = cls._test_file(path, fmt)
-        return super(FullTextFilesMeta, cls).__new__(cls, name, bases, attrs)
+    def test_file(self):
+        path = 'files/test.%s' % self.ext
+        with open(path, 'rb') as f:
+            text = fulltext.get(f, backend=self.ext)
+            self.assertEqual(text, TEXT)
 
-    @classmethod
-    def _test_file(cls, path, fmt):
-        def inner(self):
-            with open(path, 'rb') as f:
-                text = fulltext.get(f, backend=fmt)
-                self.assertMultiLineEqual(TEXT, text)
-                self.assertIsInstance(text, u"".__class__)
-        return inner
-
-    @classmethod
-    def _test_path(cls, path, fmt):
-        def inner(self):
-            text = fulltext.get(path, backend=fmt)
-            self.assertMultiLineEqual(TEXT, text)
-            self.assertIsInstance(text, u"".__class__)
-        return inner
+    def test_path(self):
+        path = 'files/test.%s' % self.ext
+        text = fulltext.get(path, backend=self.ext)
+        self.assertEqual(text, TEXT)
 
 
-@add_metaclass(FullTextFilesMeta)
+class TestTxt(BaseTestCase, TestPathAndFile):
+    ext = "txt"
+
+
+class TestOdt(BaseTestCase, TestPathAndFile):
+    ext = "odt"
+
+
+class TestDoc(BaseTestCase, TestPathAndFile):
+    ext = "doc"
+
+
+class TestDocx(BaseTestCase, TestPathAndFile):
+    ext = "docx"
+
+
+class TestOds(BaseTestCase, TestPathAndFile):
+    ext = "ods"
+
+
+class TestXls(BaseTestCase, TestPathAndFile):
+    ext = "xls"
+
+
+class TestXlsx(BaseTestCase, TestPathAndFile):
+    ext = "xlsx"
+
+
+class TestHtml(BaseTestCase, TestPathAndFile):
+    ext = "html"
+
+
+class TestXml(BaseTestCase, TestPathAndFile):
+    ext = "xml"
+
+
+class TestZip(BaseTestCase, TestPathAndFile):
+    ext = "zip"
+
+
+class TestRtf(BaseTestCase, TestPathAndFile):
+    ext = "rtf"
+
+
+class TestTest(BaseTestCase, TestPathAndFile):
+    ext = "test"
+
+
+@unittest.skipIf(not which('pyhwp'), "pyhwp not installed")
+class TestHwp(BaseTestCase, TestPathAndFile):
+    ext = "hwp"
+
+
 class FullTextFiles(BaseTestCase):
     def test_old_doc_file(self):
         "Antiword does not support older Word documents."
@@ -140,7 +171,7 @@ class FullTextFiles(BaseTestCase):
             self.assertEndsWith(TEXT_FOR_OCR[1], text)
             self.assertIsInstance(text, u"".__class__)
 
-    def test_png_path(self):        
+    def test_png_path(self):
         text = fulltext.get('files/test.png')
         self.assertStartsWith(TEXT_FOR_OCR[0], text)
         self.assertEndsWith(TEXT_FOR_OCR[1], text)
@@ -152,11 +183,11 @@ class FullTextFiles(BaseTestCase):
             self.assertStartsWith('Lorem', text)
             self.assertIsInstance(text, u"".__class__)
 
-    def test_csv_path(self):        
+    def test_csv_path(self):
         text = fulltext.get('files/test.csv')
         self.assertStartsWith('Lorem', text)
         self.assertIsInstance(text, u"".__class__)
 
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(verbosity=2)
