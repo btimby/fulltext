@@ -34,14 +34,6 @@ TEXT_FOR_OCR = (
 
 
 class BaseTestCase(unittest.TestCase):
-    def assertMultiLineEqual(self, a, b, msg=None):
-        if a != b:
-            if msg is None:
-                msg = '\n' + ''.join(
-                    difflib.unified_diff(a.splitlines(True),
-                                         b.splitlines(True)))
-            raise AssertionError(msg)
-
     def assertStartsWith(self, prefix, body):
         if not body.startswith(prefix):
             msg = '"%s" != "%s"' % (body[:len(prefix)], prefix)
@@ -89,12 +81,12 @@ class TestPathAndFile(object):
         path = 'files/test.%s' % self.ext
         with open(path, 'rb') as f:
             text = fulltext.get(f, backend=self.ext)
-            self.assertEqual(text, TEXT)
+            self.assertSequenceEqual(TEXT, text)
 
     def test_path(self):
         path = 'files/test.%s' % self.ext
         text = fulltext.get(path, backend=self.ext)
-        self.assertEqual(text, TEXT)
+        self.assertSequenceEqual(TEXT, text)
 
 
 class TestTxt(BaseTestCase, TestPathAndFile):
