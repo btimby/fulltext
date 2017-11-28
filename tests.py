@@ -1,8 +1,16 @@
 import unittest
 import fulltext
 
+import difflib
+import textwrap
+
 from fulltext.util import ShellError
 from fulltext.util import which
+
+try:
+    from StringIO import StringIO as BytesIO
+except ImportError:
+    from io import BytesIO
 
 
 TEXT_WITH_NEWLINES = u"Lorem ipsum\ndolor sit amet, consectetur adipiscing e" \
@@ -26,6 +34,21 @@ TEXT = TEXT_WITH_NEWLINES.replace('\n', ' ')
 
 
 class BaseTestCase(unittest.TestCase):
+    def assertMultiLineEqual(self, a, b, msg=None):
+        # Check if two blocks of text are equal.
+        if a == b:
+            return
+
+        if msg is None:
+            # If not the same, display a user-friendly diff.
+            a = textwrap.wrap(a)
+            b = textwrap.wrap(b)
+            a = [l + '\n' for l in a]
+            b = [l + '\n' for l in b]
+            msg = '\n' + ''.join(difflib.unified_diff(
+                a, b, 'A (first argument)', 'B (second argument)'))
+        raise AssertionError(msg)
+
     def assertStartsWith(self, prefix, body):
         if not body.startswith(prefix):
             msg = '"%s" != "%s"' % (body[:len(prefix)], prefix)
@@ -37,7 +60,7 @@ class BaseTestCase(unittest.TestCase):
             raise AssertionError(msg)
 
 
-class FullText(BaseTestCase):
+class FullTextTestCase(BaseTestCase):
     def test_missing_default(self):
         "Ensure a missing file returns default instead of exception."
         self.assertEqual(fulltext.get('non-existent-file.pdf', 'sentinal'),
@@ -67,6 +90,24 @@ class FullText(BaseTestCase):
         self.assertEqual(fulltext.get('unknown-file.foobar', None), None)
 
 
+class FullTextStripTestCase(BaseTestCase):
+    """Test binary backend stripping."""
+
+    def setUp(self):
+        self.file = BytesIO()
+        self.file.write(b'  Test leading and trailing spaces removal.  ')
+        self.file.write(b'Test @$%* punctuation removal! ')
+        self.file.write(b'Test    spaces     removal! ')
+        self.file.seek(0)
+
+    def test_text_strip(self):
+        """Ensure that stripping works as expected."""
+        stripped = fulltext.get(self.file, backend='bin')
+        self.assertMultiLineEqual('Test leading and trailing spaces removal. '
+                                  'Test punctuation removal! Test spaces '
+                                  'removal!', stripped)
+
+
 class TestPathAndFile(object):
     text = TEXT
 
@@ -74,77 +115,77 @@ class TestPathAndFile(object):
         path = 'files/test.%s' % self.ext
         with open(path, 'rb') as f:
             text = fulltext.get(f, backend=self.ext)
-            self.assertSequenceEqual(self.text, text)
+            self.assertMultiLineEqual(self.text, text)
 
     def test_path(self):
         path = 'files/test.%s' % self.ext
         text = fulltext.get(path, backend=self.ext)
-        self.assertSequenceEqual(self.text, text)
+        self.assertMultiLineEqual(self.text, text)
 
 
-class TestTxt(BaseTestCase, TestPathAndFile):
+class TestTxtTestCase(BaseTestCase, TestPathAndFile):
     ext = "txt"
 
 
-class TestOdt(BaseTestCase, TestPathAndFile):
+class TestOdtTestCase(BaseTestCase, TestPathAndFile):
     ext = "odt"
 
 
-class TestDoc(BaseTestCase, TestPathAndFile):
+class TestDocTestCase(BaseTestCase, TestPathAndFile):
     ext = "doc"
 
 
-class TestDocx(BaseTestCase, TestPathAndFile):
+class TestDocxTestCase(BaseTestCase, TestPathAndFile):
     ext = "docx"
 
 
-class TestOds(BaseTestCase, TestPathAndFile):
+class TestOdsTestCase(BaseTestCase, TestPathAndFile):
     ext = "ods"
 
 
-class TestXls(BaseTestCase, TestPathAndFile):
+class TestXlsTestCase(BaseTestCase, TestPathAndFile):
     ext = "xls"
 
 
-class TestXlsx(BaseTestCase, TestPathAndFile):
+class TestXlsxTestCase(BaseTestCase, TestPathAndFile):
     ext = "xlsx"
 
 
-class TestHtml(BaseTestCase, TestPathAndFile):
+class TestHtmlTestCase(BaseTestCase, TestPathAndFile):
     ext = "html"
 
 
-class TestXml(BaseTestCase, TestPathAndFile):
+class TestXmlTestCase(BaseTestCase, TestPathAndFile):
     ext = "xml"
 
 
-class TestZip(BaseTestCase, TestPathAndFile):
+class TestZipTestCase(BaseTestCase, TestPathAndFile):
     ext = "zip"
 
 
-class TestRtf(BaseTestCase, TestPathAndFile):
+class TestRtfTestCase(BaseTestCase, TestPathAndFile):
     ext = "rtf"
 
 
-class TestTest(BaseTestCase, TestPathAndFile):
+class TestTestTestCase(BaseTestCase, TestPathAndFile):
     ext = "test"
 
 
-class TestCsv(BaseTestCase, TestPathAndFile):
+class TestCsvTestCase(BaseTestCase, TestPathAndFile):
     ext = "csv"
     text = TEXT.replace(',', '')
 
 
-class TestPng(BaseTestCase, TestPathAndFile):
+class TestPngTestCase(BaseTestCase, TestPathAndFile):
     ext = "png"
 
 
 @unittest.skipIf(not which('pyhwp'), "pyhwp not installed")
-class TestHwp(BaseTestCase, TestPathAndFile):
+class TestHwpTestCase(BaseTestCase, TestPathAndFile):
     ext = "hwp"
 
 
-class FullTextFiles(BaseTestCase):
+class FullTextFilesTestCase(BaseTestCase):
     def test_old_doc_file(self):
         "Antiword does not support older Word documents."
         with open('files/test.old.doc', 'rb') as f:

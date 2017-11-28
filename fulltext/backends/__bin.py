@@ -17,10 +17,12 @@ except ImportError:
 
 BUFFER_MAX = 1024 * 1024
 
-DELETE = bytes([
-    i for i in range(256) if chr(i) not in string.printable
-])
-TRANSLATE = maketrans(b'\r\n', b'  ')
+# Translate printable chars to themselves and anything else to a space.
+TRANSLATE = (
+    bytes([i for i in range(256)]),
+    bytes([i if chr(i) in string.printable else 32 for i in range(256)])
+)
+TRANSLATE = maketrans(*TRANSLATE)
 
 STRIP_PUNCTUATION = re.compile(
     r'\W*\w*[!"#$%&\'()*+,-./:;<=>?@[\]^_`{|}~]{2,}\w*\W*')
@@ -36,7 +38,7 @@ def _get_file(f, **kwargs):
             break
 
         # Emulate the `strings` CLI tool.
-        text = text.translate(TRANSLATE, DELETE)
+        text = text.translate(TRANSLATE)
         text = text.decode('ascii', 'ignore')
 
         # Remove any "words" that consist mainly of punctuation.
