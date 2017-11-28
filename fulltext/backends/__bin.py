@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+import re
 import string
 
 from six import StringIO
@@ -16,10 +17,18 @@ except ImportError:
 
 BUFFER_MAX = 1024 * 1024
 
-DELETE = bytes([
-    i for i in range(256) if chr(i) not in string.printable
-])
-TRANSLATE = maketrans(b'\r\n', b'  ')
+# Translate printable chars to themselves and anything else to a space.
+TRANSLATE = (
+    bytes([i for i in range(256)]),
+    bytes([i if chr(i) in string.printable else 32 for i in range(256)])
+)
+TRANSLATE = maketrans(*TRANSLATE)
+
+# I wish Python re module had a punctuation char class!
+STRIP_PUNCTUATION = re.compile(
+    r'\b(\w*[!"#$%&\'()*+,-.\\/:;<=>?@[\]^_`{|}~]{2,}\w+)|((?<!\w)[!"#$%&\'()*'
+    r'+,-.\\/:;<=>?@[\]^_`{|}~0-9]+)|((?<!\w)[!"#$%&\'()*+,-.\\/:;<=>?@[\]^_`{'
+    r'|}~0-9])[^\w]*\b')
 
 
 def _get_file(f, **kwargs):
@@ -31,10 +40,13 @@ def _get_file(f, **kwargs):
         if not text:
             break
 
-        text = text.translate(TRANSLATE, DELETE)
+        # Emulate the `strings` CLI tool.
+        text = text.translate(TRANSLATE)
         text = text.decode('ascii', 'ignore')
 
-        # Emulate the `strings` CLI tool.
+        # Remove any "words" that consist mainly of punctuation.
+        text = STRIP_PUNCTUATION.sub(' ', text)
+
         buffer.write(text)
 
     return buffer.getvalue()

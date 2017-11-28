@@ -5,9 +5,16 @@ try:
 except ImportError:
     import mock  # NOQA - requires "pip install mock"
 
+import codecs
+import difflib
+import textwrap
+
 import fulltext
 from fulltext.util import ShellError
 from fulltext.util import which
+
+from six import PY3
+from six import BytesIO
 
 
 TEXT_WITH_NEWLINES = u"Lorem ipsum\ndolor sit amet, consectetur adipiscing e" \
@@ -31,20 +38,40 @@ TEXT = TEXT_WITH_NEWLINES.replace('\n', ' ')
 
 
 class BaseTestCase(unittest.TestCase):
+    """Base TestCase Class."""
+
+    def assertMultiLineEqual(self, a, b, msg=None):
+        """A useful assertion for troubleshooting."""
+        # Check if two blocks of text are equal.
+        if a == b:
+            return
+
+        if msg is None:
+            # If not the same, and no msg provided, create a user-friendly
+            # diff message.
+            a = textwrap.wrap(a)
+            b = textwrap.wrap(b)
+            a = [l + '\n' for l in a]
+            b = [l + '\n' for l in b]
+            msg = '\n' + ''.join(difflib.unified_diff(
+                a, b, 'A (first argument)', 'B (second argument)'))
+
+        raise AssertionError(msg)
 
     def assertStartsWith(self, prefix, body):
+        """Shortcut."""
         if not body.startswith(prefix):
             msg = '"%s" != "%s"' % (body[:len(prefix)], prefix)
             raise AssertionError(msg)
 
     def assertEndsWith(self, postfix, body):
+        """Shortcut."""
         if not body.endswith(postfix):
             msg = '"%s" != "%s"' % (body[0 - len(postfix):], postfix)
             raise AssertionError(msg)
 
 
-class FullText(BaseTestCase):
-
+class FullTextTestCase(BaseTestCase):
     def test_missing_default(self):
         "Ensure a missing file returns default instead of exception."
         self.assertEqual(fulltext.get('non-existent-file.pdf', 'sentinal'),
@@ -74,85 +101,123 @@ class FullText(BaseTestCase):
         self.assertEqual(fulltext.get('unknown-file.foobar', None), None)
 
 
-class TestPathAndFile(object):
+class FullTextStripTestCase(BaseTestCase):
+    """Test binary backend stripping."""
+
+    def setUp(self):
+        self.file = BytesIO()
+        self.file.write(b'  Test leading and trailing spaces removal.  ')
+        self.file.write(b'Test @$%* punctuation removal! ')
+        self.file.write(b'Test    spaces     removal! ')
+        self.file.seek(0)
+
+    def test_text_strip(self):
+        """Ensure that stripping works as expected."""
+        stripped = fulltext.get(self.file, backend='bin')
+        self.assertMultiLineEqual('Test leading and trailing spaces removal. '
+                                  'Test punctuation removal! Test spaces '
+                                  'removal!', stripped)
+
+
+class PathAndFileTests(object):
     text = TEXT
 
     def test_file(self):
         path = 'files/test.%s' % self.ext
         with open(path, 'rb') as f:
             text = fulltext.get(f, backend=self.ext)
-            self.assertSequenceEqual(self.text, text)
+            self.assertMultiLineEqual(self.text, text)
+
+    def _handle_text(self, f):
+        """Main body of both 'text mode' tests."""
+        try:
+            text = fulltext.get(f, backend=self.ext)
+            self.assertMultiLineEqual(self.text, text)
+        finally:
+            f.close()
+
+    def test_file_text(self):
+        path = 'files/test.%s' % self.ext
+        if PY3:
+            with self.assertRaises(AssertionError):
+                self._handle_text(open(path, 'rt'))
+        else:
+            self._handle_text(open(path, 'rt'))
+
+    def test_file_codecs(self):
+        path = 'files/test.%s' % self.ext
+        with self.assertRaises(AssertionError):
+            self._handle_text(codecs.open(path, encoding='utf8'))
 
     def test_path(self):
         path = 'files/test.%s' % self.ext
         text = fulltext.get(path, backend=self.ext)
-        self.assertSequenceEqual(self.text, text)
+        self.assertMultiLineEqual(self.text, text)
 
 
-class TestTxt(BaseTestCase, TestPathAndFile):
+class TxtTestCase(BaseTestCase, PathAndFileTests):
     ext = "txt"
 
 
-class TestOdt(BaseTestCase, TestPathAndFile):
+class OdtTestCase(BaseTestCase, PathAndFileTests):
     ext = "odt"
 
 
-class TestDoc(BaseTestCase, TestPathAndFile):
+class DocTestCase(BaseTestCase, PathAndFileTests):
     ext = "doc"
 
 
-class TestDocx(BaseTestCase, TestPathAndFile):
+class DocxTestCase(BaseTestCase, PathAndFileTests):
     ext = "docx"
 
 
-class TestOds(BaseTestCase, TestPathAndFile):
+class OdsTestCase(BaseTestCase, PathAndFileTests):
     ext = "ods"
 
 
-class TestXls(BaseTestCase, TestPathAndFile):
+class XlsTestCase(BaseTestCase, PathAndFileTests):
     ext = "xls"
 
 
-class TestXlsx(BaseTestCase, TestPathAndFile):
+class XlsxTestCase(BaseTestCase, PathAndFileTests):
     ext = "xlsx"
 
 
-class TestHtml(BaseTestCase, TestPathAndFile):
+class HtmlTestCase(BaseTestCase, PathAndFileTests):
     ext = "html"
 
 
-class TestXml(BaseTestCase, TestPathAndFile):
+class XmlTestCase(BaseTestCase, PathAndFileTests):
     ext = "xml"
 
 
-class TestZip(BaseTestCase, TestPathAndFile):
+class ZipTestCase(BaseTestCase, PathAndFileTests):
     ext = "zip"
 
 
-class TestRtf(BaseTestCase, TestPathAndFile):
+class RtfTestCase(BaseTestCase, PathAndFileTests):
     ext = "rtf"
 
 
-class TestTest(BaseTestCase, TestPathAndFile):
+class TestCase(BaseTestCase, PathAndFileTests):
     ext = "test"
 
 
-class TestCsv(BaseTestCase, TestPathAndFile):
+class CsvTestCase(BaseTestCase, PathAndFileTests):
     ext = "csv"
     text = TEXT.replace(',', '')
 
 
-class TestPng(BaseTestCase, TestPathAndFile):
+class PngTestCase(BaseTestCase, PathAndFileTests):
     ext = "png"
 
 
 @unittest.skipIf(not which('pyhwp'), "pyhwp not installed")
-class TestHwp(BaseTestCase, TestPathAndFile):
+class HwpTestCase(BaseTestCase, PathAndFileTests):
     ext = "hwp"
 
 
-class FullTextFiles(BaseTestCase):
-
+class FilesTestCase(BaseTestCase):
     def test_old_doc_file(self):
         "Antiword does not support older Word documents."
         with open('files/test.old.doc', 'rb') as f:

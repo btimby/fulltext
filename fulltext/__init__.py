@@ -14,6 +14,7 @@ from os.path import (
 )
 
 from six import string_types
+from six import PY3
 from fulltext.util import warn
 
 
@@ -71,6 +72,36 @@ def _import_backends():
     LOGGER.info('Loaded backends: %s', ', '.join(BACKENDS.keys()))
 
 
+def is_binary(f):
+    """Return True if binary mode."""
+    # NOTE: order matters here. We don't bail on Python 2 just yet. Both
+    # codecs.open() and io.open() can open in text mode, both set the encoding
+    # attribute. We must do that check first.
+
+    # If it has a decoding attribute with a value, it is text mode.
+    if getattr(f, "encoding", None):
+        return False
+
+    # Python 2 makes no further distinction.
+    if not PY3:
+        return True
+
+    # If the file has a mode, and it contains b, it is binary.
+    if 'b' in getattr(f, 'mode', ''):
+        return True
+
+    # Can we sniff?
+    try:
+        f.seek(0, os.SEEK_CUR)
+    except (AttributeError, IOError):
+        return False
+
+    # Finally, let's sniff by reading a byte.
+    byte = f.read(1)
+    f.seek(-1, os.SEEK_CUR)
+    return hasattr(byte, 'decode')
+
+
 def _get_path(backend, path, **kwargs):
     """
     Handle a path.
@@ -98,6 +129,9 @@ def _get_file(backend, f, **kwargs):
     backend's `_get_file()` if one is provided. Otherwise, it will write the
     data to a temporary file and call `_get_path()`.
     """
+    if not is_binary(f):
+        raise AssertionError('File must be opened in binary mode.')
+
     if callable(getattr(backend, '_get_file', None)):
         # Prefer _get_file() if present.
         return backend._get_file(f, **kwargs)
