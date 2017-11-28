@@ -139,6 +139,8 @@ class PathAndFileTests(object):
         if PY3:
             with self.assertRaises(AssertionError):
                 self._handle_text(open(path, 'rt'))
+        else:
+            self._handle_text(open(path, 'rt'))
 
     def test_file_codecs(self):
         path = 'files/test.%s' % self.ext
