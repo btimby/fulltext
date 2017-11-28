@@ -33,17 +33,34 @@ STRIP_EOL = re.compile(r'[\r\n]+')
 SENTINAL = object()
 BACKENDS = {}
 MIMETYPE_TO_BACKENDS = {}
+EXTS_TO_MIMETYPES = {}
+
+mimetypes.init()
+_MIMETYPES_TO_EXT = dict([(v, k) for k, v in mimetypes.types_map.items()])
 
 
 def register_backend(mimetype, module, extensions=None):
     MIMETYPE_TO_BACKENDS[mimetype] = module
+    if extensions is None:
+        try:
+            ext = _MIMETYPES_TO_EXT[mimetype]
+        except KeyError:
+            raise KeyError(
+                "mimetypes module has no extension associated "
+                "with %r mimetype; use 'extensions' arg yourself" % mimetype)
+        EXTS_TO_MIMETYPES[ext] = mimetype
+    else:
+        if not isinstance(extensions, (list, tuple, set, frozenset)):
+            raise TypeError("invalid extensions type (got %r)" % extensions)
+        for ext in set(extensions):
+            EXTS_TO_MIMETYPES[ext] = mimetype
 
 
 register_backend(
     'application/zip',
     'fulltext.backends.__zip')
 register_backend(
-    'text/xml',
+    'application/xml',
     'fulltext.backends.__xml')
 register_backend(
     'application/vnd.ms-excel',
@@ -69,7 +86,23 @@ register_backend(
 register_backend(
     'application/vnd.oasis.opendocument.spreadsheet',
     'fulltext.backends.__odt')
-# TODO: OCR
+
+# images
+register_backend(
+    'image/jpeg',
+    'fulltext.backends.__ocr',
+    extensions=['jpg', 'jpeg'])
+register_backend(
+    'image/bmp',
+    'fulltext.backends.__ocr',
+    extensions=['bmp'])
+register_backend(
+    'image/png',
+    'fulltext.backends.__ocr')
+register_backend(
+    'image/gif',
+    'fulltext.backends.__ocr')
+
 register_backend(
     'application/x-hwp',
     'fulltext.backends.__hwp')
