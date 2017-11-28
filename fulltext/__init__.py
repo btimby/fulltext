@@ -74,6 +74,10 @@ def _import_backends():
 
 def is_binary(f):
     """Return True if binary mode."""
+    # If it has a decoding attribute with a value, it is text mode.
+    if getattr(f, "encoding", None):
+        return False
+
     # Python 2 makes no distinction.
     if not PY3:
         return True
@@ -81,10 +85,6 @@ def is_binary(f):
     # If the file has a mode, and it contains b, it is binary.
     if 'b' in getattr(f, 'mode', ''):
         return True
-
-    # If it has a decoding attribute with a value, it is text mode.
-    if getattr(f, "encoding", None):
-        return False
 
     # Can we sniff?
     try:

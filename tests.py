@@ -5,6 +5,7 @@ try:
 except ImportError:
     import mock  # NOQA - requires "pip install mock"
 
+import codecs
 import difflib
 import textwrap
 
@@ -125,18 +126,24 @@ class PathAndFileTests(object):
             text = fulltext.get(f, backend=self.ext)
             self.assertMultiLineEqual(self.text, text)
 
-    def test_file_text(self):
-        path = 'files/test.%s' % self.ext
-        f = open(path, 'rt')
+    def _handle_text(self, f):
+        """Main body of both 'text mode' tests."""
         try:
-            if PY3:
-                with self.assertRaises(AssertionError):
-                    fulltext.get(f, backend=self.ext)
-            else:
-                text = fulltext.get(f, backend=self.ext)
-                self.assertMultiLineEqual(self.text, text)
+            text = fulltext.get(f, backend=self.ext)
+            self.assertMultiLineEqual(self.text, text)
         finally:
             f.close()
+
+    def test_file_text(self):
+        path = 'files/test.%s' % self.ext
+        if PY3:
+            with self.assertRaises(AssertionError):
+                self._handle_text(open(path, 'rt'))
+
+    def test_file_codecs(self):
+        path = 'files/test.%s' % self.ext
+        with self.assertRaises(AssertionError):
+            self._handle_text(codecs.open(path, encoding='utf8'))
 
     def test_path(self):
         path = 'files/test.%s' % self.ext
