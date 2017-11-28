@@ -192,6 +192,14 @@ class TestPickups(BaseTestCase):
             mod = m.call_args[0][0]
             self.assertEqual(mod.__name__, '__bin')
 
+    def test_backend_opt(self):
+        fname = 'testfn.doc'
+        self.touch(fname)
+        with mock.patch('fulltext._get_path', return_value="") as m:
+            fulltext.get(fname, backend='pdf')
+            mod = m.call_args[0][0]
+            self.assertEqual(mod.__name__, '__pdf')
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
