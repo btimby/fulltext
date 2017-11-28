@@ -9,7 +9,7 @@ from PIL import Image
 
 import pytesseract
 
-from fulltext.util import which, MissingCommandException
+from fulltext.util import which, MissingCommandException, warn
 
 
 LOGGER = logging.getLogger(__name__)
@@ -26,7 +26,7 @@ EXIF_ROTATION = {
 }
 
 if which('tesseract') is None:
-    LOGGER.warning('CLI tool "tesseract" is required for image files backend.')
+    warn('CLI tool "tesseract" is required for image files backend.')
 
 
 def read(img, **kargs):
