@@ -184,7 +184,17 @@ class TestPickups(BaseTestCase):
             mod = m.call_args[0][0]
             self.assertEqual(mod.__name__, '__doc')
 
+    def test_no_ext(self):
+        # File with no extension == use bin backend.
+        fname = 'testfn'
+        self.touch(fname)
+        with mock.patch('fulltext._get_path', return_value="") as m:
+            fulltext.get(fname)
+            mod = m.call_args[0][0]
+            self.assertEqual(mod.__name__, '__bin')
+
     def test_unknown_ext(self):
+        # File with unknown extension == use bin backend.
         fname = 'testfn.unknown'
         self.touch(fname)
         with mock.patch('fulltext._get_path', return_value="") as m:
@@ -193,6 +203,7 @@ class TestPickups(BaseTestCase):
             self.assertEqual(mod.__name__, '__bin')
 
     def test_backend_opt(self):
+        # Assert file ext is ignored if backend opt is used.
         fname = 'testfn.doc'
         self.touch(fname)
         with mock.patch('fulltext._get_path', return_value="") as m:
