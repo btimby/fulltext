@@ -10,7 +10,13 @@ EXTENSIONS = ('csv', )
 
 def readlines(f):
     for line in f.readlines():
-        yield line.decode('utf8')
+        # Decoding may be necessary.
+        try:
+            line = line.decode('utf8')
+        except AttributeError:
+            pass
+
+        yield line
 
 
 def _get_file(f, **kwargs):

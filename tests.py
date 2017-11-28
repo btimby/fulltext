@@ -117,6 +117,12 @@ class PathAndFileTests(object):
             text = fulltext.get(f, backend=self.ext)
             self.assertMultiLineEqual(self.text, text)
 
+    def test_file_text(self):
+        path = 'files/test.%s' % self.ext
+        with open(path, 'rt') as f:
+            text = fulltext.get(f, backend=self.ext)
+            self.assertMultiLineEqual(self.text, text)
+
     def test_path(self):
         path = 'files/test.%s' % self.ext
         text = fulltext.get(path, backend=self.ext)
