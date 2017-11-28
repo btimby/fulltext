@@ -74,11 +74,15 @@ def _import_backends():
 
 def is_binary(f):
     """Return True if binary mode."""
+    # NOTE: order matters here. We don't bail on Python 2 just yet. Both
+    # codecs.open() and io.open() can open in text mode, both set the encoding
+    # attribute. We must do that check first.
+
     # If it has a decoding attribute with a value, it is text mode.
     if getattr(f, "encoding", None):
         return False
 
-    # Python 2 makes no distinction.
+    # Python 2 makes no further distinction.
     if not PY3:
         return True
 
