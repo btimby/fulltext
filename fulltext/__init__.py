@@ -7,6 +7,7 @@ import os
 import glob
 import shutil
 import tempfile
+import mimetypes
 
 from os.path import join as pathjoin
 from os.path import (
@@ -18,7 +19,7 @@ from six import PY3
 from fulltext.util import warn
 
 
-__all__ = ["get"]
+__all__ = ["get", "register_backend"]
 
 
 LOGGER = logging.getLogger(__file__)
@@ -31,6 +32,62 @@ STRIP_WHITE = re.compile(r'[ \t\v\f]+')
 STRIP_EOL = re.compile(r'[\r\n]+')
 SENTINAL = object()
 BACKENDS = {}
+MIMETYPE_TO_BACKENDS = {}
+
+
+def register_backend(mimetype, module, extensions=None):
+    MIMETYPE_TO_BACKENDS[mimetype] = module
+
+
+register_backend(
+    'application/zip',
+    'fulltext.backend.__zip')
+register_backend(
+    'text/xml',
+    'fulltext.backend.__xml')
+register_backend(
+    'application/vnd.ms-excel',
+    'fulltext.backend.__xlsx')
+register_backend(
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'fulltext.backend.__xlsx')
+register_backend(
+    'text/plain',
+    'fulltext.backend.__text')
+register_backend(
+    'application/rtf',
+    'fulltext.backend.__rtf')
+register_backend(
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    'fulltext.backend.__pptx')
+register_backend(
+    'application/pdf',
+    'fulltext.backend.__pdf')
+register_backend(
+    'application/vnd.oasis.opendocument.text',
+    'fulltext.backend.__odt')
+register_backend(
+    'application/vnd.oasis.opendocument.spreadsheet',
+    'fulltext.backend.__odt')
+# TODO: OCR
+register_backend(
+    'application/x-hwp',
+    'fulltext.backend.__hwp')
+register_backend(
+    'text/html',
+    'fulltext.backend.__html')
+register_backend(
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'fulltext.backend.__docx')
+register_backend(
+    'application/msword',
+    'fulltext.backend.__doc')
+register_backend(
+    'text/csv',
+    'fulltext.backend.__csv')
+register_backend(
+    'application/octet-stream',
+    'fulltext.backend.__bin')
 
 
 def _import_backends():
