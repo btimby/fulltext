@@ -42,7 +42,11 @@ def _get_file(f, **kwargs):
 
         # Emulate the `strings` CLI tool.
         text = text.translate(TRANSLATE)
-        text = text.decode('ascii', 'ignore')
+
+        try:
+            text = text.decode('ascii', 'ignore')
+        except:
+            pass
 
         # Remove any "words" that consist mainly of punctuation.
         text = STRIP_PUNCTUATION.sub(' ', text)

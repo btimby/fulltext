@@ -108,7 +108,7 @@ class FullTextStripTestCase(BaseTestCase):
                                   'removal!', stripped)
 
 
-class TestPathAndFile(object):
+class PathAndFileTests(object):
     text = TEXT
 
     def test_file(self):
@@ -123,69 +123,69 @@ class TestPathAndFile(object):
         self.assertMultiLineEqual(self.text, text)
 
 
-class TestTxtTestCase(BaseTestCase, TestPathAndFile):
+class TxtTestCase(BaseTestCase, PathAndFileTests):
     ext = "txt"
 
 
-class TestOdtTestCase(BaseTestCase, TestPathAndFile):
+class OdtTestCase(BaseTestCase, PathAndFileTests):
     ext = "odt"
 
 
-class TestDocTestCase(BaseTestCase, TestPathAndFile):
+class DocTestCase(BaseTestCase, PathAndFileTests):
     ext = "doc"
 
 
-class TestDocxTestCase(BaseTestCase, TestPathAndFile):
+class DocxTestCase(BaseTestCase, PathAndFileTests):
     ext = "docx"
 
 
-class TestOdsTestCase(BaseTestCase, TestPathAndFile):
+class OdsTestCase(BaseTestCase, PathAndFileTests):
     ext = "ods"
 
 
-class TestXlsTestCase(BaseTestCase, TestPathAndFile):
+class XlsTestCase(BaseTestCase, PathAndFileTests):
     ext = "xls"
 
 
-class TestXlsxTestCase(BaseTestCase, TestPathAndFile):
+class XlsxTestCase(BaseTestCase, PathAndFileTests):
     ext = "xlsx"
 
 
-class TestHtmlTestCase(BaseTestCase, TestPathAndFile):
+class HtmlTestCase(BaseTestCase, PathAndFileTests):
     ext = "html"
 
 
-class TestXmlTestCase(BaseTestCase, TestPathAndFile):
+class XmlTestCase(BaseTestCase, PathAndFileTests):
     ext = "xml"
 
 
-class TestZipTestCase(BaseTestCase, TestPathAndFile):
+class ZipTestCase(BaseTestCase, PathAndFileTests):
     ext = "zip"
 
 
-class TestRtfTestCase(BaseTestCase, TestPathAndFile):
+class RtfTestCase(BaseTestCase, PathAndFileTests):
     ext = "rtf"
 
 
-class TestTestTestCase(BaseTestCase, TestPathAndFile):
+class TestCase(BaseTestCase, PathAndFileTests):
     ext = "test"
 
 
-class TestCsvTestCase(BaseTestCase, TestPathAndFile):
+class CsvTestCase(BaseTestCase, PathAndFileTests):
     ext = "csv"
     text = TEXT.replace(',', '')
 
 
-class TestPngTestCase(BaseTestCase, TestPathAndFile):
+class PngTestCase(BaseTestCase, PathAndFileTests):
     ext = "png"
 
 
 @unittest.skipIf(not which('pyhwp'), "pyhwp not installed")
-class TestHwpTestCase(BaseTestCase, TestPathAndFile):
+class HwpTestCase(BaseTestCase, PathAndFileTests):
     ext = "hwp"
 
 
-class FullTextFilesTestCase(BaseTestCase):
+class FilesTestCase(BaseTestCase):
     def test_old_doc_file(self):
         "Antiword does not support older Word documents."
         with open('files/test.old.doc', 'rb') as f:
