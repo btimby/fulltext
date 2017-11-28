@@ -5,7 +5,6 @@ INSTALL_OPTS = `$(PYTHON) -c "import sys; print('' if hasattr(sys, 'real_prefix'
 PYDEPS = \
 	docx2txt \
 	flake8 \
-	pyhwp \
 	pytesseract \
 	python-pptx \
 	xlrd
