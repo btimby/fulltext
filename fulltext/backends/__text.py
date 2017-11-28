@@ -30,10 +30,7 @@ def _get_file(f, **kwargs):
         if not text:
             break
 
-        try:
-            text = text.decode(encoding, 'ignore')
-        except AttributeError:
-            pass
+        text = text.decode(encoding, 'ignore')
 
         # Emulate the `strings` CLI tool.
         buffer.write(text)
