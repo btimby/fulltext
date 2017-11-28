@@ -41,53 +41,53 @@ def register_backend(mimetype, module, extensions=None):
 
 register_backend(
     'application/zip',
-    'fulltext.backend.__zip')
+    'fulltext.backends.__zip')
 register_backend(
     'text/xml',
-    'fulltext.backend.__xml')
+    'fulltext.backends.__xml')
 register_backend(
     'application/vnd.ms-excel',
-    'fulltext.backend.__xlsx')
+    'fulltext.backends.__xlsx')
 register_backend(
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    'fulltext.backend.__xlsx')
+    'fulltext.backends.__xlsx')
 register_backend(
     'text/plain',
-    'fulltext.backend.__text')
+    'fulltext.backends.__text')
 register_backend(
     'application/rtf',
-    'fulltext.backend.__rtf')
+    'fulltext.backends.__rtf')
 register_backend(
     'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-    'fulltext.backend.__pptx')
+    'fulltext.backends.__pptx')
 register_backend(
     'application/pdf',
-    'fulltext.backend.__pdf')
+    'fulltext.backends.__pdf')
 register_backend(
     'application/vnd.oasis.opendocument.text',
-    'fulltext.backend.__odt')
+    'fulltext.backends.__odt')
 register_backend(
     'application/vnd.oasis.opendocument.spreadsheet',
-    'fulltext.backend.__odt')
+    'fulltext.backends.__odt')
 # TODO: OCR
 register_backend(
     'application/x-hwp',
-    'fulltext.backend.__hwp')
+    'fulltext.backends.__hwp')
 register_backend(
     'text/html',
-    'fulltext.backend.__html')
+    'fulltext.backends.__html')
 register_backend(
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'fulltext.backend.__docx')
+    'fulltext.backends.__docx')
 register_backend(
     'application/msword',
-    'fulltext.backend.__doc')
+    'fulltext.backends.__doc')
 register_backend(
     'text/csv',
-    'fulltext.backend.__csv')
+    'fulltext.backends.__csv')
 register_backend(
     'application/octet-stream',
-    'fulltext.backend.__bin')
+    'fulltext.backends.__bin')
 
 
 def _import_backends():
