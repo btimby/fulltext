@@ -87,8 +87,11 @@ def is_binary(f):
         return False
 
     # Can we sniff?
-    if not hasattr(f, 'seek'):
+    try:
+        f.seek(0, os.SEEK_CUR)
+    except (AttributeError, IOError):
         return False
+
     # Finally, let's sniff by reading a byte.
     byte = f.read(1)
     f.seek(-1, os.SEEK_CUR)
