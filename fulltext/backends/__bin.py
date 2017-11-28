@@ -45,7 +45,7 @@ def _get_file(f, **kwargs):
 
         try:
             text = text.decode('ascii', 'ignore')
-        except:
+        except AttributeError:
             pass
 
         # Remove any "words" that consist mainly of punctuation.
