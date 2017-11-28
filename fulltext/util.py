@@ -1,9 +1,15 @@
+import errno
+import logging
 import os
 import subprocess
-import errno
+import warnings
 
 from os.path import isfile, dirname
 from os.path import join as pathjoin
+
+
+LOGGER = logging.getLogger(__file__)
+LOGGER.addHandler(logging.NullHandler())
 
 
 class BackendError(AssertionError):
@@ -15,6 +21,7 @@ class CommandLineError(Exception):
     errors occur on the command line to provide a useful command line
     interface.
     """
+
     def render(self, msg):
         return msg % vars(self)
 
@@ -27,6 +34,7 @@ class ShellError(CommandLineError):
     """This error is raised when a shell.run returns a non-zero exit code
     (meaning the command failed).
     """
+
     def __init__(self, command, exit_code, stdout, stderr):
         self.command = command
         self.exit_code = exit_code
@@ -95,3 +103,8 @@ def run(*cmd, **kwargs):
         raise ShellError(' '.join(cmd), pipe.returncode, stdout, stderr)
 
     return stdout
+
+
+def warn(msg):
+    warnings.warn(msg, UserWarning)
+    LOGGER.warning(msg)

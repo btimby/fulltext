@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 import logging
 
-from fulltext.util import run, which
+from fulltext.util import run, which, warn
 
 
 LOGGER = logging.getLogger(__name__)
@@ -12,7 +12,7 @@ EXTENSIONS = ('rtf', )
 
 
 if which('unrtf') is None:
-    LOGGER.warning('CLI tool "unrtf" is required for .rtf backend.')
+    warn('CLI tool "unrtf" is required for .rtf backend.')
 
 
 def _strip(text):
