@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 import logging
 from fulltext.backends import __html
-from fulltext.util import run, which
+from fulltext.util import run, which, warn
 
 
 LOGGER = logging.getLogger(__name__)
@@ -12,7 +12,8 @@ EXTENSIONS = ('hwp',)
 
 
 if which('hwp5proc') is None:
-    LOGGER.warning('CLI tool "hwp5proc" is required for .hwp backend. use "pip2 install --pre pyhwp"')
+    warn('CLI tool "hwp5proc" is required for .hwp backend. use '
+         '"pip2 install --pre pyhwp"')
 
 
 def _cmd(path, **kwargs):

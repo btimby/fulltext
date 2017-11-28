@@ -14,6 +14,7 @@ from os.path import (
 )
 
 from six import string_types
+from fulltext.util import warn
 
 
 LOGGER = logging.getLogger(__file__)
@@ -40,9 +41,8 @@ def _import_backends():
             try:
                 module = imp.load_source(module_name, filename)
             except ImportError as e:
-                LOGGER.warning(
-                    'Backend %s disabled due to missing dependency %s',
-                    module_name, e.args[0])
+                warn('Backend %s disabled due to missing dependency; %s' % (
+                    module_name, e.args[0]))
                 continue
 
             has_get_path = callable(getattr(module, '_get_path', None))
