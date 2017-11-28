@@ -24,8 +24,11 @@ TRANSLATE = (
 )
 TRANSLATE = maketrans(*TRANSLATE)
 
+# I wish Python re module had a punctuation char class!
 STRIP_PUNCTUATION = re.compile(
-    r'\W*\w*[!"#$%&\'()*+,-./:;<=>?@[\]^_`{|}~]{2,}\w*\W*')
+    r'\b(\w*[!"#$%&\'()*+,-.\\/:;<=>?@[\]^_`{|}~]{2,}\w+)|((?<!\w)[!"#$%&\'()*'
+    r'+,-.\\/:;<=>?@[\]^_`{|}~0-9]+)|((?<!\w)[!"#$%&\'()*+,-.\\/:;<=>?@[\]^_`{'
+    r'|}~0-9])[^\w]*\b')
 
 
 def _get_file(f, **kwargs):
