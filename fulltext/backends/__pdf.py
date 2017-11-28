@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 import logging
 
-from fulltext.util import run, which
+from fulltext.util import run, which, warn
 
 
 LOGGER = logging.getLogger(__name__)
@@ -12,7 +12,7 @@ EXTENSIONS = ('pdf', )
 
 
 if which('pdftotext') is None:
-    LOGGER.warning('CLI tool "pdftotext" is required for .pdf backend.')
+    warn('CLI tool "pdftotext" is required for .pdf backend.')
 
 
 def _cmd(path, **kwargs):
