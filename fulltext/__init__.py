@@ -16,6 +16,9 @@ from os.path import (
 from six import string_types
 
 
+__all__ = ["get"]
+
+
 LOGGER = logging.getLogger(__file__)
 LOGGER.addHandler(logging.NullHandler())
 
@@ -114,13 +117,20 @@ def _get_file(backend, f, **kwargs):
             return backend._get_path(t.name, **kwargs)
 
 
-def get(path_or_file, default=SENTINAL, mime=None, name=None, **kwargs):
+def get(path_or_file, default=SENTINAL, mime=None, name=None, backend=None,
+        **kwargs):
     """
     Get document full text.
 
     Accepts a path or file-like object. If given, `default` is returned
-    instead of an error. `mime` and `name` should be passed if the information
+    instead of an error.
+
+    `backend` is a string specifying which backend to use (e.g. "doc").
+
+    `mime` and `name` should be passed if the information
     is available to caller, otherwise a best guess is made.
+
+    **kwargs are passed to the underlying backend.
     """
     if not name:
         name = getattr(path_or_file, 'name', None)
@@ -128,31 +138,29 @@ def get(path_or_file, default=SENTINAL, mime=None, name=None, **kwargs):
     if not name and isinstance(path_or_file, string_types):
         name = basename(path_or_file)
 
-    try:
-        backend_name = kwargs.pop('backend')
-    except KeyError:
+    if backend is None:
         if name:
             ext = splitext(name)[1].lstrip('.')
         elif mime:
             ext = mime.partition('/')[2]
         else:
             ext = ''
-        backend_name = ext.replace('-', '_').lower()
+        backend = ext.replace('-', '_').lower()
 
-    if backend_name not in BACKENDS:
+    if backend not in BACKENDS:
         LOGGER.warning('Falling back to binary backend')
-        backend = BACKENDS['bin']
+        backend_mod = BACKENDS['bin']
     else:
-        backend = BACKENDS[backend_name]
+        backend_mod = BACKENDS[backend]
 
     try:
         if isinstance(path_or_file, string_types):
             text = _get_path(
-                backend, path_or_file, mime=mime, name=name, **kwargs)
+                backend_mod, path_or_file, mime=mime, name=name, **kwargs)
 
         else:
             text = _get_file(
-                backend, path_or_file, mime=mime, name=name, **kwargs)
+                backend_mod, path_or_file, mime=mime, name=name, **kwargs)
 
     except Exception as e:
         LOGGER.exception(e)
