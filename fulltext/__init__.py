@@ -14,7 +14,11 @@ from os.path import (
 )
 
 from six import string_types
+from six import PY3
 from fulltext.util import warn
+
+
+__all__ = ["get"]
 
 
 LOGGER = logging.getLogger(__file__)
@@ -68,6 +72,29 @@ def _import_backends():
     LOGGER.info('Loaded backends: %s', ', '.join(BACKENDS.keys()))
 
 
+def is_binary(f):
+    """Return True if binary mode."""
+    # Python 2 makes no distinction.
+    if not PY3:
+        return True
+
+    # If the file has a mode, and it contains b, it is binary.
+    if 'b' in getattr(f, 'mode', ''):
+        return True
+
+    # If it has a decoding attribute with a value, it is text mode.
+    if getattr(f, "encoding", None):
+        return False
+
+    # Can we sniff?
+    if not hasattr(f, 'seek'):
+        return False
+    # Finally, let's sniff by reading a byte.
+    byte = f.read(1)
+    f.seek(-1, os.SEEK_CUR)
+    return hasattr(byte, 'decode')
+
+
 def _get_path(backend, path, **kwargs):
     """
     Handle a path.
@@ -95,6 +122,9 @@ def _get_file(backend, f, **kwargs):
     backend's `_get_file()` if one is provided. Otherwise, it will write the
     data to a temporary file and call `_get_path()`.
     """
+    if not is_binary(f):
+        raise AssertionError('File must be opened in binary mode.')
+
     if callable(getattr(backend, '_get_file', None)):
         # Prefer _get_file() if present.
         return backend._get_file(f, **kwargs)
@@ -114,13 +144,17 @@ def _get_file(backend, f, **kwargs):
             return backend._get_path(t.name, **kwargs)
 
 
-def get(path_or_file, default=SENTINAL, mime=None, name=None, **kwargs):
+def get(path_or_file, default=SENTINAL, mime=None, name=None, backend=None,
+        kwargs={}):
     """
     Get document full text.
 
-    Accepts a path or file-like object. If given, `default` is returned
-    instead of an error. `mime` and `name` should be passed if the information
+    Accepts a path or file-like object.
+    If given, `default` is returned instead of an error.
+    `backend` is a string specifying which backend to use (e.g. "doc").
+    `mime` and `name` should be passed if the information
     is available to caller, otherwise a best guess is made.
+    `kwargs` are passed to the underlying backend.
     """
     if not name:
         name = getattr(path_or_file, 'name', None)
@@ -128,38 +162,29 @@ def get(path_or_file, default=SENTINAL, mime=None, name=None, **kwargs):
     if not name and isinstance(path_or_file, string_types):
         name = basename(path_or_file)
 
-    try:
-        backend_name = kwargs.pop('backend')
-    except KeyError:
+    if backend is None:
         if name:
             ext = splitext(name)[1].lstrip('.')
         elif mime:
             ext = mime.partition('/')[2]
         else:
             ext = ''
-        backend_name = ext.replace('-', '_').lower()
+        backend = ext.replace('-', '_').lower()
 
-    if backend_name not in BACKENDS:
+    if backend not in BACKENDS:
         LOGGER.warning('Falling back to binary backend')
-        backend = BACKENDS['bin']
+        backend_mod = BACKENDS['bin']
     else:
-        backend = BACKENDS[backend_name]
+        backend_mod = BACKENDS[backend]
 
+    fun = _get_path if isinstance(path_or_file, string_types) else _get_file
     try:
-        if isinstance(path_or_file, string_types):
-            text = _get_path(
-                backend, path_or_file, mime=mime, name=name, **kwargs)
-
-        else:
-            text = _get_file(
-                backend, path_or_file, mime=mime, name=name, **kwargs)
-
+        text = fun(backend_mod, path_or_file, **kwargs)
     except Exception as e:
         LOGGER.exception(e)
         if default is not SENTINAL:
             return default
         raise
-
     else:
         text = STRIP_WHITE.sub(' ', text)
         text = STRIP_EOL.sub(' ', text)
