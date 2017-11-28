@@ -59,30 +59,41 @@ def register_backend(mimetype, module, extensions=None):
 register_backend(
     'application/zip',
     'fulltext.backends.__zip')
+
 register_backend(
     'application/xml',
     'fulltext.backends.__xml')
+
 register_backend(
     'application/vnd.ms-excel',
-    'fulltext.backends.__xlsx')
+    'fulltext.backends.__xlsx',
+    extensions=['xls', 'xlsx'])
+
 register_backend(
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     'fulltext.backends.__xlsx')
+
 register_backend(
     'text/plain',
-    'fulltext.backends.__text')
+    'fulltext.backends.__text',
+    extensions=['txt', 'text'])
+
 register_backend(
     'application/rtf',
     'fulltext.backends.__rtf')
+
 register_backend(
     'application/vnd.openxmlformats-officedocument.presentationml.presentation',
     'fulltext.backends.__pptx')
+
 register_backend(
     'application/pdf',
     'fulltext.backends.__pdf')
+
 register_backend(
     'application/vnd.oasis.opendocument.text',
     'fulltext.backends.__odt')
+
 register_backend(
     'application/vnd.oasis.opendocument.spreadsheet',
     'fulltext.backends.__odt')
@@ -106,18 +117,24 @@ register_backend(
 register_backend(
     'application/x-hwp',
     'fulltext.backends.__hwp')
+
 register_backend(
     'text/html',
-    'fulltext.backends.__html')
+    'fulltext.backends.__html',
+    extensions=['htm', 'html'])
+
 register_backend(
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     'fulltext.backends.__docx')
+
 register_backend(
     'application/msword',
     'fulltext.backends.__doc')
+
 register_backend(
     'text/csv',
     'fulltext.backends.__csv')
+
 register_backend(
     'application/octet-stream',
     'fulltext.backends.__bin')
