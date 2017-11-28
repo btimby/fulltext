@@ -47,13 +47,15 @@ class BaseTestCase(unittest.TestCase):
             return
 
         if msg is None:
-            # If not the same, display a user-friendly diff.
+            # If not the same, and no msg provided, create a user-friendly
+            # diff message.
             a = textwrap.wrap(a)
             b = textwrap.wrap(b)
             a = [l + '\n' for l in a]
             b = [l + '\n' for l in b]
             msg = '\n' + ''.join(difflib.unified_diff(
                 a, b, 'A (first argument)', 'B (second argument)'))
+
         raise AssertionError(msg)
 
     def assertStartsWith(self, prefix, body):
