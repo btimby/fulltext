@@ -227,7 +227,7 @@ def _get_file(backend, f, **kwargs):
 
 
 def backend_from_mime(mime):
-    mod_name = MIMETYPE_TO_BACKENDS
+    mod_name = MIMETYPE_TO_BACKENDS[mime]
     mod = __import__(mod_name, fromlist=[' '])
     return mod
 
@@ -263,7 +263,7 @@ def get(path_or_file, default=SENTINAL, mime=None, name=None, backend=None,
     # Find backend.
     if backend is None:
         if mime:
-            raise NotImplementedError  # TODO
+            backend_mod = backend_from_mime(mime)
         elif name:
             backend_mod = backend_from_ext(splitext(name)[1])
         else:

@@ -249,6 +249,14 @@ class TestPickups(BaseTestCase):
             mod = m.call_args[0][0]
             self.assertEqual(mod.__name__, 'fulltext.backends.__doc')
 
+    def test_by_mime(self):
+        fname = 'testfn.doc'
+        self.touch(fname)
+        with mock.patch('fulltext._get_path', return_value="") as m:
+            fulltext.get(fname, mime='application/vnd.ms-excel')
+            mod = m.call_args[0][0]
+            self.assertEqual(mod.__name__, 'fulltext.backends.__xlsx')
+
     def test_no_ext(self):
         # File with no extension == use bin backend.
         fname = 'testfn'
