@@ -10,7 +10,7 @@ SYSDEPS = \
 	unrtf
 
 test:  ## Run tests.
-	$(PYTHON) tests.py
+	PYTHONWARNINGS=all $(PYTHON) tests.py
 
 check:  ## Run linters.
 	@git ls-files | grep \\.py$ | xargs $(PYTHON) -m flake8
