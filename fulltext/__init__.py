@@ -7,7 +7,7 @@ import shutil
 import tempfile
 import mimetypes
 
-from os.path import basename, splitext
+from os.path import splitext
 
 from six import string_types
 from six import PY3
@@ -21,14 +21,13 @@ LOGGER = logging.getLogger(__file__)
 LOGGER.addHandler(logging.NullHandler())
 
 FULLTEXT_TEMP = os.environ.get('FULLTEXT_TEMP', tempfile.gettempdir())
-FULLTEXT_PATH = os.environ.get('FULLTEXT_PATH', '')
 
 STRIP_WHITE = re.compile(r'[ \t\v\f]+')
 STRIP_EOL = re.compile(r'[\r\n]+')
 SENTINAL = object()
-BACKENDS = {}
 MIMETYPE_TO_BACKENDS = {}
 EXTS_TO_MIMETYPES = {}
+DEFAULT_MIME = 'application/octet-stream'
 
 mimetypes.init()
 _MIMETYPES_TO_EXT = dict([(v, k) for k, v in mimetypes.types_map.items()])
@@ -226,14 +225,27 @@ def _get_file(backend, f, **kwargs):
             return backend._get_path(t.name, **kwargs)
 
 
-def get_backend_mod(ext):
-    if not ext.startswith('.'):
+def backend_from_mime(mime):
+    try:
+        mod_name = MIMETYPE_TO_BACKENDS[mime]
+    except KeyError:
+        warn("don't know how to handle %r mime; assume %r" % (
+            mime, DEFAULT_MIME))
+        mod_name = MIMETYPE_TO_BACKENDS[DEFAULT_MIME]
+    mod = __import__(mod_name, fromlist=[' '])
+    return mod
+
+
+def backend_from_ext(ext, ignore_err=True):
+    if ext and not ext.startswith('.'):
         ext = "." + ext
     try:
         mime = EXTS_TO_MIMETYPES[ext]
     except KeyError:
+        if not ignore_err:
+            raise ValueError("don't know how to handle %r extension" % ext)
         warn("don't know how to handle %r extension; assume binary" % ext)
-        mime = 'application/octet-stream'
+        mime = DEFAULT_MIME
     mod_name = MIMETYPE_TO_BACKENDS[mime]
     mod = __import__(mod_name, fromlist=[' '])
     return mod
@@ -251,32 +263,32 @@ def get(path_or_file, default=SENTINAL, mime=None, name=None, backend=None,
        default backends.
      * `mime` and `name` should be passed if the information
        is available to caller, otherwise a best guess is made.
+       If both are specified `mime` takes precedence.
      * `kwargs` are passed to the underlying backend.
     """
+    # Find backend.
     if backend is None:
-        if not name:
-            name = getattr(path_or_file, 'name', None)
-        if not name and isinstance(path_or_file, string_types):
-            name = basename(path_or_file)
-
-        if name:
-            ext = splitext(name)[1]
-        elif mime:
-            ext = mime.partition('/')[2]
+        if mime:
+            backend_mod = backend_from_mime(mime)
+        elif name:
+            backend_mod = backend_from_ext(splitext(name)[1])
         else:
-            ext = ''
-        backend = ext.replace('-', '_').lower()
+            if isinstance(path_or_file, string_types):
+                backend_mod = backend_from_ext(splitext(path_or_file)[1])
+            else:
+                raise NotImplementedError  # TODO
+    else:
+        backend_mod = backend_from_ext(backend, ignore_err=False)
 
-    backend_mod = get_backend_mod(backend)
-
+    # Call backend.
     fun = _get_path if isinstance(path_or_file, string_types) else _get_file
     kwargs.setdefault("mime", mime)
     try:
         text = fun(backend_mod, path_or_file, **kwargs)
 
     except Exception as e:
-        LOGGER.exception(e)
         if default is not SENTINAL:
+            LOGGER.exception(e)
             return default
         raise
 
