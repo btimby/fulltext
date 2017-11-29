@@ -294,7 +294,6 @@ def get(path_or_file, default=SENTINAL, mime=None, name=None, backend=None,
         raise
 
     else:
-        assert text, repr(text)
         text = STRIP_WHITE.sub(' ', text)
         text = STRIP_EOL.sub(' ', text)
         return text.strip()

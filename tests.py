@@ -41,6 +41,16 @@ TEXT = TEXT_WITH_NEWLINES.replace('\n', ' ')
 class BaseTestCase(unittest.TestCase):
     """Base TestCase Class."""
 
+    def __str__(self):
+        # Print fully qualified test name.
+        return "%s.%s.%s" % (
+            os.path.splitext(__file__)[0], self.__class__.__name__,
+            self._testMethodName)
+
+    def shortDescription(self):
+        # Avoid printing docstrings.
+        return ""
+
     def assertMultiLineEqual(self, a, b, msg=None):
         """A useful assertion for troubleshooting."""
         # Check if two blocks of text are equal.
@@ -99,7 +109,9 @@ class FullTextTestCase(BaseTestCase):
 
     def test_default_none(self):
         "Ensure None is a valid value to pass as default."
-        self.assertEqual(fulltext.get('unknown-file.foobar', None), None)
+        with warnings.catch_warnings(record=True) as ws:
+            self.assertEqual(fulltext.get('unknown-file.foobar', None), None)
+        assert ws
 
 
 class FullTextStripTestCase(BaseTestCase):
