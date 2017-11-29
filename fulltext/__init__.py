@@ -227,7 +227,12 @@ def _get_file(backend, f, **kwargs):
 
 
 def backend_from_mime(mime):
-    mod_name = MIMETYPE_TO_BACKENDS[mime]
+    try:
+        mod_name = MIMETYPE_TO_BACKENDS[mime]
+    except KeyError:
+        mimebin = 'application/octet-stream'
+        warn("don't know how to handle %r mime; assume %r" % (mime, mimebin))
+        mod_name = MIMETYPE_TO_BACKENDS[mimebin]
     mod = __import__(mod_name, fromlist=[' '])
     return mod
 

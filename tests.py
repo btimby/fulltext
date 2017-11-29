@@ -8,6 +8,7 @@ except ImportError:
 import codecs
 import difflib
 import textwrap
+import warnings
 
 import fulltext
 from fulltext.util import ShellError
@@ -241,6 +242,8 @@ class TestPickups(BaseTestCase):
                 f.write(content)
         self.addCleanup(os.remove, fname)
 
+    # --- by extension
+
     def test_by_ext(self):
         fname = 'testfn.doc'
         self.touch(fname)
@@ -248,6 +251,30 @@ class TestPickups(BaseTestCase):
             fulltext.get(fname)
             mod = m.call_args[0][0]
             self.assertEqual(mod.__name__, 'fulltext.backends.__doc')
+
+    def test_no_ext(self):
+        # File with no extension == use bin backend.
+        fname = 'testfn'
+        self.touch(fname)
+        with mock.patch('fulltext._get_path', return_value="") as m:
+            with warnings.catch_warnings(record=True) as ws:
+                fulltext.get(fname)
+            assert ws
+            mod = m.call_args[0][0]
+            self.assertEqual(mod.__name__, 'fulltext.backends.__bin')
+
+    def test_unknown_ext(self):
+        # File with unknown extension == use bin backend.
+        fname = 'testfn.unknown'
+        self.touch(fname)
+        with mock.patch('fulltext._get_path', return_value="") as m:
+            with warnings.catch_warnings(record=True) as ws:
+                fulltext.get(fname)
+            assert ws
+            mod = m.call_args[0][0]
+            self.assertEqual(mod.__name__, 'fulltext.backends.__bin')
+
+    # --- by mime
 
     def test_by_mime(self):
         fname = 'testfn.doc'
@@ -257,21 +284,13 @@ class TestPickups(BaseTestCase):
             mod = m.call_args[0][0]
             self.assertEqual(mod.__name__, 'fulltext.backends.__xlsx')
 
-    def test_no_ext(self):
-        # File with no extension == use bin backend.
-        fname = 'testfn'
+    def test_by_unknown_mime(self):
+        fname = 'testfn.doc'
         self.touch(fname)
         with mock.patch('fulltext._get_path', return_value="") as m:
-            fulltext.get(fname)
-            mod = m.call_args[0][0]
-            self.assertEqual(mod.__name__, 'fulltext.backends.__bin')
-
-    def test_unknown_ext(self):
-        # File with unknown extension == use bin backend.
-        fname = 'testfn.unknown'
-        self.touch(fname)
-        with mock.patch('fulltext._get_path', return_value="") as m:
-            fulltext.get(fname)
+            with warnings.catch_warnings(record=True) as ws:
+                fulltext.get(fname, mime='application/yo!')
+            assert ws
             mod = m.call_args[0][0]
             self.assertEqual(mod.__name__, 'fulltext.backends.__bin')
 
