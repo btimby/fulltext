@@ -231,6 +231,10 @@ class MobiTestCase(BaseTestCase, PathAndFileTests):
     ext = "mobi"
 
 
+class PsTestCase(BaseTestCase, PathAndFileTests):
+    ext = "ps"
+
+
 @unittest.skipIf(not which('pyhwp'), "pyhwp not installed")
 class HwpTestCase(BaseTestCase, PathAndFileTests):
     ext = "hwp"

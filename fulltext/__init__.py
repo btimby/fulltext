@@ -151,6 +151,11 @@ register_backend(
     extensions=[".mobi"])
 
 register_backend(
+    'application/postscript',
+    'fulltext.backends.__ps',
+    extensions=[".ps", ".eps", ".ai"])
+
+register_backend(
     'application/octet-stream',
     'fulltext.backends.__bin',
     extensions=['.a', '.bin'])
