@@ -364,6 +364,16 @@ class TestFileObj(BaseTestCase):
         mod = fulltext.backend_from_fobj(f)
         self.assertEqual(mod.__name__, 'fulltext.backends.__text')
 
+    def test_no_magic(self):
+        # Emulate a case where magic lib is not installed.
+        f = self.touch_fobj(content=b"hello world")
+        f.seek(0)
+        with mock.patch("fulltext.magic", None):
+            with warnings.catch_warnings(record=True) as ws:
+                mod = fulltext.backend_from_fobj(f)
+            self.assertIn("magic lib is not installed", str(ws[0].message))
+            self.assertEqual(mod.__name__, 'fulltext.backends.__bin')
+
 
 class TestGuessingFromFileContent(BaseTestCase):
     """Make sure that when file has no extension its type is guessed

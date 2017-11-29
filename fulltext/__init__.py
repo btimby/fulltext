@@ -230,6 +230,7 @@ def _get_file(backend, f, **kwargs):
 
 
 def backend_from_mime(mime):
+    """Determine backend module object from a mime string."""
     try:
         mod_name = MIMETYPE_TO_BACKENDS[mime]
     except KeyError:
@@ -241,6 +242,7 @@ def backend_from_mime(mime):
 
 
 def backend_from_fname(name):
+    """Determine backend module object from a file name."""
     ext = splitext(name)[1]
     try:
         mime = EXTS_TO_MIMETYPES[ext]
@@ -254,13 +256,19 @@ def backend_from_fname(name):
 
 
 def backend_from_fobj(fobj):
-    offset = fobj.tell()
-    try:
-        chunk = fobj.read(MAGIC_BUFFER_SIZE)
-        mime = magic.from_buffer(chunk, mime=True)
-        return backend_from_mime(mime)
-    finally:
-        fobj.seek(offset)
+    """Determine backend module object from a file object."""
+    if magic is None:
+        warn("magic lib is not installed; assuming mime type %r" % (
+            DEFAULT_MIME))
+        return backend_from_mime(DEFAULT_MIME)
+    else:
+        offset = fobj.tell()
+        try:
+            chunk = fobj.read(MAGIC_BUFFER_SIZE)
+            mime = magic.from_buffer(chunk, mime=True)
+            return backend_from_mime(mime)
+        finally:
+            fobj.seek(offset)
 
 
 def _get(path_or_file, default, mime, name, backend, kwargs):
