@@ -5,9 +5,6 @@ import csv
 from six import StringIO
 
 
-EXTENSIONS = ('csv', )
-
-
 def readlines(f):
     for line in f.readlines():
         yield line.decode('utf8')

@@ -15,8 +15,6 @@ from fulltext.util import which, MissingCommandException, warn
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
-EXTENSIONS = ('jpg', 'jpeg', 'bmp', 'png', 'gif')
-
 EXIF_ORIENTATION = 274  # cf ExifTags
 
 EXIF_ROTATION = {

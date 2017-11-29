@@ -8,8 +8,6 @@ from fulltext.util import run, which, warn
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
-EXTENSIONS = ('pdf', )
-
 
 if which('pdftotext') is None:
     warn('CLI tool "pdftotext" is required for .pdf backend.')

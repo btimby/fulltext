@@ -8,7 +8,6 @@ from fulltext.util import run, which, ShellError, MissingCommandException, warn
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
-EXTENSIONS = ('doc', )
 
 if which('antiword') is None:
     warn('CLI tool "antiword" is required for .doc backend.')

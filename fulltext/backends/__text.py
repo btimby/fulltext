@@ -15,7 +15,6 @@ import sys
 from six import StringIO
 
 
-EXTENSIONS = ('txt', 'text')
 BUFFER_MAX = 1024 * 1024
 ENCODING = sys.getfilesystemencoding()
 
