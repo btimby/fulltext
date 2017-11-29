@@ -226,7 +226,13 @@ def _get_file(backend, f, **kwargs):
             return backend._get_path(t.name, **kwargs)
 
 
-def get_backend_mod(ext):
+def backend_from_mime(mime):
+    mod_name = MIMETYPE_TO_BACKENDS
+    mod = __import__(mod_name, fromlist=[' '])
+    return mod
+
+
+def backend_from_ext(ext):
     if not ext.startswith('.'):
         ext = "." + ext
     try:
@@ -251,24 +257,24 @@ def get(path_or_file, default=SENTINAL, mime=None, name=None, backend=None,
        default backends.
      * `mime` and `name` should be passed if the information
        is available to caller, otherwise a best guess is made.
+       If both are specified `mime` takes precedence.
      * `kwargs` are passed to the underlying backend.
     """
+    # Find backend.
     if backend is None:
-        if not name:
-            name = getattr(path_or_file, 'name', None)
-        if not name and isinstance(path_or_file, string_types):
-            name = basename(path_or_file)
-
-        if name:
-            ext = splitext(name)[1]
-        elif mime:
-            ext = mime.partition('/')[2]
+        if mime:
+            raise NotImplementedError  # TODO
+        elif name:
+            backend_mod = backend_from_ext(splitext(name)[1])
         else:
-            ext = ''
-        backend = ext.replace('-', '_').lower()
+            if isinstance(path_or_file, string_types):
+                backend_mod = backend_from_ext(splitext(path_or_file)[1])
+            else:
+                raise NotImplementedError  # TODO
+    else:
+        backend_mod = backend_from_ext(backend)
 
-    backend_mod = get_backend_mod(backend)
-
+    # Call backend.
     fun = _get_path if isinstance(path_or_file, string_types) else _get_file
     kwargs.setdefault("mime", mime)
     try:
