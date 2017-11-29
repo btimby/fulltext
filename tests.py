@@ -357,19 +357,38 @@ class TestFileObj(BaseTestCase):
             mod = m.call_args[0][0]
             self.assertEqual(mod.__name__, 'fulltext.backends.__pdf')
 
-
-class TestGuessingFromFileContent(BaseTestCase):
-
-    def test_magic_is_installed(self):
-        from fulltext.util import magic
-        self.assertIsNotNone(magic)
-
     def test_fobj_offset(self):
         # Make sure offset is unaltered after guessing mime type.
         f = self.touch_fobj(content=b"hello world")
         f.seek(0)
         mod = fulltext.backend_from_fobj(f)
         self.assertEqual(mod.__name__, 'fulltext.backends.__text')
+
+
+class TestGuessingFromFileContent(BaseTestCase):
+    """Make sure that when file has no extension its type is guessed
+    from its content.
+    """
+
+    def test_magic_is_installed(self):
+        from fulltext.util import magic
+        self.assertIsNotNone(magic)
+
+    def test_pdf(self):
+        fname = "file-noext"
+        self.touch(fname, content=open('files/test.pdf', 'rb').read())
+        with mock.patch('fulltext._get_path', return_value="") as m:
+            fulltext.get(fname)
+            mod = m.call_args[0][0]
+            self.assertEqual(mod.__name__, 'fulltext.backends.__pdf')
+
+    def test_html(self):
+        fname = "file-noext"
+        self.touch(fname, content=open('files/test.html', 'rb').read())
+        with mock.patch('fulltext._get_path', return_value="") as m:
+            fulltext.get(fname)
+            mod = m.call_args[0][0]
+            self.assertEqual(mod.__name__, 'fulltext.backends.__html')
 
 
 if __name__ == '__main__':
