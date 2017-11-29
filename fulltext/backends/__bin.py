@@ -25,6 +25,7 @@ TRANSLATE = (
 TRANSLATE = maketrans(*TRANSLATE)
 
 # I wish Python re module had a punctuation char class!
+# https://pythex.org/
 STRIP_PUNCTUATION = re.compile(
     r'\b(\w*[!"#$%&\'()*+,-.\\/:;<=>?@[\]^_`{|}~]{2,}\w+)|((?<!\w)[!"#$%&\'()*'
     r'+,-.\\/:;<=>?@[\]^_`{|}~0-9]+)|((?<!\w)[!"#$%&\'()*+,-.\\/:;<=>?@[\]^_`{'
