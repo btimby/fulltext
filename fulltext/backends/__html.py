@@ -7,9 +7,6 @@ from bs4 import BeautifulSoup
 from six import StringIO
 
 
-EXTENSIONS = ('htm', 'html')
-
-
 def _visible(elem):
     if elem.parent.name in ['style', 'script', '[document]', 'head', 'title']:
         return False

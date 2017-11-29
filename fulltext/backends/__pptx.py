@@ -5,9 +5,6 @@ import pptx
 from six import StringIO
 
 
-EXTENSIONS = ('pptx', )
-
-
 def _get_path(path, **kwargs):
     text, p = StringIO(), pptx.Presentation(path)
     for slide in p.slides:

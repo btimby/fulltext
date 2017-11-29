@@ -6,9 +6,6 @@ from lxml import etree
 from six import StringIO
 
 
-EXTENSIONS = ('ods', 'odt')
-
-
 def _qn(ns):
     nsmap = {
         'text': 'urn:oasis:names:tc:opendocument:xmlns:text:1.0',

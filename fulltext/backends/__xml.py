@@ -5,9 +5,6 @@ from lxml import etree
 from six import StringIO
 
 
-EXTENSIONS = ('xml',)
-
-
 def _get_file(f, **kwargs):
     text, root = StringIO(), etree.parse(f)
     for elem in root.iter():

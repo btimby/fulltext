@@ -247,7 +247,7 @@ class TestPickups(BaseTestCase):
         with mock.patch('fulltext._get_path', return_value="") as m:
             fulltext.get(fname)
             mod = m.call_args[0][0]
-            self.assertEqual(mod.__name__, '__doc')
+            self.assertEqual(mod.__name__, 'fulltext.backends.__doc')
 
     def test_no_ext(self):
         # File with no extension == use bin backend.
@@ -256,7 +256,7 @@ class TestPickups(BaseTestCase):
         with mock.patch('fulltext._get_path', return_value="") as m:
             fulltext.get(fname)
             mod = m.call_args[0][0]
-            self.assertEqual(mod.__name__, '__bin')
+            self.assertEqual(mod.__name__, 'fulltext.backends.__bin')
 
     def test_unknown_ext(self):
         # File with unknown extension == use bin backend.
@@ -265,7 +265,7 @@ class TestPickups(BaseTestCase):
         with mock.patch('fulltext._get_path', return_value="") as m:
             fulltext.get(fname)
             mod = m.call_args[0][0]
-            self.assertEqual(mod.__name__, '__bin')
+            self.assertEqual(mod.__name__, 'fulltext.backends.__bin')
 
     def test_backend_opt(self):
         # Assert file ext is ignored if backend opt is used.
@@ -274,7 +274,7 @@ class TestPickups(BaseTestCase):
         with mock.patch('fulltext._get_path', return_value="") as m:
             fulltext.get(fname, backend='pdf')
             mod = m.call_args[0][0]
-            self.assertEqual(mod.__name__, '__pdf')
+            self.assertEqual(mod.__name__, 'fulltext.backends.__pdf')
 
 
 if __name__ == '__main__':
