@@ -227,8 +227,8 @@ class EpubTestCase(BaseTestCase, PathAndFileTests):
     ext = "epub"
 
 
-class MobiTestCase(BaseTestCase, PathAndFileTests):
-    ext = "mobi"
+# class MobiTestCase(BaseTestCase, PathAndFileTests):
+#     ext = "mobi"
 
 
 class PsTestCase(BaseTestCase, PathAndFileTests):
