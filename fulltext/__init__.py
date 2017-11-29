@@ -255,24 +255,25 @@ def backend_from_fname(name):
         return mod
 
 
-def backend_from_fobj(fobj):
+def backend_from_fobj(f):
     """Determine backend module object from a file object."""
     if magic is None:
         warn("magic lib is not installed; assuming mime type %r" % (
             DEFAULT_MIME))
         return backend_from_mime(DEFAULT_MIME)
     else:
-        offset = fobj.tell()
+        offset = f.tell()
         try:
-            chunk = fobj.read(MAGIC_BUFFER_SIZE)
+            f.seek(0)
+            chunk = f.read(MAGIC_BUFFER_SIZE)
             mime = magic.from_buffer(chunk, mime=True)
             return backend_from_mime(mime)
         finally:
-            fobj.seek(offset)
+            f.seek(offset)
 
 
 def _get(path_or_file, default, mime, name, backend, kwargs):
-    # Find backend.
+    # Find backend module.
     if backend is None:
         if mime:
             backend_mod = backend_from_mime(mime)

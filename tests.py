@@ -56,8 +56,8 @@ class BaseTestCase(unittest.TestCase):
 
     # --- utils
 
-    def touch(self, fname, content=""):
-        with open(fname, 'wt') as f:
+    def touch(self, fname, content=b""):
+        with open(fname, 'wb') as f:
             if content:
                 f.write(content)
         self.addCleanup(os.remove, fname)
@@ -343,10 +343,9 @@ class TestPickups(BaseTestCase):
 class TestFileObj(BaseTestCase):
 
     def test_returned_content(self):
-        content = b"hello world"
-        f = self.touch_fobj(content=content)
+        f = self.touch_fobj(content=b"hello world")
         ret = fulltext.get(f)
-        self.assertEqual(ret, content)
+        self.assertEqual(ret, "hello world")
 
     def test_name_attr(self):
         # Make sure that fulltext attempts to determine file name
