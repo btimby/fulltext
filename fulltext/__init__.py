@@ -86,7 +86,7 @@ register_backend(
     'fulltext.backends.__rtf')
 
 register_backend(
-    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation',  # NOQA
     'fulltext.backends.__pptx')
 
 register_backend(
