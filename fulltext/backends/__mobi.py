@@ -9,5 +9,5 @@ def _get_path(path, **kwargs):
 
     for record in book:
         text.write(record)
-    
+
     return text.getvalue()

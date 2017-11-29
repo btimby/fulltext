@@ -5,7 +5,7 @@ from __future__ import absolute_import
 
 import logging
 
-from fulltext.util import run, which, ShellError, MissingCommandException, warn
+from fulltext.util import run, which, warn
 
 
 LOGGER = logging.getLogger(__name__)
