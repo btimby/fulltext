@@ -109,7 +109,7 @@ the new backend against fulltext.
     fulltext.register_backend(
         'application/x-rar-compressed',
         'path.to.this.module',
-        '.rar')
+        ['.rar'])
 
 If you only implement ``_get_file`` Fulltext will open any paths and pass them
 to that function. Therefore if possible, define at least this function. If
