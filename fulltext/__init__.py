@@ -180,6 +180,11 @@ def is_binary(f):
     return hasattr(byte, 'decode')
 
 
+def is_file_path(obj):
+    """Return True if obj is a possible file path or name."""
+    return isinstance(obj, string_types) or isinstance(obj, bytes)
+
+
 def _get_path(backend, path, **kwargs):
     """
     Handle a path.
@@ -280,7 +285,7 @@ def _get(path_or_file, default, mime, name, backend, kwargs):
         elif name:
             backend_mod = backend_from_fname(name)
         else:
-            if isinstance(path_or_file, string_types):
+            if is_file_path(path_or_file):
                 backend_mod = backend_from_fname(path_or_file)
             else:
                 if hasattr(path_or_file, "name"):
@@ -295,7 +300,7 @@ def _get(path_or_file, default, mime, name, backend, kwargs):
         backend_mod = backend_from_mime(mime)
 
     # Call backend.
-    fun = _get_path if isinstance(path_or_file, string_types) else _get_file
+    fun = _get_path if is_file_path(path_or_file) else _get_file
     kwargs.setdefault("mime", mime)
     text = fun(backend_mod, path_or_file, **kwargs)
     assert text is not None

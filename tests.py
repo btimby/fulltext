@@ -65,6 +65,7 @@ class BaseTestCase(unittest.TestCase):
 
     def touch_fobj(self, content=b""):
         f = BytesIO()
+        self.addCleanup(f.close)
         if content:
             f.write(content)
             f.seek(0)
@@ -398,6 +399,14 @@ class TestGuessingFromFileContent(BaseTestCase):
             fulltext.get(fname)
             mod = m.call_args[0][0]
             self.assertEqual(mod.__name__, 'fulltext.backends.__html')
+
+
+class TestUtils(BaseTestCase):
+
+    def test_is_file_path(self):
+        assert fulltext.is_file_path('foo')
+        assert fulltext.is_file_path(b'foo')
+        assert not fulltext.is_file_path(open(__file__))
 
 
 if __name__ == '__main__':
