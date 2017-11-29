@@ -1,18 +1,13 @@
 from __future__ import absolute_import
 
 import re
-import imp
 import logging
 import os
-import glob
 import shutil
 import tempfile
 import mimetypes
 
-from os.path import join as pathjoin
-from os.path import (
-    basename, splitext, dirname
-)
+from os.path import basename, splitext
 
 from six import string_types
 from six import PY3
@@ -40,6 +35,11 @@ _MIMETYPES_TO_EXT = dict([(v, k) for k, v in mimetypes.types_map.items()])
 
 
 def register_backend(mimetype, module, extensions=None):
+    """Register a backend.
+    `mimetype`: a mimetype string (e.g. 'text/plain')
+    `module`: an import string (e.g. path.to.my.module)
+    `extensions`: a list of extensions (e.g. ['txt', 'text'])
+    """
     MIMETYPE_TO_BACKENDS[mimetype] = module
     if extensions is None:
         try:
@@ -53,6 +53,7 @@ def register_backend(mimetype, module, extensions=None):
         if not isinstance(extensions, (list, tuple, set, frozenset)):
             raise TypeError("invalid extensions type (got %r)" % extensions)
         for ext in set(extensions):
+            assert ext.startswith('.'), ext
             EXTS_TO_MIMETYPES[ext] = mimetype
 
 
@@ -60,14 +61,16 @@ register_backend(
     'application/zip',
     'fulltext.backends.__zip')
 
-register_backend(
-    'application/xml',
-    'fulltext.backends.__xml')
+for mt in ("text/xml", "application/xml", "application/x-xml"):
+    register_backend(
+        mt,
+        'fulltext.backends.__xml',
+        extensions=[".xml", ".xsd"])
 
 register_backend(
     'application/vnd.ms-excel',
     'fulltext.backends.__xlsx',
-    extensions=['xls', 'xlsx'])
+    extensions=['.xls', '.xlsx'])
 
 register_backend(
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -76,7 +79,7 @@ register_backend(
 register_backend(
     'text/plain',
     'fulltext.backends.__text',
-    extensions=['txt', 'text'])
+    extensions=['.txt', '.text'])
 
 register_backend(
     'application/rtf',
@@ -102,11 +105,11 @@ register_backend(
 register_backend(
     'image/jpeg',
     'fulltext.backends.__ocr',
-    extensions=['jpg', 'jpeg'])
+    extensions=['.jpg', '.jpeg'])
 register_backend(
     'image/bmp',
     'fulltext.backends.__ocr',
-    extensions=['bmp'])
+    extensions=['.bmp'])
 register_backend(
     'image/png',
     'fulltext.backends.__ocr')
@@ -121,7 +124,7 @@ register_backend(
 register_backend(
     'text/html',
     'fulltext.backends.__html',
-    extensions=['htm', 'html'])
+    extensions=['.htm', '.html'])
 
 register_backend(
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -129,7 +132,8 @@ register_backend(
 
 register_backend(
     'application/msword',
-    'fulltext.backends.__doc')
+    'fulltext.backends.__doc',
+    extensions=['.doc'])
 
 register_backend(
     'text/csv',
@@ -137,46 +141,8 @@ register_backend(
 
 register_backend(
     'application/octet-stream',
-    'fulltext.backends.__bin')
-
-
-def _import_backends():
-    paths = [pathjoin(dirname(__file__), 'backends')]
-
-    if FULLTEXT_PATH:
-        paths.extend(FULLTEXT_PATH.split(os.pathsep))
-
-    for path in paths:
-        for filename in glob.iglob(pathjoin(path, '*.py')):
-            module_name = splitext(basename(filename))[0]
-            try:
-                module = imp.load_source(module_name, filename)
-            except ImportError as e:
-                warn('Backend %s disabled due to missing dependency; %s' % (
-                    module_name, e.args[0]))
-                continue
-
-            has_get_path = callable(getattr(module, '_get_path', None))
-            has_get_file = callable(getattr(module, '_get_file', None))
-            if not (has_get_path or has_get_file):
-                if module_name != '__init__':
-                    # No worries, __init__ is part of a package, is often left
-                    # empty.
-                    LOGGER.warning(
-                        'Backend %s defines neither `_get_path()` nor '
-                        '`_get_file()`, disabled', module)
-                continue
-
-            extensions = getattr(
-                module, 'EXTENSIONS', (module_name.lstrip('_'), ))
-
-            for ext in extensions:
-                if ext in BACKENDS:
-                    LOGGER.warning('Backend %s overrides %s for %s',
-                                   module, BACKENDS[ext], ext)
-                BACKENDS[ext] = module
-
-    LOGGER.info('Loaded backends: %s', ', '.join(BACKENDS.keys()))
+    'fulltext.backends.__bin',
+    extensions=['.a', '.bin'])
 
 
 def is_binary(f):
@@ -258,6 +224,19 @@ def _get_file(backend, f, **kwargs):
             return backend._get_path(t.name, **kwargs)
 
 
+def get_backend_mod(ext):
+    if not ext.startswith('.'):
+        ext = "." + ext
+    try:
+        mime = EXTS_TO_MIMETYPES[ext]
+    except KeyError:
+        warn("don't know how to handle %r extension; assume binary" % ext)
+        mime = 'application/octet-stream'
+    mod_name = MIMETYPE_TO_BACKENDS[mime]
+    mod = __import__(mod_name, fromlist=[' '])
+    return mod
+
+
 def get(path_or_file, default=SENTINAL, mime=None, name=None, backend=None,
         kwargs={}):
     """
@@ -285,11 +264,7 @@ def get(path_or_file, default=SENTINAL, mime=None, name=None, backend=None,
             ext = ''
         backend = ext.replace('-', '_').lower()
 
-    if backend not in BACKENDS:
-        LOGGER.warning('Falling back to binary backend')
-        backend_mod = BACKENDS['bin']
-    else:
-        backend_mod = BACKENDS[backend]
+    backend_mod = get_backend_mod(backend)
 
     fun = _get_path if isinstance(path_or_file, string_types) else _get_file
     try:
@@ -303,7 +278,3 @@ def get(path_or_file, default=SENTINAL, mime=None, name=None, backend=None,
         text = STRIP_WHITE.sub(' ', text)
         text = STRIP_EOL.sub(' ', text)
         return text.strip()
-
-
-# Some backends use this module, so import them last.
-_import_backends()
