@@ -83,19 +83,16 @@ You can pass a file-like object or a path to ``.get()`` Fulltext will try to
 do the right thing, using memory buffers or temp files depending on the
 backend.
 
-
 Custom backends
 ---------------
 
 To write a new backend, you need to do two things. First, create a python
-module that implements the interface that Fulltext expects. Second, define an
-environment variable that informs Fulltext where to find your module.
+module that implements the interface that Fulltext expects. Second, register
+the new backend against fulltext.
 
 .. code:: python
 
-    # Tell Fulltext what file extensions your backend supports.
-    EXTENSIONS = ('foo', 'bar')
-
+    import fulltext
 
     def _get_file(f, **kwargs):
         # Extract text from a file-like object. This should be defined when
@@ -109,6 +106,11 @@ environment variable that informs Fulltext where to find your module.
         # passing it to _get_file().
         pass
 
+    fulltext.register_backend(
+        'application/x-rar-compressed',
+        'path.to.this.module',
+        '.rar')
+
 If you only implement ``_get_file`` Fulltext will open any paths and pass them
 to that function. Therefore if possible, define at least this function. If
 working with file-like objects is not possible and you only define
@@ -118,12 +120,3 @@ functions in cases when you can do each efficiently.
 
 If you have questions about writing a backend, see the `backends/`_ directory
 for some examples.
-
-.. _backends/: fulltext/backends/
-
-Once written, simply define an environment variable ``FULLTEXT_PATH`` to
-contain paths to your backend modules.
-
-.. code:: bash
-
-    FULLTEXT_PATH=/path/to/my/module;/path/to/other/module python myprogram.py

@@ -5,7 +5,7 @@ from setuptools import find_packages
 from setuptools import setup
 
 NAME = 'fulltext'
-VERSION = '0.5'
+VERSION = '0.6'
 README = os.path.join(os.path.dirname(__file__), 'README.rst')
 
 with open(README) as f:
@@ -31,11 +31,11 @@ setup(
     packages=find_packages(),
     install_requires=REQUIRED,
     classifiers=(
-          'Development Status :: 4 - Beta',
-          'Intended Audience :: Developers',
-          'Operating System :: OS Independent',
-          'Programming Language :: Python',
-          'Topic :: Software Development :: Libraries :: Python Modules',
-          'Topic :: Text Processing :: Indexing',
+        'Development Status :: 4 - Beta',
+        'Intended Audience :: Developers',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python',
+        'Topic :: Software Development :: Libraries :: Python Modules',
+        'Topic :: Text Processing :: Indexing',
     ),
 )
