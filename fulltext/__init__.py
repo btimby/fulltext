@@ -27,6 +27,7 @@ STRIP_EOL = re.compile(r'[\r\n]+')
 SENTINAL = object()
 MIMETYPE_TO_BACKENDS = {}
 EXTS_TO_MIMETYPES = {}
+DEFAULT_MIME = 'application/octet-stream'
 
 mimetypes.init()
 _MIMETYPES_TO_EXT = dict([(v, k) for k, v in mimetypes.types_map.items()])
@@ -228,9 +229,9 @@ def backend_from_mime(mime):
     try:
         mod_name = MIMETYPE_TO_BACKENDS[mime]
     except KeyError:
-        mimebin = 'application/octet-stream'
-        warn("don't know how to handle %r mime; assume %r" % (mime, mimebin))
-        mod_name = MIMETYPE_TO_BACKENDS[mimebin]
+        warn("don't know how to handle %r mime; assume %r" % (
+            mime, DEFAULT_MIME))
+        mod_name = MIMETYPE_TO_BACKENDS[DEFAULT_MIME]
     mod = __import__(mod_name, fromlist=[' '])
     return mod
 
@@ -244,7 +245,7 @@ def backend_from_ext(ext, ignore_err=True):
         if not ignore_err:
             raise ValueError("don't know how to handle %r extension" % ext)
         warn("don't know how to handle %r extension; assume binary" % ext)
-        mime = 'application/octet-stream'
+        mime = DEFAULT_MIME
     mod_name = MIMETYPE_TO_BACKENDS[mime]
     mod = __import__(mod_name, fromlist=[' '])
     return mod
