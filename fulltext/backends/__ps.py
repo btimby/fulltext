@@ -1,3 +1,6 @@
+# To create a postscript file for test:
+# enscript -B --word-wrap -ptest.ps test.txt
+
 from __future__ import absolute_import
 
 import logging

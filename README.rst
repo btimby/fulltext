@@ -41,10 +41,13 @@ Supported formats
          strings from arbitrary (possibly) binary files.
 * xls - Uses Python ``xlrd`` module.
 * xlsx - Uses Python ``xlrd`` module.
-* pptx - Use Python ``pptx`` module
+* pptx - Uses Python ``pptx`` module
 * zip - Uses Python ``zipfile`` module.
 * jpg, jpeg, png, bmp, gif - Use ``/usr/bin/tesseract`` CLI tool and ``pytesseract`` module.
 * hwp - Uses Python ``pyhwp`` module as CLI tool.
+* epub - Uses Python ``ebooklib`` module.
+* mobi - Uses Python ``mobi-python`` module (from github).
+* ps - Uses ``/bin/pstotext`` CLI tool.
 
 Installing tools
 ----------------

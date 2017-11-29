@@ -1,3 +1,6 @@
+# To create a .epub file for test:
+# run "sigil", open test.txt and save as epub.
+
 from ebooklib import epub, ITEM_DOCUMENT
 
 from bs4 import BeautifulSoup
