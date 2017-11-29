@@ -268,13 +268,16 @@ def get(path_or_file, default=SENTINAL, mime=None, name=None, backend=None,
     backend_mod = get_backend_mod(backend)
 
     fun = _get_path if isinstance(path_or_file, string_types) else _get_file
+
     try:
         text = fun(backend_mod, path_or_file, **kwargs)
+
     except Exception as e:
         LOGGER.exception(e)
         if default is not SENTINAL:
             return default
         raise
+
     else:
         text = STRIP_WHITE.sub(' ', text)
         text = STRIP_EOL.sub(' ', text)
