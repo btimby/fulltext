@@ -9,4 +9,5 @@ pytesseract
 Pillow
 pycodestyle
 pyflakes
-
+ebooklib
+git+https://github.com/miracle2k/mobi-python.git#egg=mobi

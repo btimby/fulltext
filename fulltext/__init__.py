@@ -22,8 +22,7 @@ LOGGER.addHandler(logging.NullHandler())
 
 FULLTEXT_TEMP = os.environ.get('FULLTEXT_TEMP', tempfile.gettempdir())
 
-STRIP_WHITE = re.compile(r'[ \t\v\f]+')
-STRIP_EOL = re.compile(r'[\r\n]+')
+STRIP_WHITE = re.compile(r'[ \t\v\f\r\n]+')
 SENTINAL = object()
 MIMETYPE_TO_BACKENDS = {}
 EXTS_TO_MIMETYPES = {}
@@ -140,6 +139,17 @@ register_backend(
     'text/csv',
     'fulltext.backends.__csv')
 
+for mt in ("application/epub", "application/epub+zip"):
+    register_backend(
+        mt,
+        'fulltext.backends.__epub',
+        extensions=[".epub"])
+
+register_backend(
+    'application/mobi',
+    'fulltext.backends.__mobi',
+    extensions=[".mobi"])
+
 register_backend(
     'application/octet-stream',
     'fulltext.backends.__bin',
@@ -194,6 +204,10 @@ def _get_path(backend, path, **kwargs):
         with open(path, 'rb') as f:
             return backend._get_file(f, **kwargs)
 
+    else:
+        raise AssertionError(
+            'Backend %s has no _get functions' % backend.__name__)
+
 
 def _get_file(backend, f, **kwargs):
     """
@@ -223,6 +237,10 @@ def _get_file(backend, f, **kwargs):
             shutil.copyfileobj(f, t)
             t.flush()
             return backend._get_path(t.name, **kwargs)
+
+    else:
+        raise AssertionError(
+            'Backend %s has no _get functions' % backend.__name__)
 
 
 def backend_from_mime(mime):
@@ -294,5 +312,4 @@ def get(path_or_file, default=SENTINAL, mime=None, name=None, backend=None,
 
     else:
         text = STRIP_WHITE.sub(' ', text)
-        text = STRIP_EOL.sub(' ', text)
         return text.strip()

@@ -22,7 +22,7 @@ def _get_file(f, **kwargs):
     except ShellError as e:
         if b'not a Word Document' not in e.stderr:
             raise
-        LOGGER.warning('.doc file unsupported format')
+        LOGGER.warning('.doc file unsupported format, trying abiword')
     except MissingCommandException:
         LOGGER.warning('CLI tool "antiword" missing, using "abiword"')
 
@@ -40,7 +40,7 @@ def _get_path(path, **kwargs):
     except ShellError as e:
         if b'not a Word Document' not in e.stderr:
             raise
-        LOGGER.warning('.doc file unsupported format')
+        LOGGER.warning('.doc file unsupported format, trying abiword')
     except MissingCommandException:
         LOGGER.warning('CLI tool "antiword" missing, using "abiword"')
 

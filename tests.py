@@ -53,6 +53,10 @@ class BaseTestCase(unittest.TestCase):
 
     def assertMultiLineEqual(self, a, b, msg=None):
         """A useful assertion for troubleshooting."""
+        # Normalize spacing/formatting.
+        a = textwrap.wrap(a)
+        b = textwrap.wrap(b)
+
         # Check if two blocks of text are equal.
         if a == b:
             return
@@ -60,8 +64,6 @@ class BaseTestCase(unittest.TestCase):
         if msg is None:
             # If not the same, and no msg provided, create a user-friendly
             # diff message.
-            a = textwrap.wrap(a)
-            b = textwrap.wrap(b)
             a = [l + '\n' for l in a]
             b = [l + '\n' for l in b]
             msg = '\n' + ''.join(difflib.unified_diff(
@@ -219,6 +221,14 @@ class CsvTestCase(BaseTestCase, PathAndFileTests):
 
 class PngTestCase(BaseTestCase, PathAndFileTests):
     ext = "png"
+
+
+class EpubTestCase(BaseTestCase, PathAndFileTests):
+    ext = "epub"
+
+
+class MobiTestCase(BaseTestCase, PathAndFileTests):
+    ext = "mobi"
 
 
 @unittest.skipIf(not which('pyhwp'), "pyhwp not installed")

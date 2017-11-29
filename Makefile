@@ -13,7 +13,8 @@ SYSDEPS = \
 	libjpeg-dev \
 	poppler-utils \
 	tesseract-ocr abiword \
-	unrtf
+	unrtf \
+	pstotext
 
 test:  ## Run tests.
 	PYTHONWARNINGS=all $(PYTHON) tests.py
