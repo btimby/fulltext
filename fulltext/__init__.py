@@ -40,6 +40,8 @@ def register_backend(mimetype, module, extensions=None):
     `module`: an import string (e.g. path.to.my.module)
     `extensions`: a list of extensions (e.g. ['txt', 'text'])
     """
+    if mimetype in MIMETYPE_TO_BACKENDS:
+        warn("overwriting %r mimetype which was already set" % mimetype)
     MIMETYPE_TO_BACKENDS[mimetype] = module
     if extensions is None:
         try:
@@ -53,7 +55,7 @@ def register_backend(mimetype, module, extensions=None):
         if not isinstance(extensions, (list, tuple, set, frozenset)):
             raise TypeError("invalid extensions type (got %r)" % extensions)
         for ext in set(extensions):
-            assert ext.startswith('.'), ext
+            ext = ext if ext.startswith('.') else '.' + ext
             EXTS_TO_MIMETYPES[ext] = mimetype
 
 
@@ -268,6 +270,7 @@ def get(path_or_file, default=SENTINAL, mime=None, name=None, backend=None,
     backend_mod = get_backend_mod(backend)
 
     fun = _get_path if isinstance(path_or_file, string_types) else _get_file
+    kwargs.setdefault("mime", mime)
     try:
         text = fun(backend_mod, path_or_file, **kwargs)
     except Exception as e:
