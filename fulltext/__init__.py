@@ -7,7 +7,7 @@ import shutil
 import tempfile
 import mimetypes
 
-from os.path import basename, splitext
+from os.path import splitext
 
 from six import string_types
 from six import PY3
