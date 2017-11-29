@@ -238,7 +238,7 @@ def backend_from_mime(mime):
 
 
 def backend_from_ext(ext):
-    if not ext.startswith('.'):
+    if ext and not ext.startswith('.'):
         ext = "." + ext
     try:
         mime = EXTS_TO_MIMETYPES[ext]
