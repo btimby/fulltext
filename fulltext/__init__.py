@@ -288,12 +288,13 @@ def get(path_or_file, default=SENTINAL, mime=None, name=None, backend=None,
         text = fun(backend_mod, path_or_file, **kwargs)
 
     except Exception as e:
-        LOGGER.exception(e)
         if default is not SENTINAL:
+            LOGGER.exception(e)
             return default
         raise
 
     else:
+        assert text, repr(text)
         text = STRIP_WHITE.sub(' ', text)
         text = STRIP_EOL.sub(' ', text)
         return text.strip()
