@@ -12,6 +12,7 @@ from os.path import splitext
 from six import string_types
 from six import PY3
 from fulltext.util import warn
+from fulltext.util import magic
 
 
 __all__ = ["get", "register_backend"]
@@ -28,6 +29,7 @@ SENTINAL = object()
 MIMETYPE_TO_BACKENDS = {}
 EXTS_TO_MIMETYPES = {}
 DEFAULT_MIME = 'application/octet-stream'
+MAGIC_BUFFER_SIZE = 1024
 
 mimetypes.init()
 _MIMETYPES_TO_EXT = dict([(v, k) for k, v in mimetypes.types_map.items()])
@@ -49,12 +51,14 @@ def register_backend(mimetype, module, extensions=None):
             raise KeyError(
                 "mimetypes module has no extension associated "
                 "with %r mimetype; use 'extensions' arg yourself" % mimetype)
+        assert ext, ext
         EXTS_TO_MIMETYPES[ext] = mimetype
     else:
         if not isinstance(extensions, (list, tuple, set, frozenset)):
             raise TypeError("invalid extensions type (got %r)" % extensions)
         for ext in set(extensions):
             ext = ext if ext.startswith('.') else '.' + ext
+            assert ext, ext
             EXTS_TO_MIMETYPES[ext] = mimetype
 
 
@@ -176,6 +180,11 @@ def is_binary(f):
     return hasattr(byte, 'decode')
 
 
+def is_file_path(obj):
+    """Return True if obj is a possible file path or name."""
+    return isinstance(obj, string_types) or isinstance(obj, bytes)
+
+
 def _get_path(backend, path, **kwargs):
     """
     Handle a path.
@@ -226,6 +235,7 @@ def _get_file(backend, f, **kwargs):
 
 
 def backend_from_mime(mime):
+    """Determine backend module object from a mime string."""
     try:
         mod_name = MIMETYPE_TO_BACKENDS[mime]
     except KeyError:
@@ -236,19 +246,67 @@ def backend_from_mime(mime):
     return mod
 
 
-def backend_from_ext(ext, ignore_err=True):
-    if ext and not ext.startswith('.'):
-        ext = "." + ext
+def backend_from_fname(name):
+    """Determine backend module object from a file name."""
+    ext = splitext(name)[1]
     try:
         mime = EXTS_TO_MIMETYPES[ext]
     except KeyError:
-        if not ignore_err:
-            raise ValueError("don't know how to handle %r extension" % ext)
-        warn("don't know how to handle %r extension; assume binary" % ext)
-        mime = DEFAULT_MIME
-    mod_name = MIMETYPE_TO_BACKENDS[mime]
-    mod = __import__(mod_name, fromlist=[' '])
-    return mod
+        with open(name, 'rb') as f:
+            return backend_from_fobj(f)
+    else:
+        mod_name = MIMETYPE_TO_BACKENDS[mime]
+        mod = __import__(mod_name, fromlist=[' '])
+        return mod
+
+
+def backend_from_fobj(f):
+    """Determine backend module object from a file object."""
+    if magic is None:
+        warn("magic lib is not installed; assuming mime type %r" % (
+            DEFAULT_MIME))
+        return backend_from_mime(DEFAULT_MIME)
+    else:
+        offset = f.tell()
+        try:
+            f.seek(0)
+            chunk = f.read(MAGIC_BUFFER_SIZE)
+            mime = magic.from_buffer(chunk, mime=True)
+            return backend_from_mime(mime)
+        finally:
+            f.seek(offset)
+
+
+def _get(path_or_file, default, mime, name, backend, kwargs):
+    # Find backend module.
+    if backend is None:
+        if mime:
+            backend_mod = backend_from_mime(mime)
+        elif name:
+            backend_mod = backend_from_fname(name)
+        else:
+            if is_file_path(path_or_file):
+                backend_mod = backend_from_fname(path_or_file)
+            else:
+                if hasattr(path_or_file, "name"):
+                    backend_mod = backend_from_fname(path_or_file.name)
+                else:
+                    backend_mod = backend_from_fobj(path_or_file)
+    else:
+        try:
+            mime = EXTS_TO_MIMETYPES['.' + backend]
+        except KeyError:
+            raise ValueError("invalid backend %r" % backend)
+        backend_mod = backend_from_mime(mime)
+
+    # Call backend.
+    fun = _get_path if is_file_path(path_or_file) else _get_file
+    kwargs.setdefault("mime", mime)
+    text = fun(backend_mod, path_or_file, **kwargs)
+    assert text is not None
+    text = STRIP_WHITE.sub(' ', text)
+    text = STRIP_EOL.sub(' ', text)
+    return text.strip()
 
 
 def get(path_or_file, default=SENTINAL, mime=None, name=None, backend=None,
@@ -266,33 +324,11 @@ def get(path_or_file, default=SENTINAL, mime=None, name=None, backend=None,
        If both are specified `mime` takes precedence.
      * `kwargs` are passed to the underlying backend.
     """
-    # Find backend.
-    if backend is None:
-        if mime:
-            backend_mod = backend_from_mime(mime)
-        elif name:
-            backend_mod = backend_from_ext(splitext(name)[1])
-        else:
-            if isinstance(path_or_file, string_types):
-                backend_mod = backend_from_ext(splitext(path_or_file)[1])
-            else:
-                raise NotImplementedError  # TODO
-    else:
-        backend_mod = backend_from_ext(backend, ignore_err=False)
-
-    # Call backend.
-    fun = _get_path if isinstance(path_or_file, string_types) else _get_file
-    kwargs.setdefault("mime", mime)
     try:
-        text = fun(backend_mod, path_or_file, **kwargs)
-
+        return _get(path_or_file, default=default, mime=mime, name=name,
+                    backend=backend, kwargs=kwargs)
     except Exception as e:
         if default is not SENTINAL:
             LOGGER.exception(e)
             return default
         raise
-
-    else:
-        text = STRIP_WHITE.sub(' ', text)
-        text = STRIP_EOL.sub(' ', text)
-        return text.strip()

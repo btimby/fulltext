@@ -2,12 +2,6 @@ PYTHON = python
 
 # In not in a virtualenv, add --user options for install commands.
 INSTALL_OPTS = `$(PYTHON) -c "import sys; print('' if hasattr(sys, 'real_prefix') else '--user')"`
-PYDEPS = \
-	docx2txt \
-	flake8 \
-	pytesseract \
-	python-pptx \
-	xlrd
 SYSDEPS = \
 	antiword \
 	libjpeg-dev \
@@ -27,7 +21,8 @@ install:  ## Install this package as current user in "edit" mode.
 	PYTHONWARNINGS=all $(PYTHON) setup.py develop $(INSTALL_OPTS)
 
 pydeps:  ## Install third party python libs.
-	$(PYTHON) -m pip install $(INSTALL_OPTS) --upgrade $(PYDEPS)
+	$(PYTHON) -m pip install $(INSTALL_OPTS) --upgrade -r requirements.txt
+	$(PYTHON) -m pip install $(INSTALL_OPTS) --upgrade flake8
 
 sysdeps:  ## Install system deps (Ubuntu).
 	sudo apt-get install -y $(SYSDEPS)
