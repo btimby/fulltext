@@ -21,12 +21,10 @@ LOGGER = logging.getLogger(__file__)
 LOGGER.addHandler(logging.NullHandler())
 
 FULLTEXT_TEMP = os.environ.get('FULLTEXT_TEMP', tempfile.gettempdir())
-FULLTEXT_PATH = os.environ.get('FULLTEXT_PATH', '')
 
 STRIP_WHITE = re.compile(r'[ \t\v\f]+')
 STRIP_EOL = re.compile(r'[\r\n]+')
 SENTINAL = object()
-BACKENDS = {}
 MIMETYPE_TO_BACKENDS = {}
 EXTS_TO_MIMETYPES = {}
 
