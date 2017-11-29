@@ -1,5 +1,6 @@
 import os
 import unittest
+import io
 try:
     from unittest import mock  # py3
 except ImportError:
@@ -61,6 +62,13 @@ class BaseTestCase(unittest.TestCase):
                 f.write(content)
         self.addCleanup(os.remove, fname)
         return fname
+
+    def touch_fobj(self, content=b""):
+        f = BytesIO()
+        if content:
+            f.write(content)
+            f.seek(0)
+        return f
 
     def assertMultiLineEqual(self, a, b, msg=None):
         """A useful assertion for troubleshooting."""
@@ -330,6 +338,29 @@ class TestPickups(BaseTestCase):
         fname = self.touch('testfn.doc')
         with self.assertRaises(ValueError):
             fulltext.get(fname, backend='yoo')
+
+
+class TestFileObj(BaseTestCase):
+
+    def test_returned_content(self):
+        content = b"hello world"
+        f = self.touch_fobj(content=content)
+        ret = fulltext.get(f)
+        self.assertEqual(ret, content)
+
+
+class TestGuessingFromFileContent(BaseTestCase):
+
+    def test_fobj_offset(self):
+        # Make sure offset is unaltered after guessing mime type.
+        f = self.touch_fobj(content=b"hello world")
+        f.seek(0)
+        mod = fulltext.backend_from_fobj(f)
+        self.assertEqual(mod.__name__, 'fulltext.backends.__pdf')
+
+    def test_magic_is_installed(self):
+        from fulltext.util import magic
+        self.assertIsNotNone(magic)
 
 
 if __name__ == '__main__':

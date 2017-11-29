@@ -12,6 +12,7 @@ from os.path import splitext
 from six import string_types
 from six import PY3
 from fulltext.util import warn
+from fulltext.util import magic
 
 
 __all__ = ["get", "register_backend"]
@@ -28,6 +29,7 @@ SENTINAL = object()
 MIMETYPE_TO_BACKENDS = {}
 EXTS_TO_MIMETYPES = {}
 DEFAULT_MIME = 'application/octet-stream'
+MAGIC_BUFFER_SIZE = 1024
 
 mimetypes.init()
 _MIMETYPES_TO_EXT = dict([(v, k) for k, v in mimetypes.types_map.items()])
@@ -227,11 +229,6 @@ def _get_file(backend, f, **kwargs):
             return backend._get_path(t.name, **kwargs)
 
 
-def backend_from_fobj(fobj):
-    warn("don't know how to handle mime; assume %r" % (DEFAULT_MIME))
-    return backend_from_mime(DEFAULT_MIME)
-
-
 def backend_from_mime(mime):
     try:
         mod_name = MIMETYPE_TO_BACKENDS[mime]
@@ -256,6 +253,16 @@ def backend_from_fname(name):
         return mod
 
 
+def backend_from_fobj(fobj):
+    offset = fobj.tell()
+    try:
+        chunk = fobj.read(MAGIC_BUFFER_SIZE)
+        mime = magic.from_buffer(chunk, mime=True)
+        return backend_from_mime(mime)
+    finally:
+        fobj.seek(offset)
+
+
 def _get(path_or_file, default, mime, name, backend, kwargs):
     # Find backend.
     if backend is None:
@@ -267,7 +274,10 @@ def _get(path_or_file, default, mime, name, backend, kwargs):
             if isinstance(path_or_file, string_types):
                 backend_mod = backend_from_fname(path_or_file)
             else:
-                raise NotImplementedError  # TODO
+                if hasattr(path_or_file, "name"):
+                    backend_mod = backend_from_fname(path_or_file.name)
+                else:
+                    backend_mod = backend_from_fobj(path_or_file)
     else:
         try:
             mime = EXTS_TO_MIMETYPES['.' + backend]
