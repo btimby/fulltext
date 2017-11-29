@@ -200,10 +200,6 @@ class RtfTestCase(BaseTestCase, PathAndFileTests):
     ext = "rtf"
 
 
-class TestCase(BaseTestCase, PathAndFileTests):
-    ext = "test"
-
-
 class CsvTestCase(BaseTestCase, PathAndFileTests):
     ext = "csv"
     text = TEXT.replace(',', '')
@@ -315,7 +311,7 @@ class TestPickups(BaseTestCase):
 
     # --- by backend opt
 
-    def test_backend_opt(self):
+    def test_by_backend(self):
         # Assert file ext is ignored if backend opt is used.
         fname = 'testfn.doc'
         self.touch(fname)
@@ -323,6 +319,13 @@ class TestPickups(BaseTestCase):
             fulltext.get(fname, backend='pdf')
             mod = m.call_args[0][0]
             self.assertEqual(mod.__name__, 'fulltext.backends.__pdf')
+
+    def test_by_invalid_backend(self):
+        # Assert file ext is ignored if backend opt is used.
+        fname = 'testfn.doc'
+        self.touch(fname)
+        with self.assertRaises(ValueError):
+            fulltext.get(fname, backend='yoo')
 
 
 if __name__ == '__main__':

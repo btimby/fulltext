@@ -237,12 +237,14 @@ def backend_from_mime(mime):
     return mod
 
 
-def backend_from_ext(ext):
+def backend_from_ext(ext, ignore_err=True):
     if ext and not ext.startswith('.'):
         ext = "." + ext
     try:
         mime = EXTS_TO_MIMETYPES[ext]
     except KeyError:
+        if not ignore_err:
+            raise ValueError("don't know how to handle %r extension" % ext)
         warn("don't know how to handle %r extension; assume binary" % ext)
         mime = 'application/octet-stream'
     mod_name = MIMETYPE_TO_BACKENDS[mime]
@@ -277,7 +279,7 @@ def get(path_or_file, default=SENTINAL, mime=None, name=None, backend=None,
             else:
                 raise NotImplementedError  # TODO
     else:
-        backend_mod = backend_from_ext(backend)
+        backend_mod = backend_from_ext(backend, ignore_err=False)
 
     # Call backend.
     fun = _get_path if isinstance(path_or_file, string_types) else _get_file
