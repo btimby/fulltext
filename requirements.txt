@@ -9,4 +9,4 @@ pytesseract
 Pillow
 pycodestyle
 pyflakes
-
+python-magic
