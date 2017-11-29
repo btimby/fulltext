@@ -41,6 +41,8 @@ TEXT = TEXT_WITH_NEWLINES.replace('\n', ' ')
 class BaseTestCase(unittest.TestCase):
     """Base TestCase Class."""
 
+    # --- override
+
     def __str__(self):
         # Print fully qualified test name.
         return "%s.%s.%s" % (
@@ -50,6 +52,15 @@ class BaseTestCase(unittest.TestCase):
     def shortDescription(self):
         # Avoid printing docstrings.
         return ""
+
+    # --- utils
+
+    def touch(self, fname, content=""):
+        with open(fname, 'wt') as f:
+            if content:
+                f.write(content)
+        self.addCleanup(os.remove, fname)
+        return fname
 
     def assertMultiLineEqual(self, a, b, msg=None):
         """A useful assertion for troubleshooting."""
@@ -109,9 +120,7 @@ class FullTextTestCase(BaseTestCase):
 
     def test_default_none(self):
         "Ensure None is a valid value to pass as default."
-        with warnings.catch_warnings(record=True) as ws:
-            self.assertEqual(fulltext.get('unknown-file.foobar', None), None)
-        assert ws
+        self.assertEqual(fulltext.get('unknown-file.foobar', None), None)
 
 
 class FullTextStripTestCase(BaseTestCase):
@@ -244,17 +253,10 @@ class FilesTestCase(BaseTestCase):
 class TestPickups(BaseTestCase):
     """Make sure the right backend is called."""
 
-    def touch(self, fname, content=""):
-        with open(fname, 'wt') as f:
-            if content:
-                f.write(content)
-        self.addCleanup(os.remove, fname)
-
     # --- by extension
 
     def test_by_ext(self):
-        fname = 'testfn.doc'
-        self.touch(fname)
+        fname = self.touch('testfn.doc')
         with mock.patch('fulltext._get_path', return_value="") as m:
             fulltext.get(fname)
             mod = m.call_args[0][0]
@@ -262,8 +264,7 @@ class TestPickups(BaseTestCase):
 
     def test_no_ext(self):
         # File with no extension == use bin backend.
-        fname = 'testfn'
-        self.touch(fname)
+        fname = self.touch('testfn')
         with mock.patch('fulltext._get_path', return_value="") as m:
             fulltext.get(fname)
             mod = m.call_args[0][0]
@@ -271,28 +272,23 @@ class TestPickups(BaseTestCase):
 
     def test_unknown_ext(self):
         # File with unknown extension == use bin backend.
-        fname = 'testfn.unknown'
-        self.touch(fname)
+        fname = self.touch('testfn.unknown')
         with mock.patch('fulltext._get_path', return_value="") as m:
-            with warnings.catch_warnings(record=True) as ws:
-                fulltext.get(fname)
-            assert ws
+            fulltext.get(fname)
             mod = m.call_args[0][0]
             self.assertEqual(mod.__name__, 'fulltext.backends.__bin')
 
     # --- by mime opt
 
     def test_by_mime(self):
-        fname = 'testfn.doc'
-        self.touch(fname)
+        fname = self.touch('testfn.doc')
         with mock.patch('fulltext._get_path', return_value="") as m:
             fulltext.get(fname, mime='application/vnd.ms-excel')
             mod = m.call_args[0][0]
             self.assertEqual(mod.__name__, 'fulltext.backends.__xlsx')
 
     def test_by_unknown_mime(self):
-        fname = 'testfn.doc'
-        self.touch(fname)
+        fname = self.touch('testfn.doc')
         with mock.patch('fulltext._get_path', return_value="") as m:
             with warnings.catch_warnings(record=True) as ws:
                 fulltext.get(fname, mime='application/yo!')
@@ -303,8 +299,7 @@ class TestPickups(BaseTestCase):
     # -- by name opt
 
     def test_by_name(self):
-        fname = 'testfn'
-        self.touch(fname)
+        fname = self.touch('testfn')
         with mock.patch('fulltext._get_path', return_value="") as m:
             fulltext.get(fname, name="woodstock.doc")
             mod = m.call_args[0][0]
@@ -312,11 +307,10 @@ class TestPickups(BaseTestCase):
 
     def test_by_name_with_no_ext(self):
         # Assume bin backend is picked up.
-        fname = 'testfn'
-        self.touch(fname)
+        fname = self.touch("woodstock-no-ext")
         with mock.patch('fulltext._get_path', return_value="") as m:
             with warnings.catch_warnings(record=True) as ws:
-                fulltext.get(fname, name="woodstock-no-ext")
+                fulltext.get(fname, name=fname)
             assert ws
             mod = m.call_args[0][0]
             self.assertEqual(mod.__name__, 'fulltext.backends.__bin')
@@ -325,8 +319,7 @@ class TestPickups(BaseTestCase):
 
     def test_by_backend(self):
         # Assert file ext is ignored if backend opt is used.
-        fname = 'testfn.doc'
-        self.touch(fname)
+        fname = self.touch('testfn.doc')
         with mock.patch('fulltext._get_path', return_value="") as m:
             fulltext.get(fname, backend='pdf')
             mod = m.call_args[0][0]
@@ -334,8 +327,7 @@ class TestPickups(BaseTestCase):
 
     def test_by_invalid_backend(self):
         # Assert file ext is ignored if backend opt is used.
-        fname = 'testfn.doc'
-        self.touch(fname)
+        fname = self.touch('testfn.doc')
         with self.assertRaises(ValueError):
             fulltext.get(fname, backend='yoo')
 

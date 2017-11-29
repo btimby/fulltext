@@ -49,12 +49,14 @@ def register_backend(mimetype, module, extensions=None):
             raise KeyError(
                 "mimetypes module has no extension associated "
                 "with %r mimetype; use 'extensions' arg yourself" % mimetype)
+        assert ext, ext
         EXTS_TO_MIMETYPES[ext] = mimetype
     else:
         if not isinstance(extensions, (list, tuple, set, frozenset)):
             raise TypeError("invalid extensions type (got %r)" % extensions)
         for ext in set(extensions):
             ext = ext if ext.startswith('.') else '.' + ext
+            assert ext, ext
             EXTS_TO_MIMETYPES[ext] = mimetype
 
 
@@ -225,6 +227,11 @@ def _get_file(backend, f, **kwargs):
             return backend._get_path(t.name, **kwargs)
 
 
+def backend_from_fobj(fobj):
+    warn("don't know how to handle mime; assume %r" % (DEFAULT_MIME))
+    return backend_from_mime(DEFAULT_MIME)
+
+
 def backend_from_mime(mime):
     try:
         mod_name = MIMETYPE_TO_BACKENDS[mime]
@@ -241,28 +248,15 @@ def backend_from_fname(name):
     try:
         mime = EXTS_TO_MIMETYPES[ext]
     except KeyError:
-        warn("don't know how to handle %r extension; assume binary" % ext)
-        mime = DEFAULT_MIME
-    mod_name = MIMETYPE_TO_BACKENDS[mime]
-    mod = __import__(mod_name, fromlist=[' '])
-    return mod
+        with open(name, 'rb') as f:
+            return backend_from_fobj(f)
+    else:
+        mod_name = MIMETYPE_TO_BACKENDS[mime]
+        mod = __import__(mod_name, fromlist=[' '])
+        return mod
 
 
-def get(path_or_file, default=SENTINAL, mime=None, name=None, backend=None,
-        kwargs={}):
-    """
-    Get document full text.
-
-    Accepts a path or file-like object.
-     * If given, `default` is returned instead of an error.
-     * `backend` is a string specifying which default backend to use
-       (e.g. "doc"); take a look at backends directory to see a list of
-       default backends.
-     * `mime` and `name` should be passed if the information
-       is available to caller, otherwise a best guess is made.
-       If both are specified `mime` takes precedence.
-     * `kwargs` are passed to the underlying backend.
-    """
+def _get(path_or_file, default, mime, name, backend, kwargs):
     # Find backend.
     if backend is None:
         if mime:
@@ -284,16 +278,33 @@ def get(path_or_file, default=SENTINAL, mime=None, name=None, backend=None,
     # Call backend.
     fun = _get_path if isinstance(path_or_file, string_types) else _get_file
     kwargs.setdefault("mime", mime)
-    try:
-        text = fun(backend_mod, path_or_file, **kwargs)
+    text = fun(backend_mod, path_or_file, **kwargs)
+    assert text is not None
+    text = STRIP_WHITE.sub(' ', text)
+    text = STRIP_EOL.sub(' ', text)
+    return text.strip()
 
+
+def get(path_or_file, default=SENTINAL, mime=None, name=None, backend=None,
+        kwargs={}):
+    """
+    Get document full text.
+
+    Accepts a path or file-like object.
+     * If given, `default` is returned instead of an error.
+     * `backend` is a string specifying which default backend to use
+       (e.g. "doc"); take a look at backends directory to see a list of
+       default backends.
+     * `mime` and `name` should be passed if the information
+       is available to caller, otherwise a best guess is made.
+       If both are specified `mime` takes precedence.
+     * `kwargs` are passed to the underlying backend.
+    """
+    try:
+        return _get(path_or_file, default=default, mime=mime, name=name,
+                    backend=backend, kwargs=kwargs)
     except Exception as e:
         if default is not SENTINAL:
             LOGGER.exception(e)
             return default
         raise
-
-    else:
-        text = STRIP_WHITE.sub(' ', text)
-        text = STRIP_EOL.sub(' ', text)
-        return text.strip()
