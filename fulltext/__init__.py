@@ -243,21 +243,22 @@ def get(path_or_file, default=SENTINAL, mime=None, name=None, backend=None,
     Get document full text.
 
     Accepts a path or file-like object.
-    If given, `default` is returned instead of an error.
-    `backend` is a string specifying which backend to use (e.g. "doc").
-    `mime` and `name` should be passed if the information
-    is available to caller, otherwise a best guess is made.
-    `kwargs` are passed to the underlying backend.
+     * If given, `default` is returned instead of an error.
+     * `backend` is a string specifying which default backend to use
+       (e.g. "doc"); take a look at backends directory to see a list of
+       default backends.
+     * `mime` and `name` should be passed if the information
+       is available to caller, otherwise a best guess is made.
+     * `kwargs` are passed to the underlying backend.
     """
-    if not name:
-        name = getattr(path_or_file, 'name', None)
-
-    if not name and isinstance(path_or_file, string_types):
-        name = basename(path_or_file)
-
     if backend is None:
+        if not name:
+            name = getattr(path_or_file, 'name', None)
+        if not name and isinstance(path_or_file, string_types):
+            name = basename(path_or_file)
+
         if name:
-            ext = splitext(name)[1].lstrip('.')
+            ext = splitext(name)[1]
         elif mime:
             ext = mime.partition('/')[2]
         else:
