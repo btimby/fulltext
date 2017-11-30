@@ -1,7 +1,5 @@
 from __future__ import absolute_import
 
-import re
-
 from bs4 import BeautifulSoup
 
 from six import StringIO
