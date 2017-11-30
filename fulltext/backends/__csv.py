@@ -11,24 +11,21 @@ def readlines(f):
 
 
 def _get_file(f, **kwargs):
-    csv_kwargs = {
+    options = {
         'dialect': 'excel',
         'delimiter': ',',
     }
 
-    mimetype = kwargs.get('mimetype', None)
+    mimetype = kwargs.get('mime', None)
 
     if mimetype == 'text/tsv':
-        csv_kwargs = {
-            'delimiter': '\t',
-        }
+        options['delimiter'] = '\t'
+
     elif mimetype == 'text/psv':
-        csv_kwargs = {
-            'delimiter': '|',
-        }
+        options['delimiter'] = '|'
 
     text = StringIO()
-    for row in csv.reader(readlines(f), **csv_kwargs):
+    for row in csv.reader(readlines(f), **options):
         text.write(u' '.join(row))
         text.write(u'\n')
     return text.getvalue()
