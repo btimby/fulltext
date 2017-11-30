@@ -265,11 +265,6 @@ class PsTestCase(BaseTestCase, PathAndFileTests):
 class JsonTestCase(BaseTestCase, PathAndFileTests):
     ext = "json"
 
-    def assertMultiLineEqual(self, a, b, msg=None):
-        a = ' '.join(sorted(set(a.split())))
-        b = ' '.join(sorted(set(b.split())))
-        super().assertMultiLineEqual(a, b, msg)
-
 
 @unittest.skipIf(not which('pyhwp'), "pyhwp not installed")
 class HwpTestCase(BaseTestCase, PathAndFileTests):
