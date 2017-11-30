@@ -1,18 +1,18 @@
 #!/bin/env python
 
-import os
+from os.path import dirname
+from os.path import join as pathjoin
 from setuptools import find_packages
 from setuptools import setup
 
-NAME = 'fulltext'
-VERSION = '0.6'
-README = os.path.join(os.path.dirname(__file__), 'README.rst')
 
-with open(README) as f:
+NAME = 'fulltext'
+VERSION = '0.7'
+
+with open(pathjoin(dirname(__file__), 'README.rst')) as f:
     DESCRIPTION = f.read()
 
-REQUIRED = []
-REQUIRED_URL = []
+REQUIRED, REQUIRED_URL = [], []
 
 with open('requirements.txt') as f:
     for line in f.readlines():
