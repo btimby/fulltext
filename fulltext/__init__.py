@@ -23,8 +23,7 @@ LOGGER.addHandler(logging.NullHandler())
 
 FULLTEXT_TEMP = os.environ.get('FULLTEXT_TEMP', tempfile.gettempdir())
 
-STRIP_WHITE = re.compile(r'[ \t\v\f]+')
-STRIP_EOL = re.compile(r'[\r\n]+')
+STRIP_WHITE = re.compile(r'[ \t\v\f\r\n]+')
 SENTINAL = object()
 MIMETYPE_TO_BACKENDS = {}
 EXTS_TO_MIMETYPES = {}
@@ -111,13 +110,16 @@ register_backend(
     'image/jpeg',
     'fulltext.backends.__ocr',
     extensions=['.jpg', '.jpeg'])
+
 register_backend(
     'image/bmp',
     'fulltext.backends.__ocr',
     extensions=['.bmp'])
+
 register_backend(
     'image/png',
     'fulltext.backends.__ocr')
+
 register_backend(
     'image/gif',
     'fulltext.backends.__ocr')
@@ -140,9 +142,22 @@ register_backend(
     'fulltext.backends.__doc',
     extensions=['.doc'])
 
+for mt in ('text/csv', 'text/tsv', 'text/psv'):
+    register_backend(
+        mt,
+        'fulltext.backends.__csv',
+        extensions=['.csv', '.tsv', '.psv'])
+
+for mt in ("application/epub", "application/epub+zip"):
+    register_backend(
+        mt,
+        'fulltext.backends.__epub',
+        extensions=[".epub"])
+
 register_backend(
-    'text/csv',
-    'fulltext.backends.__csv')
+    'application/postscript',
+    'fulltext.backends.__ps',
+    extensions=[".ps", ".eps", ".ai"])
 
 register_backend(
     'application/octet-stream',
@@ -203,6 +218,10 @@ def _get_path(backend, path, **kwargs):
         with open(path, 'rb') as f:
             return backend._get_file(f, **kwargs)
 
+    else:
+        raise AssertionError(
+            'Backend %s has no _get functions' % backend.__name__)
+
 
 def _get_file(backend, f, **kwargs):
     """
@@ -232,6 +251,10 @@ def _get_file(backend, f, **kwargs):
             shutil.copyfileobj(f, t)
             t.flush()
             return backend._get_path(t.name, **kwargs)
+
+    else:
+        raise AssertionError(
+            'Backend %s has no _get functions' % backend.__name__)
 
 
 def backend_from_mime(mime):
@@ -293,24 +316,27 @@ def _get(path_or_file, default, mime, name, backend, kwargs):
                 else:
                     backend_mod = backend_from_fobj(path_or_file)
     else:
-        try:
-            mime = EXTS_TO_MIMETYPES['.' + backend]
-        except KeyError:
-            raise ValueError("invalid backend %r" % backend)
+        if mime is None:
+            try:
+                mime = EXTS_TO_MIMETYPES['.' + backend]
+            except KeyError:
+                raise ValueError("invalid backend %r" % backend)
         backend_mod = backend_from_mime(mime)
+
+    # Create kwargs, add one by default.
+    kwargs = kwargs or {}
+    kwargs.setdefault("mime", mime)
 
     # Call backend.
     fun = _get_path if is_file_path(path_or_file) else _get_file
-    kwargs.setdefault("mime", mime)
     text = fun(backend_mod, path_or_file, **kwargs)
     assert text is not None
     text = STRIP_WHITE.sub(' ', text)
-    text = STRIP_EOL.sub(' ', text)
     return text.strip()
 
 
 def get(path_or_file, default=SENTINAL, mime=None, name=None, backend=None,
-        kwargs={}):
+        kwargs=None):
     """
     Get document full text.
 

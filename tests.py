@@ -73,6 +73,10 @@ class BaseTestCase(unittest.TestCase):
 
     def assertMultiLineEqual(self, a, b, msg=None):
         """A useful assertion for troubleshooting."""
+        # Normalize spacing/formatting.
+        a = textwrap.wrap(a)
+        b = textwrap.wrap(b)
+
         # Check if two blocks of text are equal.
         if a == b:
             return
@@ -80,8 +84,6 @@ class BaseTestCase(unittest.TestCase):
         if msg is None:
             # If not the same, and no msg provided, create a user-friendly
             # diff message.
-            a = textwrap.wrap(a)
-            b = textwrap.wrap(b)
             a = [l + '\n' for l in a]
             b = [l + '\n' for l in b]
             msg = '\n' + ''.join(difflib.unified_diff(
@@ -152,17 +154,18 @@ class FullTextStripTestCase(BaseTestCase):
 
 class PathAndFileTests(object):
     text = TEXT
+    mime = None
 
     def test_file(self):
         path = 'files/test.%s' % self.ext
         with open(path, 'rb') as f:
-            text = fulltext.get(f, backend=self.ext)
+            text = fulltext.get(f, backend=self.ext, mime=self.mime)
             self.assertMultiLineEqual(self.text, text)
 
     def _handle_text(self, f):
         """Main body of both 'text mode' tests."""
         try:
-            text = fulltext.get(f, backend=self.ext)
+            text = fulltext.get(f, backend=self.ext, mime=self.mime)
             self.assertMultiLineEqual(self.text, text)
         finally:
             f.close()
@@ -182,16 +185,16 @@ class PathAndFileTests(object):
 
     def test_path(self):
         path = 'files/test.%s' % self.ext
-        text = fulltext.get(path, backend=self.ext)
+        text = fulltext.get(path, backend=self.ext, mime=self.mime)
         self.assertMultiLineEqual(self.text, text)
 
 
 class TxtTestCase(BaseTestCase, PathAndFileTests):
-    ext = "txt"
+    ext = 'txt'
 
 
 class OdtTestCase(BaseTestCase, PathAndFileTests):
-    ext = "odt"
+    ext = 'odt'
 
 
 class DocTestCase(BaseTestCase, PathAndFileTests):
@@ -232,11 +235,30 @@ class RtfTestCase(BaseTestCase, PathAndFileTests):
 
 class CsvTestCase(BaseTestCase, PathAndFileTests):
     ext = "csv"
+    mime = 'text/csv'
     text = TEXT.replace(',', '')
+
+
+class TsvTestCase(BaseTestCase, PathAndFileTests):
+    ext = "tsv"
+    mime = 'text/tsv'
+
+
+class PsvTestCase(BaseTestCase, PathAndFileTests):
+    ext = "psv"
+    mime = 'text/psv'
 
 
 class PngTestCase(BaseTestCase, PathAndFileTests):
     ext = "png"
+
+
+class EpubTestCase(BaseTestCase, PathAndFileTests):
+    ext = "epub"
+
+
+class PsTestCase(BaseTestCase, PathAndFileTests):
+    ext = "ps"
 
 
 @unittest.skipIf(not which('pyhwp'), "pyhwp not installed")
