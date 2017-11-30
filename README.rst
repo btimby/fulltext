@@ -49,7 +49,6 @@ Supported formats
 * jpg, jpeg, png, bmp, gif - Use ``/usr/bin/tesseract`` CLI tool and ``pytesseract`` module.
 * hwp - Uses Python ``pyhwp`` module as CLI tool.
 * epub - Uses Python ``ebooklib`` module.
-* mobi - Uses Python ``mobi-python`` module (from github).
 * ps - Uses ``/bin/pstotext`` CLI tool.
 
 Installing tools
