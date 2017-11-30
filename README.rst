@@ -51,6 +51,7 @@ Supported formats
 * hwp - Uses Python ``pyhwp`` module as CLI tool.
 * epub - Uses Python ``ebooklib`` module.
 * ps - Uses ``/bin/pstotext`` CLI tool.
+* json - Uses ``json`` Python module.
 
 Installing tools
 ----------------
