@@ -30,3 +30,6 @@ def _get_file(path_or_file, **kwargs):
         else:
             backend = backend_from_fobj(f)
         return get(f, backend=backend)
+
+
+_get_path = _get_file
