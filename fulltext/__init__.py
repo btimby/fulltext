@@ -13,6 +13,8 @@ from six import string_types
 from six import PY3
 from fulltext.util import warn
 from fulltext.util import magic
+from fulltext.util import is_windows
+
 
 
 __all__ = ["get", "register_backend"]
@@ -30,6 +32,7 @@ MIMETYPE_TO_BACKENDS = {}
 EXTS_TO_MIMETYPES = {}
 DEFAULT_MIME = 'application/octet-stream'
 MAGIC_BUFFER_SIZE = 1024
+WINDOWS = is_windows()
 
 mimetypes.init()
 _MIMETYPES_TO_EXT = dict([(v, k) for k, v in mimetypes.types_map.items()])
@@ -64,7 +67,8 @@ def register_backend(mimetype, module, extensions=None):
 
 register_backend(
     'application/zip',
-    'fulltext.backends.__zip')
+    'fulltext.backends.__zip',
+    extensions=['.zip'])
 
 for mt in ("text/xml", "application/xml", "application/x-xml"):
     register_backend(
@@ -79,7 +83,8 @@ register_backend(
 
 register_backend(
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    'fulltext.backends.__xlsx')
+    'fulltext.backends.__xlsx',
+    extensions=['.xlsx'] if WINDOWS else None)
 
 register_backend(
     'text/plain',
@@ -88,11 +93,13 @@ register_backend(
 
 register_backend(
     'application/rtf',
-    'fulltext.backends.__rtf')
+    'fulltext.backends.__rtf',
+    extensions=['.rtf'] if WINDOWS else None)
 
 register_backend(
     'application/vnd.openxmlformats-officedocument.presentationml.presentation',  # NOQA
-    'fulltext.backends.__pptx')
+    'fulltext.backends.__pptx',
+    extensions=['.pptx'] if WINDOWS else None)
 
 register_backend(
     'application/pdf',
@@ -100,11 +107,13 @@ register_backend(
 
 register_backend(
     'application/vnd.oasis.opendocument.text',
-    'fulltext.backends.__odt')
+    'fulltext.backends.__odt',
+    extensions=['.odt'] if WINDOWS else None)
 
 register_backend(
     'application/vnd.oasis.opendocument.spreadsheet',
-    'fulltext.backends.__odt')
+    'fulltext.backends.__odt',
+    extensions=['.ods'] if WINDOWS else None)
 
 # images
 register_backend(
@@ -124,7 +133,8 @@ register_backend(
 
 register_backend(
     'application/x-hwp',
-    'fulltext.backends.__hwp')
+    'fulltext.backends.__hwp',
+    extensions=['.hwp'] if WINDOWS else None)
 
 register_backend(
     'text/html',
@@ -133,7 +143,8 @@ register_backend(
 
 register_backend(
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'fulltext.backends.__docx')
+    'fulltext.backends.__docx',
+    extensions=['.docx'] if WINDOWS else None)
 
 register_backend(
     'application/msword',
