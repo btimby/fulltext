@@ -15,17 +15,16 @@ def _to_text(text, obj):
         for item in obj:
             _to_text(text, item)
 
-    elif isinstance(obj, string_types):
-        text.write(obj)
-        text.write(u' ')
+    elif isinstance(obj, string_types + integer_types):
+        text.write(u'%s ' % obj)
 
-    elif isinstance(obj, integer_types):
-        text.write(str(obj))
-        text.write(u' ')
+    else:
+        raise ValueError('Unrecognized type: %s' % obj.__class__)
 
 
 def _get_file(f, **kwargs):
-    text, obj = StringIO(), json.loads(f.read().decode('utf8'))
+    text, data = StringIO(), f.read()
+    obj = json.loads(data.decode('utf8'))
 
     _to_text(text, obj)
 
