@@ -1,4 +1,5 @@
 import json
+import sys
 
 from six import StringIO
 from six import string_types
@@ -6,6 +7,7 @@ from six import integer_types
 
 
 SCALAR_TYPES = string_types + integer_types
+ENCODING = sys.getfilesystemencoding()
 
 
 def _to_text(text, obj):
@@ -26,8 +28,9 @@ def _to_text(text, obj):
 
 
 def _get_file(f, **kwargs):
+    encoding = kwargs.get('encoding', ENCODING)
     text, data = StringIO(), f.read()
-    obj = json.loads(data.decode('utf8'))
+    obj = json.loads(data.decode(encoding))
 
     _to_text(text, obj)
 
