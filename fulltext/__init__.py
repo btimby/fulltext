@@ -185,8 +185,14 @@ def is_binary(f):
         return True
 
     # If the file has a mode, and it contains b, it is binary.
-    if 'b' in getattr(f, 'mode', ''):
-        return True
+    try:
+        if 'b' in getattr(f, 'mode', ''):
+            return True
+    except TypeError:
+        import gzip
+        if isinstance(f, gzip.GzipFile):
+            return True  # in gzip mode is an integer
+        raise
 
     # Can we sniff?
     try:
