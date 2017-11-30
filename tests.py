@@ -105,6 +105,7 @@ class BaseTestCase(unittest.TestCase):
 
 
 class FullTextTestCase(BaseTestCase):
+
     def test_missing_default(self):
         "Ensure a missing file returns default instead of exception."
         self.assertEqual(fulltext.get('non-existent-file.pdf', 'sentinal'),
@@ -159,13 +160,13 @@ class PathAndFileTests(object):
     def test_file(self):
         path = 'files/test.%s' % self.ext
         with open(path, 'rb') as f:
-            text = fulltext.get(f, backend=self.ext, mime=self.mime)
+            text = fulltext.get(f, mime=self.mime)
             self.assertMultiLineEqual(self.text, text)
 
     def _handle_text(self, f):
         """Main body of both 'text mode' tests."""
         try:
-            text = fulltext.get(f, backend=self.ext, mime=self.mime)
+            text = fulltext.get(f, mime=self.mime)
             self.assertMultiLineEqual(self.text, text)
         finally:
             f.close()
@@ -185,7 +186,7 @@ class PathAndFileTests(object):
 
     def test_path(self):
         path = 'files/test.%s' % self.ext
-        text = fulltext.get(path, backend=self.ext, mime=self.mime)
+        text = fulltext.get(path, mime=self.mime)
         self.assertMultiLineEqual(self.text, text)
 
 
@@ -274,7 +275,25 @@ class HwpTestCase(BaseTestCase, PathAndFileTests):
     ext = "hwp"
 
 
+class GzTestCase(BaseTestCase, PathAndFileTests):
+    ext = "gz"
+
+    # TODO: pdf backend can't handle file objects
+    # def test_pdf(self):
+    #     text = fulltext.get("files/gz/test.pdf.gz")
+    #     self.assertMultiLineEqual(self.text, text)
+
+    def test_csv(self):
+        text = fulltext.get("files/gz/test.csv.gz")
+        self.assertMultiLineEqual(self.text.replace(',', ''), text)
+
+    def test_txt(self):
+        text = fulltext.get("files/gz/test.txt.gz")
+        self.assertMultiLineEqual(self.text, text)
+
+
 class FilesTestCase(BaseTestCase):
+
     def test_old_doc_file(self):
         "Antiword does not support older Word documents."
         with open('files/test.old.doc', 'rb') as f:

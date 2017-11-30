@@ -46,6 +46,7 @@ Supported formats
 * xml - Uses Python ``lxml`` module.
 * pptx - Uses Python ``pptx`` module
 * zip - Uses Python ``zipfile`` module.
+* gz - Uses Python ``gzip`` module.
 * jpg, jpeg, png, bmp, gif - Use ``/usr/bin/tesseract`` CLI tool and ``pytesseract`` module.
 * hwp - Uses Python ``pyhwp`` module as CLI tool.
 * epub - Uses Python ``ebooklib`` module.
