@@ -146,7 +146,7 @@ for mt in ('text/csv', 'text/tsv', 'text/psv'):
     register_backend(
         mt,
         'fulltext.backends.__csv',
-        extensions=['.csv', '.tsv', '.csv'])
+        extensions=['.csv', '.tsv', '.psv'])
 
 for mt in ("application/epub", "application/epub+zip"):
     register_backend(
@@ -321,15 +321,19 @@ def _get(path_or_file, default, mime, name, backend, kwargs):
                 else:
                     backend_mod = backend_from_fobj(path_or_file)
     else:
-        try:
-            mime = EXTS_TO_MIMETYPES['.' + backend]
-        except KeyError:
-            raise ValueError("invalid backend %r" % backend)
+        if mime is None:
+            try:
+                mime = EXTS_TO_MIMETYPES['.' + backend]
+            except KeyError:
+                raise ValueError("invalid backend %r" % backend)
         backend_mod = backend_from_mime(mime)
+
+    # Create kwargs, add one by default.
+    kwargs = kwargs or {}
+    kwargs.setdefault("mime", mime)
 
     # Call backend.
     fun = _get_path if is_file_path(path_or_file) else _get_file
-    kwargs.setdefault("mime", mime)
     text = fun(backend_mod, path_or_file, **kwargs)
     assert text is not None
     text = STRIP_WHITE.sub(' ', text)
@@ -337,7 +341,7 @@ def _get(path_or_file, default, mime, name, backend, kwargs):
 
 
 def get(path_or_file, default=SENTINAL, mime=None, name=None, backend=None,
-        kwargs={}):
+        kwargs=None):
     """
     Get document full text.
 
