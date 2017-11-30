@@ -5,6 +5,9 @@ from six import string_types
 from six import integer_types
 
 
+SCALAR_TYPES = string_types + integer_types
+
+
 def _to_text(text, obj):
     if isinstance(obj, dict):
         for key in sorted(obj.keys()):
@@ -15,7 +18,7 @@ def _to_text(text, obj):
         for item in obj:
             _to_text(text, item)
 
-    elif isinstance(obj, string_types + integer_types):
+    elif isinstance(obj, SCALAR_TYPES):
         text.write(u'%s ' % obj)
 
     else:
