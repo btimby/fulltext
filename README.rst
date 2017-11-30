@@ -39,8 +39,7 @@ Supported formats
 * odt - Uses Python ``lxml``, ``zipfile`` modules.
 * pdf - Uses ``/bin/pdf2text`` CLI tool.
 * rtf - Uses ``/bin/unrtf`` CLI tool.
-* text - Default backend that uses various Python stdlib modules to extract
-         strings from arbitrary (possibly) binary files.
+* text - Uses Python stdlib modules to extract text.
 * xls - Uses Python ``xlrd`` module.
 * xlsx - Uses Python ``xlrd`` module.
 * xml - Uses Python ``lxml`` module.
@@ -52,6 +51,7 @@ Supported formats
 * epub - Uses Python ``ebooklib`` module.
 * ps - Uses ``/bin/pstotext`` CLI tool.
 * json - Uses ``json`` Python module.
+* bin - Uses Python stdlib modules to emulate ``strings``` CLI util.
 
 Installing tools
 ----------------
