@@ -22,9 +22,12 @@ directly, removing the need to write temporary files.
 Fulltext uses native python libraries when possible and utilizes CLI tools
 when necessary, for example, the following CLI tools are required.
 
- * antiword - Legacy .doc (Word) format.
- * unrtf - .rtf format.
- * pdf2text (poppler-utils) - .pdf format.
+* antiword - Legacy .doc (Word) format.
+* unrtf - .rtf format.
+* pdf2text (poppler-utils) - .pdf format.
+* pstotext (pstotext) - .ps format.
+* tesseract-ocr - image formats (OCR).
+* abiword - office documents.
 
 Supported formats
 -----------------
@@ -62,13 +65,15 @@ libraries and CLI tools, you can use your package manager.
 
 .. code:: bash
 
-    $ sudo yum install antiword unrtf poppler-utils libjpeg-dev tesseract-ocr
+    $ sudo yum install antiword abiword unrtf poppler-utils libjpeg-dev \
+    tesseract-ocr pstotext
 
 Or for debian-based systems:
 
 .. code:: bash
 
-    $ sudo apt-get install antiword unrtf poppler-utils libjpeg-dev
+    $ sudo apt-get install antiword abiword unrtf poppler-utils libjpeg-dev \
+    pstotext
 
 Usage
 -----
