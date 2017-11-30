@@ -106,13 +106,16 @@ register_backend(
     'image/jpeg',
     'fulltext.backends.__ocr',
     extensions=['.jpg', '.jpeg'])
+
 register_backend(
     'image/bmp',
     'fulltext.backends.__ocr',
     extensions=['.bmp'])
+
 register_backend(
     'image/png',
     'fulltext.backends.__ocr')
+
 register_backend(
     'image/gif',
     'fulltext.backends.__ocr')
@@ -135,9 +138,11 @@ register_backend(
     'fulltext.backends.__doc',
     extensions=['.doc'])
 
-register_backend(
-    'text/csv',
-    'fulltext.backends.__csv')
+for mt in ('text/csv', 'text/tsv', 'text/psv'):
+    register_backend(
+        mt,
+        'fulltext.backends.__csv',
+        extensions=['.csv', '.tsv', '.csv'])
 
 for mt in ("application/epub", "application/epub+zip"):
     register_backend(
