@@ -80,15 +80,35 @@ text could not be extracted.
 
 .. code:: python
 
-    > import fulltext
-    > fulltext.get('does-not-exist.pdf', '< no content >')
-    '< no content >'
-    > fulltext.get('exists.pdf', '< no content >'')
+    >>> import fulltext
+    >>>
+    >>> fulltext.get('does-not-exist.pdf', None)
+    None
+    >>>
+    >>> fulltext.get('exists.pdf', None)
     'Lorem ipsum...'
 
 You can pass a file-like object or a path to ``.get()`` Fulltext will try to
 do the right thing, using memory buffers or temp files depending on the
 backend.
+
+You should pass any file details you have available, such as the file name or
+mime type. These will help fulltext select the correct backend. If you want to
+specify the backend explicitly, use the backend keyword argument.
+
+.. code:: python
+
+    >>> with open('foo.pdf' 'rb') as f:
+    >>>     fulltext.get(f, name='foo.pdf', mime='application/pdf',
+    ...                  backend='pdf')
+
+Some backends accept additonal parameters. You can pass these using the
+``kwargs`` key word argument.
+
+.. code:: python
+
+    >>> fulltext.get('does-not-exist.pdf', kwargs={'option': 'value'})
+
 
 Custom backends
 ---------------
