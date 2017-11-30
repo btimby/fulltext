@@ -157,13 +157,13 @@ class PathAndFileTests(object):
     def test_file(self):
         path = 'files/test.%s' % self.ext
         with open(path, 'rb') as f:
-            text = fulltext.get(f, backend=self.ext)
+            text = fulltext.get(f)
             self.assertMultiLineEqual(self.text, text)
 
     def _handle_text(self, f):
         """Main body of both 'text mode' tests."""
         try:
-            text = fulltext.get(f, backend=self.ext)
+            text = fulltext.get(f)
             self.assertMultiLineEqual(self.text, text)
         finally:
             f.close()
@@ -183,7 +183,7 @@ class PathAndFileTests(object):
 
     def test_path(self):
         path = 'files/test.%s' % self.ext
-        text = fulltext.get(path, backend=self.ext)
+        text = fulltext.get(path)
         self.assertMultiLineEqual(self.text, text)
 
 
