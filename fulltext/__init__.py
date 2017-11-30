@@ -149,6 +149,10 @@ register_backend(
     'fulltext.backends.__bin',
     extensions=['.a', '.bin'])
 
+register_backend(
+    'application/gzip',
+    'fulltext.backends.__gz')
+
 
 def is_binary(f):
     """Return True if binary mode."""
@@ -203,6 +207,10 @@ def _get_path(backend, path, **kwargs):
         with open(path, 'rb') as f:
             return backend._get_file(f, **kwargs)
 
+    else:
+        raise RuntimeError(
+            "module %r does not define _get_file() nor _get_path()" % backend)
+
 
 def _get_file(backend, f, **kwargs):
     """
@@ -232,6 +240,10 @@ def _get_file(backend, f, **kwargs):
             shutil.copyfileobj(f, t)
             t.flush()
             return backend._get_path(t.name, **kwargs)
+
+    else:
+        raise RuntimeError(
+            "module %r does not define _get_file() nor _get_path()" % backend)
 
 
 def backend_from_mime(mime):
@@ -293,11 +305,14 @@ def _get(path_or_file, default, mime, name, backend, kwargs):
                 else:
                     backend_mod = backend_from_fobj(path_or_file)
     else:
-        try:
-            mime = EXTS_TO_MIMETYPES['.' + backend]
-        except KeyError:
-            raise ValueError("invalid backend %r" % backend)
-        backend_mod = backend_from_mime(mime)
+        if isinstance(backend, string_types):
+            try:
+                mime = EXTS_TO_MIMETYPES['.' + backend]
+            except KeyError:
+                raise ValueError("invalid backend %r" % backend)
+            backend_mod = backend_from_mime(mime)
+        else:
+            backend_mod = backend
 
     # Call backend.
     fun = _get_path if is_file_path(path_or_file) else _get_file
@@ -316,9 +331,9 @@ def get(path_or_file, default=SENTINAL, mime=None, name=None, backend=None,
 
     Accepts a path or file-like object.
      * If given, `default` is returned instead of an error.
-     * `backend` is a string specifying which default backend to use
-       (e.g. "doc"); take a look at backends directory to see a list of
-       default backends.
+     * `backend` is either a module object or a string specifying which
+       default backend to use (e.g. "doc"); take a look at backends
+       directory to see a list of default backends.
      * `mime` and `name` should be passed if the information
        is available to caller, otherwise a best guess is made.
        If both are specified `mime` takes precedence.

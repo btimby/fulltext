@@ -244,6 +244,10 @@ class HwpTestCase(BaseTestCase, PathAndFileTests):
     ext = "hwp"
 
 
+class GzTestCase(BaseTestCase, PathAndFileTests):
+    ext = "gz"
+
+
 class FilesTestCase(BaseTestCase):
     def test_old_doc_file(self):
         "Antiword does not support older Word documents."
