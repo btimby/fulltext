@@ -164,6 +164,11 @@ register_backend(
     'fulltext.backends.__bin',
     extensions=['.a', '.bin'])
 
+register_backend(
+    'application/gzip',
+    'fulltext.backends.__gz',
+    extensions=['.gz'])
+
 
 def is_binary(f):
     """Return True if binary mode."""
@@ -180,8 +185,14 @@ def is_binary(f):
         return True
 
     # If the file has a mode, and it contains b, it is binary.
-    if 'b' in getattr(f, 'mode', ''):
-        return True
+    try:
+        if 'b' in getattr(f, 'mode', ''):
+            return True
+    except TypeError:
+        import gzip
+        if isinstance(f, gzip.GzipFile):
+            return True  # in gzip mode is an integer
+        raise
 
     # Can we sniff?
     try:
@@ -316,12 +327,14 @@ def _get(path_or_file, default, mime, name, backend, kwargs):
                 else:
                     backend_mod = backend_from_fobj(path_or_file)
     else:
-        if mime is None:
+        if isinstance(backend, string_types):
             try:
                 mime = EXTS_TO_MIMETYPES['.' + backend]
             except KeyError:
                 raise ValueError("invalid backend %r" % backend)
-        backend_mod = backend_from_mime(mime)
+            backend_mod = backend_from_mime(mime)
+        else:
+            backend_mod = backend
 
     # Create kwargs, add one by default.
     kwargs = kwargs or {}
@@ -342,9 +355,9 @@ def get(path_or_file, default=SENTINAL, mime=None, name=None, backend=None,
 
     Accepts a path or file-like object.
      * If given, `default` is returned instead of an error.
-     * `backend` is a string specifying which default backend to use
-       (e.g. "doc"); take a look at backends directory to see a list of
-       default backends.
+     * `backend` is either a module object or a string specifying which
+       default backend to use (e.g. "doc"); take a look at backends
+       directory to see a list of default backends.
      * `mime` and `name` should be passed if the information
        is available to caller, otherwise a best guess is made.
        If both are specified `mime` takes precedence.
