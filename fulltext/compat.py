@@ -6,10 +6,10 @@ import sys
 import six
 
 if six.PY3:
-    from contextlib import ExitStack
+    from contextlib import ExitStack  # NOQA
 else:
     # Backport from Python 3.3.
-    from contextlib2 import ExitStack
+    from contextlib2 import ExitStack  # NOQA
 
 try:
     from shutil import which
