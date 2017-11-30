@@ -51,7 +51,7 @@ Supported formats
 * epub - Uses Python ``ebooklib`` module.
 * ps - Uses ``/bin/pstotext`` CLI tool.
 * json - Uses ``json`` Python module.
-* bin - Uses Python stdlib modules to emulate ``strings``` CLI util.
+* bin - Uses Python stdlib modules to emulate ``strings`` CLI util.
 
 Installing tools
 ----------------
