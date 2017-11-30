@@ -26,7 +26,7 @@ def _get_file(path_or_file, **kwargs):
     with f:
         orig_name = _orig_fname(path)
         if _has_ext(orig_name) and splitext(orig_name)[1].lower() != '.gz':
-            backend = backend_from_fname(f, name=orig_name)
+            backend = backend_from_fname(orig_name)
         else:
             backend = backend_from_fobj(f)
         return get(f, backend=backend)
