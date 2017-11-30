@@ -17,6 +17,7 @@ def _visible(elem):
 
     return True
 
+
 def _get_file(f, **kwargs):
     text, bs = StringIO(), bs4.BeautifulSoup(f, 'lxml')
 
