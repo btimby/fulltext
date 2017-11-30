@@ -8,6 +8,6 @@ def _get_path(path, **kwargs):
 
     with Mobi(path) as book:
         for record in book:
-            text.write(record)
+            text.write(record.decode('utf8'))
 
     return text.getvalue()
