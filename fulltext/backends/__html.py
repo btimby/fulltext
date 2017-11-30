@@ -8,7 +8,7 @@ from six import StringIO
 
 
 def _visible(elem):
-    if elem.parent.name in ['style', 'script', '[document]', 'head', 'title']:
+    if elem.parent.name in ['style', 'script', '[document]', 'head']:
         return False
 
     elif re.match('<!--.*-->', str(elem.encode('utf8'))):

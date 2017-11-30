@@ -30,6 +30,8 @@ Supported formats
 -----------------
 
 * csv - Uses Python ``csv`` module.
+* tsv (tab delimited) - Uses Python ``csv`` module.
+* psv (pipe delimited) - Uses Python ``csv`` module.
 * doc - Uses ``/bin/antiword`` CLI tool.
 * docx - Uses Python ``docx2txt`` module.
 * html - Uses Python ``BeautifulSoup`` module.
@@ -41,10 +43,13 @@ Supported formats
          strings from arbitrary (possibly) binary files.
 * xls - Uses Python ``xlrd`` module.
 * xlsx - Uses Python ``xlrd`` module.
-* pptx - Use Python ``pptx`` module
+* xml - Uses Python ``lxml`` module.
+* pptx - Uses Python ``pptx`` module
 * zip - Uses Python ``zipfile`` module.
 * jpg, jpeg, png, bmp, gif - Use ``/usr/bin/tesseract`` CLI tool and ``pytesseract`` module.
 * hwp - Uses Python ``pyhwp`` module as CLI tool.
+* epub - Uses Python ``ebooklib`` module.
+* ps - Uses ``/bin/pstotext`` CLI tool.
 
 Installing tools
 ----------------
