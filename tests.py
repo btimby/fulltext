@@ -154,17 +154,18 @@ class FullTextStripTestCase(BaseTestCase):
 
 class PathAndFileTests(object):
     text = TEXT
+    mime = None
 
     def test_file(self):
         path = 'files/test.%s' % self.ext
         with open(path, 'rb') as f:
-            text = fulltext.get(f, backend=self.ext)
+            text = fulltext.get(f, backend=self.ext, mime=self.mime)
             self.assertMultiLineEqual(self.text, text)
 
     def _handle_text(self, f):
         """Main body of both 'text mode' tests."""
         try:
-            text = fulltext.get(f, backend=self.ext)
+            text = fulltext.get(f, backend=self.ext, mime=self.mime)
             self.assertMultiLineEqual(self.text, text)
         finally:
             f.close()
@@ -184,16 +185,16 @@ class PathAndFileTests(object):
 
     def test_path(self):
         path = 'files/test.%s' % self.ext
-        text = fulltext.get(path, backend=self.ext)
+        text = fulltext.get(path, backend=self.ext, mime=self.mime)
         self.assertMultiLineEqual(self.text, text)
 
 
 class TxtTestCase(BaseTestCase, PathAndFileTests):
-    ext = "txt"
+    ext = 'txt'
 
 
 class OdtTestCase(BaseTestCase, PathAndFileTests):
-    ext = "odt"
+    ext = 'odt'
 
 
 class DocTestCase(BaseTestCase, PathAndFileTests):
@@ -234,15 +235,18 @@ class RtfTestCase(BaseTestCase, PathAndFileTests):
 
 class CsvTestCase(BaseTestCase, PathAndFileTests):
     ext = "csv"
+    mime = 'text/csv'
     text = TEXT.replace(',', '')
 
 
 class TsvTestCase(BaseTestCase, PathAndFileTests):
     ext = "tsv"
+    mime = 'text/tsv'
 
 
 class PsvTestCase(BaseTestCase, PathAndFileTests):
     ext = "psv"
+    mime = 'text/psv'
 
 
 class PngTestCase(BaseTestCase, PathAndFileTests):
