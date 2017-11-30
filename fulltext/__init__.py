@@ -151,7 +151,8 @@ register_backend(
 
 register_backend(
     'application/gzip',
-    'fulltext.backends.__gz')
+    'fulltext.backends.__gz',
+    extensions=['.gz'])
 
 
 def is_binary(f):
