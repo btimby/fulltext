@@ -50,6 +50,9 @@ Supported formats
 * hwp - Uses Python ``pyhwp`` module as CLI tool.
 * epub - Uses Python ``ebooklib`` module.
 * ps - Uses ``/bin/pstotext`` CLI tool.
+* msg - Uses ``msg_extractor`` Python module (from github).
+* eml - Uses ``email`` Python module.
+* mbox - Uses ``mailbox`` Python module.
 
 Installing tools
 ----------------
