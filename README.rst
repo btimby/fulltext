@@ -125,5 +125,5 @@ working with file-like objects is not possible and you only define
 file and use that function. Sometimes it is advantageous to define both
 functions in cases when you can do each efficiently.
 
-If you have questions about writing a backend, see the `backends/`_ directory
+If you have questions about writing a backend, see the `./backends/`_ directory
 for some examples.
