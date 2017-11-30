@@ -219,6 +219,14 @@ class CsvTestCase(BaseTestCase, PathAndFileTests):
     text = TEXT.replace(',', '')
 
 
+class TsvTestCase(BaseTestCase, PathAndFileTests):
+    ext = "tsv"
+
+
+class PsvTestCase(BaseTestCase, PathAndFileTests):
+    ext = "psv"
+
+
 class PngTestCase(BaseTestCase, PathAndFileTests):
     ext = "png"
 

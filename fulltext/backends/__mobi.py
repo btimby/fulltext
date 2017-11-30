@@ -4,10 +4,10 @@ from six import StringIO
 
 
 def _get_path(path, **kwargs):
-    text, book = StringIO(), Mobi(path)
-    book.parse()
+    text = StringIO()
 
-    for record in book:
-        text.write(record)
+    with Mobi(path) as book:
+        for record in book:
+            text.write(record)
 
     return text.getvalue()

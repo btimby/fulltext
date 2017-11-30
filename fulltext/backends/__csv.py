@@ -11,6 +11,11 @@ def readlines(f):
 
 
 def _get_file(f, **kwargs):
+    csv_kwargs = {
+        'dialect': 'excel',
+        'delimiter': ',',
+    }
+
     mimetype = kwargs.get('mimetype', None)
 
     if mimetype == 'text/tsv':
@@ -20,11 +25,6 @@ def _get_file(f, **kwargs):
     elif mimetype == 'text/psv':
         csv_kwargs = {
             'delimiter': '|',
-        }
-    else:
-        csv_kwargs == {
-            'dialect': 'excel',
-            'delimiter': ',',
         }
 
     text = StringIO()
