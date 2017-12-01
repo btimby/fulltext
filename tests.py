@@ -485,7 +485,6 @@ class TestUtils(BaseTestCase):
 # --- Encodings
 
 
-@unittest.skipIf(not PY3, "python 3 only")
 class TestEncodingGeneric(BaseTestCase):
 
     def test_global_vars(self):
@@ -505,6 +504,7 @@ class TestEncodingGeneric(BaseTestCase):
             fulltext.ENCODING_ERRORS = errors
 
 
+@unittest.skipIf(not PY3, "python 3 only")
 class TestUnicodeBase(object):
     ext = None
 

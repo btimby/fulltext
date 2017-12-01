@@ -349,12 +349,6 @@ def _get(path_or_file, default, mime, name, backend, encoding,
         else:
             backend_mod = backend
 
-    # Create kwargs and set defaults.
-    kwargs = kwargs or {}
-    kwargs.setdefault("mime", mime)
-    kwargs.setdefault("encoding", encoding)
-    kwargs.setdefault("encoding_errors", encoding_errors)
-
     # Call backend.
     fun = _get_path if is_file_path(path_or_file) else _get_file
     text = fun(backend_mod, path_or_file, **kwargs)
@@ -386,6 +380,12 @@ def get(path_or_file, default=SENTINAL, mime=None, name=None, backend=None,
         encoding = ENCODING
     if encoding_errors is None:
         encoding_errors = ENCODING_ERRORS
+
+    kwargs = kwargs or {}
+    kwargs.setdefault("mime", mime)
+    kwargs.setdefault("encoding", encoding)
+    kwargs.setdefault("encoding_errors", encoding_errors)
+
     try:
         return _get(path_or_file, default=default, mime=mime, name=name,
                     backend=backend, kwargs=kwargs, encoding=encoding,
