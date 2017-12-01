@@ -22,9 +22,12 @@ directly, removing the need to write temporary files.
 Fulltext uses native python libraries when possible and utilizes CLI tools
 when necessary, for example, the following CLI tools are required.
 
- * antiword - Legacy .doc (Word) format.
- * unrtf - .rtf format.
- * pdf2text (poppler-utils) - .pdf format.
+* antiword - Legacy .doc (Word) format.
+* unrtf - .rtf format.
+* pdf2text (poppler-utils) - .pdf format.
+* pstotext (pstotext) - .ps format.
+* tesseract-ocr - image formats (OCR).
+* abiword - office documents.
 
 Supported formats
 -----------------
@@ -39,8 +42,7 @@ Supported formats
 * odt - Uses Python ``lxml``, ``zipfile`` modules.
 * pdf - Uses ``/bin/pdf2text`` CLI tool.
 * rtf - Uses ``/bin/unrtf`` CLI tool.
-* text - Default backend that uses various Python stdlib modules to extract
-         strings from arbitrary (possibly) binary files.
+* text - Uses Python stdlib modules to extract text.
 * xls - Uses Python ``xlrd`` module.
 * xlsx - Uses Python ``xlrd`` module.
 * xml - Uses Python ``lxml`` module.
@@ -51,6 +53,8 @@ Supported formats
 * hwp - Uses Python ``pyhwp`` module as CLI tool.
 * epub - Uses Python ``ebooklib`` module.
 * ps - Uses ``/bin/pstotext`` CLI tool.
+* json - Uses ``json`` Python module.
+* bin - Uses Python stdlib modules to emulate ``strings`` CLI tool.
 
 Installing tools
 ----------------
@@ -61,13 +65,15 @@ libraries and CLI tools, you can use your package manager.
 
 .. code:: bash
 
-    $ sudo yum install antiword unrtf poppler-utils libjpeg-dev tesseract-ocr
+    $ sudo yum install antiword abiword unrtf poppler-utils libjpeg-dev \
+    tesseract-ocr pstotext
 
 Or for debian-based systems:
 
 .. code:: bash
 
-    $ sudo apt-get install antiword unrtf poppler-utils libjpeg-dev
+    $ sudo apt-get install antiword abiword unrtf poppler-utils libjpeg-dev \
+    pstotext
 
 Usage
 -----
@@ -79,15 +85,35 @@ text could not be extracted.
 
 .. code:: python
 
-    > import fulltext
-    > fulltext.get('does-not-exist.pdf', '< no content >')
-    '< no content >'
-    > fulltext.get('exists.pdf', '< no content >'')
+    >>> import fulltext
+    >>>
+    >>> fulltext.get('does-not-exist.pdf', None)
+    None
+    >>>
+    >>> fulltext.get('exists.pdf', None)
     'Lorem ipsum...'
 
 You can pass a file-like object or a path to ``.get()`` Fulltext will try to
 do the right thing, using memory buffers or temp files depending on the
 backend.
+
+You should pass any file details you have available, such as the file name or
+mime type. These will help fulltext select the correct backend. If you want to
+specify the backend explicitly, use the backend keyword argument.
+
+.. code:: python
+
+    >>> with open('foo.pdf' 'rb') as f:
+    >>>     fulltext.get(f, name='foo.pdf', mime='application/pdf',
+    ...                  backend='pdf')
+
+Some backends accept additonal parameters. You can pass these using the
+``kwargs`` key word argument.
+
+.. code:: python
+
+    >>> fulltext.get('does-not-exist.pdf', kwargs={'option': 'value'})
+
 
 Custom backends
 ---------------
@@ -124,5 +150,5 @@ working with file-like objects is not possible and you only define
 file and use that function. Sometimes it is advantageous to define both
 functions in cases when you can do each efficiently.
 
-If you have questions about writing a backend, see the `backends/`_ directory
+If you have questions about writing a backend, see the `./backends/`_ directory
 for some examples.
