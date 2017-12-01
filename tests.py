@@ -506,7 +506,7 @@ class TestEncodingGeneric(BaseTestCase):
 @unittest.skipIf(not PY3, "python 3 only")
 class TestUnicodeBase(object):
     ext = None
-    italian = "ciao-bella-àèìòù"
+    italian = "ciao bella àèìòù"
     japanese = "かいおうせい海王星"
     korean = "매년영국과아일랜드의음반"
     invalid = "helloworld"
