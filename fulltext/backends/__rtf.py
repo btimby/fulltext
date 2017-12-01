@@ -13,8 +13,8 @@ if which('unrtf') is None:
     warn('CLI tool "unrtf" is required for .rtf backend.')
 
 
-def _strip(text):
-    return text.partition(b'-----------------')[2].decode('utf8')
+def _strip(text, encoding, errors):
+    return text.partition(b'-----------------')[2].decode(encoding, errors)
 
 
 def _get_file(f, **kwargs):
@@ -22,4 +22,6 @@ def _get_file(f, **kwargs):
 
 
 def _get_path(path, **kwargs):
-    return _strip(run('unrtf', '--text', '--nopict', path))
+    encoding, errors = kwargs['encoding'], kwargs['encoding_errors']
+    return _strip(run('unrtf', '--text', '--nopict', path),
+                  encoding, errors)
