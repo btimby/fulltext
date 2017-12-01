@@ -11,3 +11,4 @@ pycodestyle
 pyflakes
 python-magic
 ebooklib
+https://github.com/mattgwwalker/msg-extractor/zipball/master
