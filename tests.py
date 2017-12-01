@@ -39,6 +39,9 @@ TEXT_WITH_NEWLINES = u"Lorem ipsum\ndolor sit amet, consectetur adipiscing e" \
 TEXT = TEXT_WITH_NEWLINES.replace('\n', ' ')
 
 
+# --- Utils
+
+
 class BaseTestCase(unittest.TestCase):
     """Base TestCase Class."""
 
@@ -151,6 +154,9 @@ class FullTextStripTestCase(BaseTestCase):
         self.assertMultiLineEqual('Test leading and trailing spaces removal. '
                                   'Test punctuation removal! Test spaces '
                                   'removal!', stripped)
+
+
+# --- Mixin tests
 
 
 class PathAndFileTests(object):
@@ -288,6 +294,9 @@ class GzTestCase(BaseTestCase, PathAndFileTests):
         self.assertMultiLineEqual(self.text, text)
 
 
+# ---
+
+
 class FilesTestCase(BaseTestCase):
 
     def test_old_doc_file(self):
@@ -302,6 +311,9 @@ class FilesTestCase(BaseTestCase):
         text = fulltext.get('files/test.old.doc', backend='doc')
         self.assertStartsWith('eZ-Audit', text)
         self.assertIsInstance(text, u"".__class__)
+
+
+# --- Pickups
 
 
 class TestPickups(BaseTestCase):
@@ -386,6 +398,9 @@ class TestPickups(BaseTestCase):
             fulltext.get(fname, backend='yoo')
 
 
+# --- File objects
+
+
 class TestFileObj(BaseTestCase):
 
     def test_returned_content(self):
@@ -452,6 +467,28 @@ class TestUtils(BaseTestCase):
         assert fulltext.is_file_path('foo')
         assert fulltext.is_file_path(b'foo')
         assert not fulltext.is_file_path(open(__file__))
+
+
+# --- Encodings
+
+
+class TestEncodingGeneric(BaseTestCase):
+
+    def test_global_vars(self):
+        # Make sure the globla vars are taken into consideration and
+        # passed to the underlying backends.
+        encoding, errors = fulltext.ENCODING, fulltext.ENCODING_ERRORS
+        fname = self.touch("file.txt", content="hello")
+        try:
+            fulltext.ENCODING = "foo"
+            fulltext.ENCODING_ERRORS = "bar"
+            with mock.patch('fulltext._get_path', return_value="") as m:
+                fulltext.get(fname)
+            self.assertEqual(m.call_args[1]['encoding'], 'foo')
+            self.assertEqual(m.call_args[1]['encoding_errors'], 'bar')
+        finally:
+            fulltext.ENCODING = encoding
+            fulltext.ENCODING_ERRORS = errors
 
 
 if __name__ == '__main__':
