@@ -17,6 +17,7 @@ BUFFER_MAX = 1024 * 1024
 
 
 def _get_file(f, **kwargs):
+    encoding, errors = kwargs['encoding'], kwargs['encoding_errors']
     buffer = StringIO()
 
     while True:
@@ -25,7 +26,7 @@ def _get_file(f, **kwargs):
         if not text:
             break
 
-        text = text.decode(kwargs['encoding'], kwargs['encoding_errors'])
+        text = text.decode(encoding, errors)
 
         # Emulate the `strings` CLI tool.
         buffer.write(text)

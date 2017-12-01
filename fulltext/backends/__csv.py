@@ -5,12 +5,13 @@ import csv
 from six import StringIO
 
 
-def readlines(f):
+def readlines(f, encoding, errors):
     for line in f.readlines():
-        yield line.decode('utf8')
+        yield line.decode(encoding, errors)
 
 
 def _get_file(f, **kwargs):
+    encoding, errors = kwargs['encoding'], kwargs['encoding_errors']
     options = {
         'dialect': 'excel',
         'delimiter': ',',
@@ -25,7 +26,8 @@ def _get_file(f, **kwargs):
         options['delimiter'] = '|'
 
     text = StringIO()
-    for row in csv.reader(readlines(f), **options):
+    gen = readlines(f, encoding, errors)
+    for row in csv.reader(gen, **options):
         text.write(u' '.join(row))
         text.write(u'\n')
     return text.getvalue()

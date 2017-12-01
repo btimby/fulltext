@@ -546,7 +546,7 @@ class TestUnicodeBase(object):
         self.doit("йфелевой")
 
     def test_invalid_char(self):
-        fname = "testfile.%s"
+        fname = "testfile.%s" % self.ext
         self.create_invalid_file(fname)
         with self.assertRaises(UnicodeDecodeError):
             fulltext.get(fname)
