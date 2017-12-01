@@ -19,7 +19,6 @@ from fulltext.util import ShellError
 from fulltext.util import which
 
 from six import PY3
-from six import string_types
 from six import BytesIO
 
 
