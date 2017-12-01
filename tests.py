@@ -549,5 +549,18 @@ class TestUnicodeOdt(BaseTestCase, TestUnicodeBase):
     skip_invalid = True
 
 
+class TestUnicodePs(BaseTestCase):
+
+    def test_italian(self):
+        # ps backend uses `pstotext` CLI tool, which does not correctly
+        # handle unicode. Just make sure we don't crash if passed the
+        # error handler.
+        fname = "files/unicode/it.ps"
+        with self.assertRaises(UnicodeDecodeError):
+            fulltext.get(fname)
+        ret = fulltext.get(fname, encoding_errors="ignore")
+        assert ret.startswith("ciao bella")  # the rest is garbage
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)
