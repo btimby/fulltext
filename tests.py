@@ -262,6 +262,14 @@ class PsTestCase(BaseTestCase, PathAndFileTests):
     ext = "ps"
 
 
+class EmlTestCase(BaseTestCase, PathAndFileTests):
+    ext = "eml"
+
+
+class MboxTestCase(BaseTestCase, PathAndFileTests):
+    ext = "mbox"
+
+
 class JsonTestCase(BaseTestCase, PathAndFileTests):
     ext = "json"
 
