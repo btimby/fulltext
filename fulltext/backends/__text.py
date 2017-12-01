@@ -10,17 +10,13 @@ Any decoding issues are ignored.
 
 from __future__ import absolute_import
 
-import sys
-
 from six import StringIO
 
 
 BUFFER_MAX = 1024 * 1024
-ENCODING = sys.getfilesystemencoding()
 
 
 def _get_file(f, **kwargs):
-    encoding = kwargs.pop('encoding', ENCODING)
     buffer = StringIO()
 
     while True:
@@ -29,7 +25,7 @@ def _get_file(f, **kwargs):
         if not text:
             break
 
-        text = text.decode(encoding, 'ignore')
+        text = text.decode(kwargs['encoding'], kwargs['encoding_errors'])
 
         # Emulate the `strings` CLI tool.
         buffer.write(text)

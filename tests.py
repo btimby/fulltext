@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import os
 import unittest
 import tempfile
@@ -16,6 +19,7 @@ from fulltext.util import ShellError
 from fulltext.util import which
 
 from six import PY3
+from six import string_types
 from six import BytesIO
 
 
@@ -60,10 +64,19 @@ class BaseTestCase(unittest.TestCase):
     # --- utils
 
     def touch(self, fname, content=b""):
-        with open(fname, 'wb') as f:
+        if isinstance(content, bytes):
+            f = open(fname, "wb")
+        else:
+            if PY3:
+                f = open(fname, "wt")
+            else:
+                f = codecs.open(fname, "wt", encoding="utf8")
+
+        self.addCleanup(os.remove, fname)
+        with f:
             if content:
                 f.write(content)
-        self.addCleanup(os.remove, fname)
+
         return fname
 
     def touch_fobj(self, content=b""):
@@ -478,7 +491,7 @@ class TestEncodingGeneric(BaseTestCase):
         # Make sure the globla vars are taken into consideration and
         # passed to the underlying backends.
         encoding, errors = fulltext.ENCODING, fulltext.ENCODING_ERRORS
-        fname = self.touch("file.txt", content="hello")
+        fname = self.touch("file.txt", content=b"hello")
         try:
             fulltext.ENCODING = "foo"
             fulltext.ENCODING_ERRORS = "bar"
@@ -489,6 +502,37 @@ class TestEncodingGeneric(BaseTestCase):
         finally:
             fulltext.ENCODING = encoding
             fulltext.ENCODING_ERRORS = errors
+
+
+@unittest.skipIf(not PY3, "python 3 only")
+class TestUnicodeBase(object):
+    ext = None
+
+    def create_file(self, content):
+        raise NotImplementedError("must be implemented in subclass")
+
+    def doit(self, content):
+        fname = self.create_file(content)
+        ret = fulltext.get(fname)
+        self.assertEqual(content, ret)
+
+    def test_italian(self):
+        self.doit(u"ciao bella àèìòù")
+
+    def test_japanese(self):
+        self.doit("かいおうせい海王星")
+
+    def test_korean(self):
+        self.doit("매년영국과아일랜드의음반")
+
+    def test_russian(self):
+        self.doit("йфелевой")
+
+
+class TestUnicodeText(BaseTestCase, TestUnicodeBase):
+
+    def create_file(self, content):
+        return self.touch("testfile.txt", content=content)
 
 
 if __name__ == '__main__':
