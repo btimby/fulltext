@@ -30,6 +30,8 @@ def _to_text(text, obj):
 def _get_file(f, **kwargs):
     encoding = kwargs.get('encoding', ENCODING)
     text, data = StringIO(), f.read()
+
+    # TODO: catch exception and attempt to use regex to strip formatting.
     obj = json.loads(data.decode(encoding))
 
     _to_text(text, obj)
