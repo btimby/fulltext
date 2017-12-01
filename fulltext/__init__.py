@@ -6,6 +6,7 @@ import os
 import shutil
 import tempfile
 import mimetypes
+import sys
 
 from os.path import splitext
 
@@ -18,16 +19,21 @@ from fulltext.util import magic
 __all__ = ["get", "register_backend"]
 
 
+# --- overridable defaults
+
+ENCODING = sys.getfilesystemencoding()
+ENCODING_ERRORS = "strict"
+TEMPDIR = os.environ.get('FULLTEXT_TEMP', tempfile.gettempdir())
+DEFAULT_MIME = 'application/octet-stream'
+
+# --- others
+
 LOGGER = logging.getLogger(__file__)
 LOGGER.addHandler(logging.NullHandler())
-
-FULLTEXT_TEMP = os.environ.get('FULLTEXT_TEMP', tempfile.gettempdir())
-
 STRIP_WHITE = re.compile(r'[ \t\v\f\r\n]+')
 SENTINAL = object()
 MIMETYPE_TO_BACKENDS = {}
 EXTS_TO_MIMETYPES = {}
-DEFAULT_MIME = 'application/octet-stream'
 MAGIC_BUFFER_SIZE = 1024
 
 mimetypes.init()
@@ -264,7 +270,7 @@ def _get_file(backend, f, **kwargs):
         if 'ext' in kwargs:
             ext = '.' + kwargs['ext']
 
-        with tempfile.NamedTemporaryFile(dir=FULLTEXT_TEMP, suffix=ext) as t:
+        with tempfile.NamedTemporaryFile(dir=TEMPDIR, suffix=ext) as t:
             shutil.copyfileobj(f, t)
             t.flush()
             return backend._get_path(t.name, **kwargs)
@@ -317,7 +323,8 @@ def backend_from_fobj(f):
             f.seek(offset)
 
 
-def _get(path_or_file, default, mime, name, backend, kwargs):
+def _get(path_or_file, default, mime, name, backend, encoding,
+         encoding_errors, kwargs):
     # Find backend module.
     if backend is None:
         if mime:
@@ -342,9 +349,11 @@ def _get(path_or_file, default, mime, name, backend, kwargs):
         else:
             backend_mod = backend
 
-    # Create kwargs, add one by default.
+    # Create kwargs and set defaults.
     kwargs = kwargs or {}
     kwargs.setdefault("mime", mime)
+    kwargs.setdefault("encoding", encoding)
+    kwargs.setdefault("encoding_errors", encoding_errors)
 
     # Call backend.
     fun = _get_path if is_file_path(path_or_file) else _get_file
@@ -355,7 +364,7 @@ def _get(path_or_file, default, mime, name, backend, kwargs):
 
 
 def get(path_or_file, default=SENTINAL, mime=None, name=None, backend=None,
-        kwargs=None):
+        encoding=None, encoding_errors=None, kwargs=None):
     """
     Get document full text.
 
@@ -367,11 +376,20 @@ def get(path_or_file, default=SENTINAL, mime=None, name=None, backend=None,
      * `mime` and `name` should be passed if the information
        is available to caller, otherwise a best guess is made.
        If both are specified `mime` takes precedence.
+     * `encoding` and `encoding_errors` are used to handle text encoding.
+       They are taken into consideration mostly only by pure-python
+       backends which do not rely on CLI tools.
+       Default to "utf8" and "strict" respectively.
      * `kwargs` are passed to the underlying backend.
     """
+    if encoding is None:
+        encoding = ENCODING
+    if encoding_errors is None:
+        encoding_errors = ENCODING_ERRORS
     try:
         return _get(path_or_file, default=default, mime=mime, name=name,
-                    backend=backend, kwargs=kwargs)
+                    backend=backend, kwargs=kwargs, encoding=encoding,
+                    encoding_errors=encoding_errors)
     except Exception as e:
         if default is not SENTINAL:
             LOGGER.exception(e)
