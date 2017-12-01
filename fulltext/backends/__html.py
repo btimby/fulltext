@@ -11,15 +11,16 @@ def _visible(elem):
     if elem.parent.name in ['style', 'script', '[document]', 'head']:
         return False
 
-    elif re.match('<!--.*-->', str(elem.encode('utf8'))):
+    elif re.match('<!--.*-->', str(elem)):
         return False
 
     return True
 
 
 def _get_file(f, **kwargs):
+    encoding, errors = kwargs['encoding'], kwargs['encoding_errors']
     data = f.read()
-    data = data.decode(kwargs['encoding'], kwargs['encoding_errors'])
+    data = data.decode(encoding, errors)
     text, bs = StringIO(), BeautifulSoup(data, 'lxml')
 
     for elem in filter(_visible, bs.findAll(text=True)):
