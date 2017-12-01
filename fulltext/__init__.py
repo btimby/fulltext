@@ -171,6 +171,11 @@ register_backend(
     extensions=['.mbox'])
 
 register_backend(
+    'application/vnd.ms-outlook',
+    'fulltext.backends.__msg',
+    extensions=['.msg'])
+
+register_backend(
     'application/gzip',
     'fulltext.backends.__gz',
     extensions=['.gz'])

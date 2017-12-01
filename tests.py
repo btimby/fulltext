@@ -270,6 +270,10 @@ class MboxTestCase(BaseTestCase, PathAndFileTests):
     ext = "mbox"
 
 
+class MsgTestCase(BaseTestCase, PathAndFileTests):
+    ext = "msg"
+
+
 class JsonTestCase(BaseTestCase, PathAndFileTests):
     ext = "json"
 
