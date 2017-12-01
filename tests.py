@@ -506,10 +506,9 @@ class TestEncodingGeneric(BaseTestCase):
 @unittest.skipIf(not PY3, "python 3 only")
 class TestUnicodeBase(object):
     ext = None
-    italian = "ciao bella àèìòù"
+    italian = "ciao bella àèìòù "
     japanese = "かいおうせい海王星"
     invalid = "helloworld"
-    skip_invalid = False
 
     def compare(self, content_s, fulltext_s):
         # XXX
@@ -527,13 +526,19 @@ class TestUnicodeBase(object):
         self.doit("files/unicode/jp.%s" % self.ext, self.japanese)
 
     def test_invalid_char(self):
-        if self.skip_invalid:
-            raise self.skipTest("not avail")
         fname = "files/unicode/invalid.%s" % self.ext
-        with self.assertRaises(UnicodeDecodeError):
-            fulltext.get(fname)
-        ret = fulltext.get(fname, encoding_errors="ignore")
-        self.assertEqual(ret, self.invalid)
+        if os.path.exists(fname):
+            with self.assertRaises(UnicodeDecodeError):
+                fulltext.get(fname)
+            ret = fulltext.get(fname, encoding_errors="ignore")
+            self.assertEqual(ret, self.invalid)
+        else:
+            fname = "files/unicode/it.%s" % self.ext
+            with self.assertRaises(UnicodeDecodeError):
+                fulltext.get(fname, encoding='ascii')
+            ret = fulltext.get(
+                fname, encoding='ascii', encoding_errors="ignore")
+            self.assertEqual(ret, self.italian.replace(" àèìòù", ""))
 
 
 class TestUnicodeTxt(BaseTestCase, TestUnicodeBase):
@@ -546,7 +551,6 @@ class TestUnicodeCsv(BaseTestCase, TestUnicodeBase):
 
 class TestUnicodeOdt(BaseTestCase, TestUnicodeBase):
     ext = "odt"
-    skip_invalid = True
 
 
 # ps backend uses `pstotext` CLI tool, which does not correctly
@@ -566,7 +570,7 @@ class TestUnicodeHtml(BaseTestCase, TestUnicodeBase):
     ext = "html"
 
 
-# ps backend uses `pstotext` CLI tool, which does not correctly
+# backend uses `unrtf` CLI tool, which does not correctly
 # handle unicode. Just make sure we don't crash if passed the
 # error handler.
 class TestUnicodeRtf(BaseTestCase):
@@ -578,6 +582,12 @@ class TestUnicodeRtf(BaseTestCase):
             fulltext.get(fname)
         ret = fulltext.get(fname, encoding_errors="ignore")
         assert ret.startswith("ciao bella")  # the rest is garbage
+
+
+class TestUnicodeDoc(BaseTestCase, TestUnicodeBase):
+    ext = "doc"
+    italian = ' '.join(["ciao bella àèìòù" for x in range(20)])
+    japanese = ' '.join(["かいおうせい海王星" for x in range(30)])
 
 
 if __name__ == '__main__':

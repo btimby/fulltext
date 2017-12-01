@@ -18,7 +18,9 @@ def _strip(text, encoding, errors):
 
 
 def _get_file(f, **kwargs):
-    return _strip(run('unrtf', '--text', '--nopict', stdin=f))
+    encoding, errors = kwargs['encoding'], kwargs['encoding_errors']
+    return _strip(run('unrtf', '--text', '--nopict', stdin=f),
+                  encoding, errors)
 
 
 def _get_path(path, **kwargs):
