@@ -14,10 +14,10 @@ def _qn(ns):
     return '{{{}}}{}'.format(nsmap[one], two)
 
 
-def _to_string(text, elem):
+def _to_string(text, elem, encoding, errors):
     if elem.text is not None:
         try:
-            text.write(elem.text.decode('utf8'))
+            text.write(elem.text.decode(encoding, errors))
         except AttributeError:
             text.write(elem.text)
     for c in elem:
@@ -28,11 +28,12 @@ def _to_string(text, elem):
             if c.tail is not None:
                 text.write(c.tail)
         else:
-            _to_string(text, c)
+            _to_string(text, c, encoding, errors)
     text.write(u'\n')
 
 
 def _get_file(f, **kwargs):
+    encoding, errors = kwargs['encoding'], kwargs['encoding_errors']
     text = StringIO()
 
     with zipfile.ZipFile(f, 'r') as z:
@@ -41,7 +42,7 @@ def _get_file(f, **kwargs):
 
             for c in xml.iter():
                 if c.tag in (_qn('text:p'), _qn('text:h')):
-                    _to_string(text, c)
+                    _to_string(text, c, encoding, errors)
 
     return text.getvalue()
 

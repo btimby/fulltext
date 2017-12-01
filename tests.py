@@ -508,8 +508,8 @@ class TestUnicodeBase(object):
     ext = None
     italian = "ciao bella àèìòù"
     japanese = "かいおうせい海王星"
-    korean = "매년영국과아일랜드의음반"
     invalid = "helloworld"
+    skip_invalid = False
 
     def compare(self, content_s, fulltext_s):
         # XXX
@@ -526,10 +526,9 @@ class TestUnicodeBase(object):
     def test_japanese(self):
         self.doit("files/unicode/jp.%s" % self.ext, self.japanese)
 
-    def test_korean(self):
-        self.doit("files/unicode/kr.%s" % self.ext, self.korean)
-
     def test_invalid_char(self):
+        if self.skip_invalid:
+            raise self.skipTest("not avail")
         fname = "files/unicode/invalid.%s" % self.ext
         with self.assertRaises(UnicodeDecodeError):
             fulltext.get(fname)
@@ -543,6 +542,11 @@ class TestUnicodeTxt(BaseTestCase, TestUnicodeBase):
 
 class TestUnicodeCsv(BaseTestCase, TestUnicodeBase):
     ext = "csv"
+
+
+class TestUnicodeOdt(BaseTestCase, TestUnicodeBase):
+    ext = "odt"
+    skip_invalid = True
 
 
 if __name__ == '__main__':
