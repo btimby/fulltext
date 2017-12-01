@@ -506,6 +506,10 @@ class TestEncodingGeneric(BaseTestCase):
 @unittest.skipIf(not PY3, "python 3 only")
 class TestUnicodeBase(object):
     ext = None
+    italian = "ciao-bella-àèìòù"
+    japanese = "かいおうせい海王星"
+    korean = "매년영국과아일랜드의음반"
+    invalid = "helloworld"
 
     def compare(self, content_s, fulltext_s):
         # XXX
@@ -517,20 +521,20 @@ class TestUnicodeBase(object):
         self.compare(ret, expected_txt)
 
     def test_italian(self):
-        self.doit("files/unicode/it.%s" % self.ext, "ciao-bella-àèìòù")
+        self.doit("files/unicode/it.%s" % self.ext, self.italian)
 
     def test_japanese(self):
-        self.doit("files/unicode/jp.%s" % self.ext, "かいおうせい海王星")
+        self.doit("files/unicode/jp.%s" % self.ext, self.japanese)
 
     def test_korean(self):
-        self.doit("files/unicode/kr.%s" % self.ext, "매년영국과아일랜드의음반")
+        self.doit("files/unicode/kr.%s" % self.ext, self.korean)
 
     def test_invalid_char(self):
         fname = "files/unicode/invalid.%s" % self.ext
         with self.assertRaises(UnicodeDecodeError):
             fulltext.get(fname)
         ret = fulltext.get(fname, encoding_errors="ignore")
-        self.assertEqual(ret, "helloworld")
+        self.assertEqual(ret, self.invalid)
 
 
 class TestUnicodeTxt(BaseTestCase, TestUnicodeBase):
