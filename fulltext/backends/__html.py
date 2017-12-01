@@ -18,7 +18,9 @@ def _visible(elem):
 
 
 def _get_file(f, **kwargs):
-    text, bs = StringIO(), BeautifulSoup(f, 'lxml')
+    data = f.read()
+    data = data.decode(kwargs['encoding'], kwargs['encoding_errors'])
+    text, bs = StringIO(), BeautifulSoup(data, 'lxml')
 
     for elem in filter(_visible, bs.findAll(text=True)):
         text.write(elem)
