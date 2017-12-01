@@ -161,11 +161,6 @@ register_backend(
     extensions=[".ps", ".eps", ".ai"])
 
 register_backend(
-    'application/vnd.ms-outlook',
-    'fulltext.backends.__msg',
-    extensions=['.msg'])
-
-register_backend(
     'message/rfc822',
     'fulltext.backends.__eml',
     extensions=['.eml'])
@@ -176,14 +171,20 @@ register_backend(
     extensions=['.mbox'])
 
 register_backend(
-    'application/octet-stream',
-    'fulltext.backends.__bin',
-    extensions=['.a', '.bin'])
-
-register_backend(
     'application/gzip',
     'fulltext.backends.__gz',
     extensions=['.gz'])
+
+register_backend(
+    'application/json',
+    'fulltext.backends.__json',
+    extensions=['.json'])
+
+# default backend.
+register_backend(
+    'application/octet-stream',
+    'fulltext.backends.__bin',
+    extensions=['.a', '.bin'])
 
 
 def is_binary(f):

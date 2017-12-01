@@ -11,5 +11,3 @@ pycodestyle
 pyflakes
 python-magic
 ebooklib
-https://github.com/mattgwwalker/msg-extractor/zipball/master
-git+https://github.com/btimby/mobi-python.git#egg=mobi

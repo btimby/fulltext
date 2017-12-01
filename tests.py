@@ -270,6 +270,10 @@ class MboxTestCase(BaseTestCase, PathAndFileTests):
     ext = "mbox"
 
 
+class JsonTestCase(BaseTestCase, PathAndFileTests):
+    ext = "json"
+
+
 @unittest.skipIf(not which('pyhwp'), "pyhwp not installed")
 class HwpTestCase(BaseTestCase, PathAndFileTests):
     ext = "hwp"

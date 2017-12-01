@@ -20,40 +20,43 @@ form it is given. For most backends, a file-like object or path can be handled
 directly, removing the need to write temporary files.
 
 Fulltext uses native python libraries when possible and utilizes CLI tools
-when necessary, for example, the following CLI tools are required.
+when necessary, for example, the following CLI tools are utilized.
 
- * antiword - Legacy .doc (Word) format.
- * unrtf - .rtf format.
- * pdf2text (poppler-utils) - .pdf format.
+* ``antiword`` - Legacy ``.doc`` (Word) format.
+* ``unrtf`` - ``.rtf`` format.
+* ``pdf2text`` (``apt install poppler-utils``) - ``.pdf`` format.
+* ``pstotext`` (``apt install pstotext``) - ``.ps`` format.
+* ``tesseract-ocr`` - image formats (OCR).
+* ``abiword`` - office documents.
 
 Supported formats
 -----------------
 
-* csv - Uses Python ``csv`` module.
-* tsv (tab delimited) - Uses Python ``csv`` module.
-* psv (pipe delimited) - Uses Python ``csv`` module.
-* doc - Uses ``/bin/antiword`` CLI tool.
-* docx - Uses Python ``docx2txt`` module.
-* html - Uses Python ``BeautifulSoup`` module.
-* ods - Uses Python ``lxml``, ``zipfile`` modules.
-* odt - Uses Python ``lxml``, ``zipfile`` modules.
-* pdf - Uses ``/bin/pdf2text`` CLI tool.
-* rtf - Uses ``/bin/unrtf`` CLI tool.
-* text - Default backend that uses various Python stdlib modules to extract
-         strings from arbitrary (possibly) binary files.
-* xls - Uses Python ``xlrd`` module.
-* xlsx - Uses Python ``xlrd`` module.
-* xml - Uses Python ``lxml`` module.
-* pptx - Uses Python ``pptx`` module
-* zip - Uses Python ``zipfile`` module.
-* gz - Uses Python ``gzip`` module.
-* jpg, jpeg, png, bmp, gif - Use ``/usr/bin/tesseract`` CLI tool and ``pytesseract`` module.
-* hwp - Uses Python ``pyhwp`` module as CLI tool.
-* epub - Uses Python ``ebooklib`` module.
-* ps - Uses ``/bin/pstotext`` CLI tool.
-* msg - Uses ``msg_extractor`` Python module (from github).
-* eml - Uses ``email`` Python module.
-* mbox - Uses ``mailbox`` Python module.
+* ``.csv`` - Uses Python ``csv`` module.
+* ``.tsv`` (tab delimited) - Uses Python ``csv`` module.
+* ``.psv`` (pipe delimited) - Uses Python ``csv`` module.
+* ``.doc`` - Uses ``/bin/antiword`` CLI tool.
+* ``.docx`` - Uses Python ``docx2txt`` module.
+* ``.html`` - Uses Python ``BeautifulSoup`` module.
+* ``.ods`` - Uses Python ``lxml``, ``zipfile`` modules.
+* ``.odt`` - Uses Python ``lxml``, ``zipfile`` modules.
+* ``.pdf`` - Uses ``/bin/pdf2text`` CLI tool.
+* ``.rtf`` - Uses ``/bin/unrtf`` CLI tool.
+* ``.text`` - Uses Python stdlib modules to extract text.
+* ``.xls`` - Uses Python ``xlrd`` module.
+* ``.xlsx`` - Uses Python ``xlrd`` module.
+* ``.xml`` - Uses Python ``lxml`` module.
+* ``.pptx`` - Uses Python ``pptx`` module
+* ``.zip`` - Uses Python ``zipfile`` module.
+* ``.gz`` - Uses Python ``gzip`` module.
+* ``.jpg``, ``.jpeg``, ``.png``, ``.bmp``, ``.gif`` - Uses ``/usr/bin/tesseract`` CLI tool and ``pytesseract`` module.
+* ``.hwp`` - Uses Python ``pyhwp`` module as CLI tool.
+* ``.epub`` - Uses Python ``ebooklib`` module.
+* ``.ps`` - Uses ``/bin/pstotext`` CLI tool.
+* ``.json`` - Uses ``json`` Python module.
+* ``.eml`` - Uses ``email`` Python module.
+* ``.mbox`` - Uses ``mailbox`` Python module.
+* ``.bin`` - Uses Python stdlib modules to emulate ``strings`` CLI tool.
 
 Installing tools
 ----------------
@@ -64,13 +67,15 @@ libraries and CLI tools, you can use your package manager.
 
 .. code:: bash
 
-    $ sudo yum install antiword unrtf poppler-utils libjpeg-dev tesseract-ocr
+    $ sudo yum install antiword abiword unrtf poppler-utils libjpeg-dev \
+    tesseract-ocr pstotext
 
 Or for debian-based systems:
 
 .. code:: bash
 
-    $ sudo apt-get install antiword unrtf poppler-utils libjpeg-dev
+    $ sudo apt-get install antiword abiword unrtf poppler-utils libjpeg-dev \
+    pstotext
 
 Usage
 -----
@@ -82,15 +87,33 @@ text could not be extracted.
 
 .. code:: python
 
-    > import fulltext
-    > fulltext.get('does-not-exist.pdf', '< no content >')
-    '< no content >'
-    > fulltext.get('exists.pdf', '< no content >'')
+    >>> import fulltext
+    >>>
+    >>> fulltext.get('does-not-exist.pdf', None)
+    None
+    >>> fulltext.get('exists.pdf', None)
     'Lorem ipsum...'
 
 You can pass a file-like object or a path to ``.get()`` Fulltext will try to
 do the right thing, using memory buffers or temp files depending on the
 backend.
+
+You should pass any file details you have available, such as the file name or
+mime type. These will help fulltext select the correct backend. If you want to
+specify the backend explicitly, use the backend keyword argument.
+
+.. code:: python
+
+    >>> with open('foo.pdf' 'rb') as f:
+    ...     fulltext.get(f, name='foo.pdf', mime='application/pdf',
+    ...                  backend='pdf')
+
+Some backends accept additonal parameters. You can pass these using the
+``kwargs`` key word argument.
+
+.. code:: python
+
+    >>> fulltext.get('foo.pdf', kwargs={'option': 'value'})
 
 Custom backends
 ---------------
@@ -108,7 +131,6 @@ the new backend against fulltext.
         # possible.
         pass
 
-
     def _get_path(path, **kwargs):
         # Extract text from a path. This should only be defined if it can be
         # done more efficiently than having Python open() and read() the file,
@@ -120,12 +142,12 @@ the new backend against fulltext.
         'path.to.this.module',
         ['.rar'])
 
-If you only implement ``_get_file`` Fulltext will open any paths and pass them
-to that function. Therefore if possible, define at least this function. If
+If you only implement ``_get_file()`` Fulltext will open any paths and pass
+them to that function. Therefore if possible, define at least this function. If
 working with file-like objects is not possible and you only define
-``_get_path`` then Fulltext will save any file-like objects to a temporary
+``_get_path()`` then Fulltext will save any file-like objects to a temporary
 file and use that function. Sometimes it is advantageous to define both
 functions in cases when you can do each efficiently.
 
-If you have questions about writing a backend, see the `backends/`_ directory
+If you have questions about writing a backend, see the `./backends/`_ directory
 for some examples.
