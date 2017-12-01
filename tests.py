@@ -504,17 +504,21 @@ class TestEncodingGeneric(BaseTestCase):
             fulltext.ENCODING_ERRORS = errors
 
 
-@unittest.skipIf(not PY3, "python 3 only")
 class TestUnicodeBase(object):
     ext = None
 
     def create_file(self, content):
         raise NotImplementedError("must be implemented in subclass")
 
+    def compare(self, content_s, fulltext_s):
+        # XXX
+        if PY3:
+            self.assertEqual(content_s, fulltext_s)
+
     def doit(self, content):
         fname = self.create_file(content)
         ret = fulltext.get(fname)
-        self.assertEqual(content, ret)
+        self.compare(content, ret)
 
     def test_italian(self):
         self.doit(u"ciao bella àèìòù")
@@ -528,11 +532,23 @@ class TestUnicodeBase(object):
     def test_russian(self):
         self.doit("йфелевой")
 
+    # @unittest.skipIf(not PY3, "python 3 only")
+    # def test_invalid_char(self):
+    #     invalid = ("hello world ".encode('utf8') + b"\xc0\x80").decode(
+    #         'utf8', 'surrogateescape')
+    #     self.doit(invalid)
+
 
 class TestUnicodeText(BaseTestCase, TestUnicodeBase):
 
     def create_file(self, content):
         return self.touch("testfile.txt", content=content)
+
+
+class TestUnicodeCsv(BaseTestCase, TestUnicodeBase):
+
+    def create_file(self, content):
+        return self.touch("testfile.csv", content=content)
 
 
 if __name__ == '__main__':
