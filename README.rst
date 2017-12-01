@@ -113,6 +113,14 @@ Some backends accept additonal parameters. You can pass these using the
 
     >>> fulltext.get('foo.pdf', kwargs={'option': 'value'})
 
+You can specify the encoding to use (defaults to `sys.getfilesystemencoding()`
++ `strict` error handler):
+
+
+.. code:: python
+
+    >>> fulltext.get('foo.pdf', encoding='latin1', encoding_errors='ignore')
+
 Custom backends
 ---------------
 
