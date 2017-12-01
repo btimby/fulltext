@@ -507,46 +507,26 @@ class TestEncodingGeneric(BaseTestCase):
 class TestUnicodeBase(object):
     ext = None
 
-    def create_file(self, content):
-        return self.touch("testfile.%s" % self.ext, content=content)
-
-    def create_invalid_file(self, fname):
-        """Creates a file with an invalid UTF8 content"""
-        invalid_b = b"helloworld \xc0\x80"
-        with open(fname, "wb") as f:
-            self.addCleanup(os.remove, f.name)
-            f.write(invalid_b)
-
-        # make sure it really is invalid text
-        with open(fname, "rt") as f:
-            with self.assertRaises(UnicodeDecodeError):
-                f.read()
-
     def compare(self, content_s, fulltext_s):
         # XXX
         if PY3:
             self.assertEqual(content_s, fulltext_s)
 
-    def doit(self, content):
-        fname = self.create_file(content)
+    def doit(self, fname, expected_txt):
         ret = fulltext.get(fname)
-        self.compare(content, ret)
+        self.compare(ret, expected_txt)
 
     def test_italian(self):
-        self.doit(u"ciao bella àèìòù")
+        self.doit("files/unicode/it.%s" % self.ext, "ciao-bella-àèìòù")
 
     def test_japanese(self):
-        self.doit("かいおうせい海王星")
+        self.doit("files/unicode/jp.%s" % self.ext, "かいおうせい海王星")
 
     def test_korean(self):
-        self.doit("매년영국과아일랜드의음반")
-
-    def test_russian(self):
-        self.doit("йфелевой")
+        self.doit("files/unicode/kr.%s" % self.ext, "매년영국과아일랜드의음반")
 
     def test_invalid_char(self):
-        fname = "testfile.%s" % self.ext
-        self.create_invalid_file(fname)
+        fname = "files/unicode/invalid.%s" % self.ext
         with self.assertRaises(UnicodeDecodeError):
             fulltext.get(fname)
         ret = fulltext.get(fname, encoding_errors="ignore")
