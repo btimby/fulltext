@@ -485,6 +485,7 @@ class TestUtils(BaseTestCase):
 # --- Encodings
 
 
+@unittest.skipIf(not PY3, "python 3 only")
 class TestEncodingGeneric(BaseTestCase):
 
     def test_global_vars(self):
@@ -508,7 +509,19 @@ class TestUnicodeBase(object):
     ext = None
 
     def create_file(self, content):
-        raise NotImplementedError("must be implemented in subclass")
+        return self.touch("testfile.%s" % self.ext, content=content)
+
+    def create_invalid_file(self, fname):
+        """Creates a file with an invalid UTF8 content"""
+        invalid_b = b"helloworld \xc0\x80"
+        with open(fname, "wb") as f:
+            self.addCleanup(os.remove, f.name)
+            f.write(invalid_b)
+
+        # make sure it really is invalid text
+        with open(fname, "rt") as f:
+            with self.assertRaises(UnicodeDecodeError):
+                f.read()
 
     def compare(self, content_s, fulltext_s):
         # XXX
@@ -532,23 +545,21 @@ class TestUnicodeBase(object):
     def test_russian(self):
         self.doit("йфелевой")
 
-    # @unittest.skipIf(not PY3, "python 3 only")
-    # def test_invalid_char(self):
-    #     invalid = ("hello world ".encode('utf8') + b"\xc0\x80").decode(
-    #         'utf8', 'surrogateescape')
-    #     self.doit(invalid)
+    def test_invalid_char(self):
+        fname = "testfile.%s"
+        self.create_invalid_file(fname)
+        with self.assertRaises(UnicodeDecodeError):
+            fulltext.get(fname)
+        ret = fulltext.get(fname, encoding_errors="ignore")
+        self.assertEqual(ret, "helloworld")
 
 
-class TestUnicodeText(BaseTestCase, TestUnicodeBase):
-
-    def create_file(self, content):
-        return self.touch("testfile.txt", content=content)
+class TestUnicodeTxt(BaseTestCase, TestUnicodeBase):
+    ext = "txt"
 
 
 class TestUnicodeCsv(BaseTestCase, TestUnicodeBase):
-
-    def create_file(self, content):
-        return self.touch("testfile.csv", content=content)
+    ext = "csv"
 
 
 if __name__ == '__main__':
