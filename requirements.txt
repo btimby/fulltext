@@ -11,3 +11,4 @@ pycodestyle
 pyflakes
 python-magic
 ebooklib
+git+https://github.com/btimby/mobi-python.git#egg=mobi

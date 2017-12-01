@@ -156,6 +156,11 @@ for mt in ("application/epub", "application/epub+zip"):
         extensions=[".epub"])
 
 register_backend(
+    'application/mobi',
+    'fulltext.backends.__mobi',
+    extensions=[".mobi"])
+
+register_backend(
     'application/postscript',
     'fulltext.backends.__ps',
     extensions=[".ps", ".eps", ".ai"])
