@@ -6,7 +6,7 @@ before_install:
   - make sysdeps
   - make pydeps
 install:
-  - pip install --timeout=30 -q -e .
+  - pip install --timeout=60 -q -e .
 before_script:
   - make check
 script:
