@@ -532,13 +532,13 @@ class TestUnicodeBase(object):
                 fulltext.get(fname)
             ret = fulltext.get(fname, encoding_errors="ignore")
             self.assertEqual(ret, self.invalid)
-        else:
-            fname = "files/unicode/it.%s" % self.ext
-            with self.assertRaises(UnicodeDecodeError):
-                fulltext.get(fname, encoding='ascii')
-            ret = fulltext.get(
-                fname, encoding='ascii', encoding_errors="ignore")
-            self.assertEqual(ret, self.italian.replace(" àèìòù", ""))
+        #
+        fname = "files/unicode/it.%s" % self.ext
+        with self.assertRaises(UnicodeDecodeError):
+            fulltext.get(fname, encoding='ascii')
+        ret = fulltext.get(
+            fname, encoding='ascii', encoding_errors="ignore")
+        self.assertEqual(ret, self.italian.replace(" àèìòù", ""))
 
 
 class TestUnicodeTxt(BaseTestCase, TestUnicodeBase):
@@ -588,6 +588,10 @@ class TestUnicodeDoc(BaseTestCase, TestUnicodeBase):
     ext = "doc"
     italian = ' '.join(["ciao bella àèìòù" for x in range(20)])
     japanese = ' '.join(["かいおうせい海王星" for x in range(30)])
+
+
+class TestUnicodeXml(BaseTestCase, TestUnicodeBase):
+    ext = "xml"
 
 
 if __name__ == '__main__':
