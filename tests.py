@@ -636,5 +636,14 @@ class TestUnicodeJson(BaseTestCase, TestUnicodeBase):
     ext = "json"
 
 
+class TestUnicodeDocx(BaseTestCase, TestUnicodeBase):
+    ext = "docx"
+
+    # Underlying lib doesn't allow to specify an encoding.
+    @unittest.skipIf(1, "not compatible")
+    def test_invalid_char(self):
+        pass
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)
