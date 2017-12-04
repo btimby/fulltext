@@ -608,5 +608,14 @@ class TestUnicodeXlsx(BaseTestCase, TestUnicodeBase):
         pass
 
 
+class TestUnicodePptx(BaseTestCase, TestUnicodeBase):
+    ext = "pptx"
+
+    # A binary file is passed and text is not de/encoded.
+    @unittest.skipIf(1, "no conversion happening")
+    def test_invalid_char(self):
+        pass
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)
