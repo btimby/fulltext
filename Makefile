@@ -11,14 +11,17 @@ SYSDEPS = \
 	pstotext
 
 test:  ## Run tests.
+	${MAKE} install-git-hooks
 	PYTHONWARNINGS=all $(PYTHON) tests.py
 
 check:  ## Run linters.
+	${MAKE} install-git-hooks
 	@git ls-files | grep \\.py$ | xargs $(PYTHON) -m flake8
 
 lint: check
 
 install:  ## Install this package as current user in "edit" mode.
+	${MAKE} install-git-hooks
 	PYTHONWARNINGS=all $(PYTHON) setup.py develop $(INSTALL_OPTS)
 
 pydeps:  ## Install third party python libs.
@@ -54,6 +57,10 @@ clean:  ## Remove all build files.
 		docs/_build/ \
 		htmlcov/ \
 		tmp/
+
+install-git-hooks:  ## Install GIT pre-commit hook.
+	ln -sf ../../.git-pre-commit .git/hooks/pre-commit
+	chmod +x .git/hooks/pre-commit
 
 help: ## Display callable targets.
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
