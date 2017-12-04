@@ -552,6 +552,11 @@ class TestUnicodeCsv(BaseTestCase, TestUnicodeBase):
 class TestUnicodeOdt(BaseTestCase, TestUnicodeBase):
     ext = "odt"
 
+    # A binary file is passed and text is not de/encoded.
+    @unittest.skipIf(1, "no conversion happening")
+    def test_invalid_char(self):
+        pass
+
 
 # ps backend uses `pstotext` CLI tool, which does not correctly
 # handle unicode. Just make sure we don't crash if passed the
@@ -592,6 +597,15 @@ class TestUnicodeDoc(BaseTestCase, TestUnicodeBase):
 
 class TestUnicodeXml(BaseTestCase, TestUnicodeBase):
     ext = "xml"
+
+
+class TestUnicodeXlsx(BaseTestCase, TestUnicodeBase):
+    ext = "xlsx"
+
+    # A binary file is passed and text is not de/encoded.
+    @unittest.skipIf(1, "no conversion happening")
+    def test_invalid_char(self):
+        pass
 
 
 if __name__ == '__main__':
