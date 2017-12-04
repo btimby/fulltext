@@ -621,5 +621,16 @@ class TestUnicodePdf(BaseTestCase, TestUnicodeBase):
     ext = "pdf"
 
 
+class TestUnicodePng(BaseTestCase, TestUnicodeBase):
+    ext = "png"
+
+    def compare(self, content_s, fulltext_s):
+        pass
+
+    @unittest.skipIf(1, "not compatible")
+    def test_invalid_char(self):
+        pass
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)

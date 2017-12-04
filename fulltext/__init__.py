@@ -352,7 +352,7 @@ def _get(path_or_file, default, mime, name, backend, encoding,
     # Call backend.
     fun = _get_path if is_file_path(path_or_file) else _get_file
     text = fun(backend_mod, path_or_file, **kwargs)
-    assert text is not None
+    assert text is not None, "backend function returned None"
     text = STRIP_WHITE.sub(' ', text)
     return text.strip()
 
