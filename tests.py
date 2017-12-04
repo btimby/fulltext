@@ -664,5 +664,9 @@ class TestUnicodeEml(BaseTestCase, TestUnicodeBase):
     ext = "eml"
 
 
+class TestUnicodeMbox(BaseTestCase, TestUnicodeBase):
+    ext = "mbox"
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)
