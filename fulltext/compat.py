@@ -54,7 +54,8 @@ except ImportError:
 
             # PATHEXT is necessary to check on Windows.
             pathext = os.environ.get("PATHEXT", "").split(os.pathsep)
-            # See if the given file matches any of the expected path extensions.
+            # See if the given file matches any of the expected path
+            # extensions.
             # This will allow us to short circuit when given "python.exe".
             # If it does match, only test that one, otherwise we have to try
             # others.
