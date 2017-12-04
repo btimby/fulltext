@@ -4,7 +4,6 @@ import zipfile
 from lxml import etree
 
 from six import StringIO
-from six import PY3
 
 
 def _qn(ns):
@@ -31,7 +30,6 @@ def _to_string(text, elem):
 
 
 def _get_file(f, **kwargs):
-    encoding, errors = kwargs['encoding'], kwargs['encoding_errors']
     text = StringIO()
 
     with zipfile.ZipFile(f, 'r') as z:
