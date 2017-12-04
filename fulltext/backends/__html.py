@@ -5,13 +5,16 @@ import re
 from bs4 import BeautifulSoup
 
 from six import StringIO
+from six import PY3
 
 
-def _visible(elem):
+def _is_visible(elem, encoding, errors):
     if elem.parent.name in ['style', 'script', '[document]', 'head']:
         return False
 
-    elif re.match('<!--.*-->', str(elem)):
+    if not PY3:
+        elem = elem.encode(encoding, errors)
+    if re.match('<!--.*-->', elem):
         return False
 
     return True
@@ -23,8 +26,9 @@ def _get_file(f, **kwargs):
     data = data.decode(encoding, errors)
     text, bs = StringIO(), BeautifulSoup(data, 'lxml')
 
-    for elem in filter(_visible, bs.findAll(text=True)):
-        text.write(elem)
-        text.write(u' ')
+    for elem in bs.findAll(text=True):
+        if _is_visible(elem, encoding, errors):
+            text.write(elem)
+            text.write(u' ')
 
     return text.getvalue()
