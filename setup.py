@@ -1,20 +1,26 @@
 #!/bin/env python
 
-import os
+from os.path import dirname
+from os.path import join as pathjoin
 from setuptools import find_packages
 from setuptools import setup
 
-NAME = 'fulltext'
-VERSION = '0.6'
-README = os.path.join(os.path.dirname(__file__), 'README.rst')
 
-with open(README) as f:
+NAME = 'fulltext'
+VERSION = '0.7'
+
+with open(pathjoin(dirname(__file__), 'README.rst')) as f:
     DESCRIPTION = f.read()
 
-with open('requirements.txt') as f:
-    REQUIRED = f.read().splitlines()
+REQUIRED, REQUIRED_URL = [], []
 
-REQUIRED = [r for r in REQUIRED if not r.startswith('git')]
+with open('requirements.txt') as f:
+    for line in f.readlines():
+        if 'http://' in line or 'https://' in line:
+            REQUIRED_URL.append(line)
+
+        else:
+            REQUIRED.append(line)
 
 
 setup(
@@ -30,6 +36,7 @@ setup(
     license='GPLv3',
     packages=find_packages(),
     install_requires=REQUIRED,
+    dependency_links=REQUIRED_URL,
     classifiers=(
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',

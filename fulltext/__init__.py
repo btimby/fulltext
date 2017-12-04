@@ -128,10 +128,11 @@ register_backend(
     'application/x-hwp',
     'fulltext.backends.__hwp')
 
-register_backend(
-    'text/html',
-    'fulltext.backends.__html',
-    extensions=['.htm', '.html'])
+for mt in ('text/html', 'application/html', 'text/xhtml'):
+    register_backend(
+        mt,
+        'fulltext.backends.__html',
+        extensions=['.htm', '.html', '.xhtml'])
 
 register_backend(
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -146,7 +147,7 @@ for mt in ('text/csv', 'text/tsv', 'text/psv'):
     register_backend(
         mt,
         'fulltext.backends.__csv',
-        extensions=['.csv', '.tsv', '.psv'])
+        extensions=['.csv', '.tsv', '.psv', '.tab'])
 
 for mt in ("application/epub", "application/epub+zip"):
     register_backend(
@@ -160,14 +161,35 @@ register_backend(
     extensions=[".ps", ".eps", ".ai"])
 
 register_backend(
-    'application/octet-stream',
-    'fulltext.backends.__bin',
-    extensions=['.a', '.bin'])
+    'message/rfc822',
+    'fulltext.backends.__eml',
+    extensions=['.eml'])
+
+register_backend(
+    'application/mbox',
+    'fulltext.backends.__mbox',
+    extensions=['.mbox'])
+
+register_backend(
+    'application/vnd.ms-outlook',
+    'fulltext.backends.__msg',
+    extensions=['.msg'])
 
 register_backend(
     'application/gzip',
     'fulltext.backends.__gz',
     extensions=['.gz'])
+
+register_backend(
+    'application/json',
+    'fulltext.backends.__json',
+    extensions=['.json'])
+
+# default backend.
+register_backend(
+    'application/octet-stream',
+    'fulltext.backends.__bin',
+    extensions=['.a', '.bin'])
 
 
 def is_binary(f):

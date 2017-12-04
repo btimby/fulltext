@@ -1,13 +1,9 @@
 from __future__ import absolute_import
 
 import csv
+import codecs
 
 from six import StringIO
-
-
-def readlines(f):
-    for line in f.readlines():
-        yield line.decode('utf8')
 
 
 def _get_file(f, **kwargs):
@@ -24,8 +20,10 @@ def _get_file(f, **kwargs):
     elif mimetype == 'text/psv':
         options['delimiter'] = '|'
 
-    text = StringIO()
-    for row in csv.reader(readlines(f), **options):
+    text, f = StringIO(), codecs.getreader('utf8')(f, errors='ignore')
+
+    for row in csv.reader(f.readlines(), **options):
         text.write(u' '.join(row))
         text.write(u'\n')
+
     return text.getvalue()

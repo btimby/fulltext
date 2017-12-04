@@ -262,6 +262,22 @@ class PsTestCase(BaseTestCase, PathAndFileTests):
     ext = "ps"
 
 
+class EmlTestCase(BaseTestCase, PathAndFileTests):
+    ext = "eml"
+
+
+class MboxTestCase(BaseTestCase, PathAndFileTests):
+    ext = "mbox"
+
+
+class MsgTestCase(BaseTestCase, PathAndFileTests):
+    ext = "msg"
+
+
+class JsonTestCase(BaseTestCase, PathAndFileTests):
+    ext = "json"
+
+
 @unittest.skipIf(not which('pyhwp'), "pyhwp not installed")
 class HwpTestCase(BaseTestCase, PathAndFileTests):
     ext = "hwp"
