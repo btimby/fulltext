@@ -511,9 +511,12 @@ class TestUnicodeBase(object):
     invalid = "helloworld"
 
     def compare(self, content_s, fulltext_s):
-        # XXX
         if PY3:
             self.assertEqual(content_s, fulltext_s)
+        else:
+            # Don't test for equality on Python 2 because unicode
+            # support is basically broken.
+            pass
 
     def doit(self, fname, expected_txt):
         ret = fulltext.get(fname)
