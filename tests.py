@@ -515,7 +515,6 @@ class TestEncodingGeneric(BaseTestCase):
             fulltext.ENCODING_ERRORS = errors
 
 
-@unittest.skipIf(not PY3, "python 3 only")
 class TestUnicodeBase(object):
     ext = None
     italian = "ciao bella àèìòù "
@@ -553,7 +552,8 @@ class TestUnicodeBase(object):
             fulltext.get(fname, encoding='ascii')
         ret = fulltext.get(
             fname, encoding='ascii', encoding_errors="ignore")
-        self.assertEqual(ret, self.italian.replace(" àèìòù", ""))
+        against = self.italian.replace("àèìòù", "").replace("  ", " ").strip()
+        self.assertEqual(ret, against)
 
 
 class TestUnicodeTxt(BaseTestCase, TestUnicodeBase):
