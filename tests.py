@@ -660,5 +660,9 @@ class TestUnicodeDocx(BaseTestCase, TestUnicodeBase):
         pass
 
 
+class TestUnicodeEml(BaseTestCase, TestUnicodeBase):
+    ext = "eml"
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)

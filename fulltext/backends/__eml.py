@@ -6,7 +6,9 @@ from six import StringIO
 
 
 def _get_file(f, **kwargs):
-    text, f = StringIO(), codecs.getreader('utf8')(f, errors='ignore')
+    encoding, errors = kwargs['encoding'], kwargs['encoding_errors']
+    text = StringIO()
+    f = codecs.getreader(encoding)(f, errors=errors)
     m = message_from_file(f)
 
     for part in m.walk():
