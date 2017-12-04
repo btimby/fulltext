@@ -30,4 +30,5 @@ def _get_file(f, **kwargs):
     for row in csv.reader(gen, **options):
         text.write(u' '.join(row))
         text.write(u'\n')
+
     return text.getvalue()

@@ -54,6 +54,9 @@ Supported formats
 * ``.epub`` - Uses Python ``ebooklib`` module.
 * ``.ps`` - Uses ``/bin/pstotext`` CLI tool.
 * ``.json`` - Uses ``json`` Python module.
+* ``.eml`` - Uses ``email`` Python module.
+* ``.mbox`` - Uses ``mailbox`` Python module.
+* ``.msg`` - Uses ``msg-extractor`` Python module (from github).
 * ``.bin`` - Uses Python stdlib modules to emulate ``strings`` CLI tool.
 
 Installing tools

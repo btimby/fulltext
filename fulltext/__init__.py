@@ -134,10 +134,11 @@ register_backend(
     'application/x-hwp',
     'fulltext.backends.__hwp')
 
-register_backend(
-    'text/html',
-    'fulltext.backends.__html',
-    extensions=['.htm', '.html'])
+for mt in ('text/html', 'application/html', 'text/xhtml'):
+    register_backend(
+        mt,
+        'fulltext.backends.__html',
+        extensions=['.htm', '.html', '.xhtml'])
 
 register_backend(
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -152,7 +153,7 @@ for mt in ('text/csv', 'text/tsv', 'text/psv'):
     register_backend(
         mt,
         'fulltext.backends.__csv',
-        extensions=['.csv', '.tsv', '.psv'])
+        extensions=['.csv', '.tsv', '.psv', '.tab'])
 
 for mt in ("application/epub", "application/epub+zip"):
     register_backend(
@@ -164,6 +165,21 @@ register_backend(
     'application/postscript',
     'fulltext.backends.__ps',
     extensions=[".ps", ".eps", ".ai"])
+
+register_backend(
+    'message/rfc822',
+    'fulltext.backends.__eml',
+    extensions=['.eml'])
+
+register_backend(
+    'application/mbox',
+    'fulltext.backends.__mbox',
+    extensions=['.mbox'])
+
+register_backend(
+    'application/vnd.ms-outlook',
+    'fulltext.backends.__msg',
+    extensions=['.msg'])
 
 register_backend(
     'application/gzip',
