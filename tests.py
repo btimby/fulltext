@@ -617,5 +617,9 @@ class TestUnicodePptx(BaseTestCase, TestUnicodeBase):
         pass
 
 
+class TestUnicodePdf(BaseTestCase, TestUnicodeBase):
+    ext = "pdf"
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)
