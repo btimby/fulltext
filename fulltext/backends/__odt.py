@@ -4,6 +4,7 @@ import zipfile
 from lxml import etree
 
 from six import StringIO
+from six import PY3
 
 
 def _qn(ns):
@@ -14,12 +15,9 @@ def _qn(ns):
     return '{{{}}}{}'.format(nsmap[one], two)
 
 
-def _to_string(text, elem, encoding, errors):
+def _to_string(text, elem):
     if elem.text is not None:
-        try:
-            text.write(elem.text.decode(encoding, errors))
-        except AttributeError:
-            text.write(elem.text)
+        text.write(elem.text)
     for c in elem:
         if c.tag == _qn('text:tab'):
             text.write(' ')
@@ -28,7 +26,7 @@ def _to_string(text, elem, encoding, errors):
             if c.tail is not None:
                 text.write(c.tail)
         else:
-            _to_string(text, c, encoding, errors)
+            _to_string(text, c)
     text.write(u'\n')
 
 
@@ -42,7 +40,7 @@ def _get_file(f, **kwargs):
 
             for c in xml.iter():
                 if c.tag in (_qn('text:p'), _qn('text:h')):
-                    _to_string(text, c, encoding, errors)
+                    _to_string(text, c)
 
     return text.getvalue()
 
