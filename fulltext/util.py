@@ -5,7 +5,7 @@ import subprocess
 import warnings
 import sys
 
-from os.path import isfile, dirname, abspath
+from os.path import dirname, abspath
 from os.path import join as pathjoin
 
 
@@ -58,26 +58,6 @@ class ShellError(CommandLineError):
 
     def __str__(self):
         return self.failed_message()
-
-
-# http://stackoverflow.com/questions/377017/test-if-executable-exists-in-python
-def which(program):
-    "Simply checks if a given program exists within PATH and is executable."
-    def _is_exe(fpath):
-        return isfile(fpath) and os.access(fpath, os.X_OK)
-
-    fpath = dirname(program)
-    if fpath:
-        if _is_exe(program):
-            return program
-
-    else:
-        for path in os.environ["PATH"].split(os.pathsep):
-            exe_file = pathjoin(path, program)
-            if _is_exe(exe_file):
-                return exe_file
-
-    return None
 
 
 def run(*cmd, **kwargs):
