@@ -517,9 +517,9 @@ class TestEncodingGeneric(BaseTestCase):
 
 class TestUnicodeBase(object):
     ext = None
-    italian = "ciao bella àèìòù "
-    japanese = "かいおうせい海王星"
-    invalid = "helloworld"
+    italian = u"ciao bella àèìòù "
+    japanese = u"かいおうせい海王星"
+    invalid = u"helloworld"
 
     def compare(self, content_s, fulltext_s):
         if PY3:
@@ -527,6 +527,7 @@ class TestUnicodeBase(object):
         else:
             # Don't test for equality on Python 2 because unicode
             # support is basically broken.
+            self.assertEqual(content_s, fulltext_s)
             pass
 
     def doit(self, fname, expected_txt):
@@ -552,7 +553,8 @@ class TestUnicodeBase(object):
             fulltext.get(fname, encoding='ascii')
         ret = fulltext.get(
             fname, encoding='ascii', encoding_errors="ignore")
-        against = self.italian.replace("àèìòù", "").replace("  ", " ").strip()
+        against = self.italian.replace(
+            u"àèìòù", u"").replace(u"  ", u" ").strip()
         self.assertEqual(ret, against)
 
 
@@ -606,8 +608,8 @@ class TestUnicodeRtf(BaseTestCase):
 
 class TestUnicodeDoc(BaseTestCase, TestUnicodeBase):
     ext = "doc"
-    italian = ' '.join(["ciao bella àèìòù" for x in range(20)])
-    japanese = ' '.join(["かいおうせい海王星" for x in range(30)])
+    italian = ' '.join([u"ciao bella àèìòù" for x in range(20)])
+    japanese = ' '.join([u"かいおうせい海王星" for x in range(30)])
 
 
 class TestUnicodeXml(BaseTestCase, TestUnicodeBase):
