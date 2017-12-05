@@ -9,7 +9,8 @@ from PIL import Image
 
 import pytesseract
 
-from fulltext.util import which, MissingCommandException, warn
+from fulltext.util import MissingCommandException, warn
+from fulltext.compat import which
 
 
 LOGGER = logging.getLogger(__name__)

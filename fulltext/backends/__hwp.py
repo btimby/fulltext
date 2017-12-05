@@ -2,7 +2,8 @@ from __future__ import absolute_import
 
 import logging
 from fulltext.backends import __html
-from fulltext.util import run, which, warn
+from fulltext.util import run, warn
+from fulltext.compat import which
 
 
 LOGGER = logging.getLogger(__name__)
