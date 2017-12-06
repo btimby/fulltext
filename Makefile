@@ -30,6 +30,8 @@ pydeps:  ## Install third party python libs.
 
 sysdeps:  ## Install system deps (Ubuntu).
 	sudo apt-get install -y $(SYSDEPS)
+	sudo apt-get install python
+	sudo pip2 install --pre --upgrade pyhwp
 
 publish:  ## Upload package on PYPI.
 	$(PYTHON) setup.py register
