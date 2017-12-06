@@ -299,8 +299,8 @@ def handle_fobj(backend, f, **kwargs):
 def import_mod(mod_name):
     try:
         mod = __import__(mod_name, fromlist=[' '])
-        if hasattr(mod, "test"):
-            mod.test()
+        if hasattr(mod, "check"):
+            mod.check()
         return mod
     except Exception as err:
         bin_mod = "fulltext.backends.__bin"

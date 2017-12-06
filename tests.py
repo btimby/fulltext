@@ -177,9 +177,10 @@ class TestCLI(BaseTestCase):
             "%s -m fulltext extract %s" % (sys.executable, "files/test.txt"),
             shell=True)
 
-    def test_test(self):
-        subprocess.check_call("%s -m fulltext test" % sys.executable,
-                              shell=True)
+    # XXX: disabled because hwp5proc CLI tool is missing.
+    # def test_test(self):
+    #     subprocess.check_call("%s -m fulltext test" % sys.executable,
+    #                           shell=True)
 
 
 # --- Mixin tests

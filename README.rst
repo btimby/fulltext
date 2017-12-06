@@ -140,6 +140,13 @@ the new backend against fulltext.
         'path.to.this.module',
         ['.rar'])
 
+    def check():
+        # This is invoked before `handle_` functions. In here you can
+        # import third party deps or raise an exception if a CLI tool
+        # is missing. Both conditions will be turned into a warning
+        # on `get()` and bin backend will be used as fallback.
+        pass
+
     def handle_fobj(f, **kwargs):
         # Extract text from a file-like object. This should be defined when
         # possible.
