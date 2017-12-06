@@ -397,10 +397,10 @@ def get(path_or_file, default=SENTINAL, mime=None, name=None, backend=None,
     if encoding_errors is None:
         encoding_errors = ENCODING_ERRORS
 
-    kwargs = kwargs or {}
+    kwargs = kwargs.copy() if kwargs is not None else {}
     kwargs.setdefault("mime", mime)
-    kwargs.setdefault("encoding", encoding)
-    kwargs.setdefault("encoding_errors", encoding_errors)
+    kwargs["encoding"] = encoding
+    kwargs["encoding_errors"] = encoding_errors
 
     try:
         return _get(path_or_file, default=default, mime=mime, name=name,
