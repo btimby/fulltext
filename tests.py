@@ -17,7 +17,7 @@ import textwrap
 import warnings
 
 import fulltext
-from fulltext.util import run, ShellError
+from fulltext.util import ShellError
 from fulltext.compat import which
 
 from six import PY3
