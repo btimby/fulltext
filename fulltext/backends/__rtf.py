@@ -7,17 +7,17 @@ def check():
     assert_cmd_exists('unrtf')
 
 
-def _strip(text, encoding, errors):
+def strip(text, encoding, errors):
     return text.partition(b'-----------------')[2].decode(encoding, errors)
 
 
 def handle_fobj(f, **kwargs):
     encoding, errors = kwargs['encoding'], kwargs['encoding_errors']
-    return _strip(run('unrtf', '--text', '--nopict', stdin=f),
-                  encoding, errors)
+    return strip(run('unrtf', '--text', '--nopict', stdin=f),
+                 encoding, errors)
 
 
 def handle_path(path, **kwargs):
     encoding, errors = kwargs['encoding'], kwargs['encoding_errors']
-    return _strip(run('unrtf', '--text', '--nopict', path),
-                  encoding, errors)
+    return strip(run('unrtf', '--text', '--nopict', path),
+                 encoding, errors)

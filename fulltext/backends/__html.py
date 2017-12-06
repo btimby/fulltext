@@ -8,7 +8,7 @@ from six import StringIO
 from six import PY3
 
 
-def _is_visible(elem, encoding, errors):
+def is_visible(elem, encoding, errors):
     if elem.parent.name in ['style', 'script', '[document]', 'head']:
         return False
 
@@ -27,7 +27,7 @@ def handle_fobj(f, **kwargs):
     text, bs = StringIO(), BeautifulSoup(data, 'lxml')
 
     for elem in bs.findAll(text=True):
-        if _is_visible(elem, encoding, errors):
+        if is_visible(elem, encoding, errors):
             text.write(elem)
             text.write(u' ')
 
