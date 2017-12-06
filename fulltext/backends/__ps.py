@@ -5,7 +5,7 @@ from __future__ import absolute_import
 from fulltext.util import run, assert_cmd_exists
 
 
-def test():
+def check():
     assert_cmd_exists('pstotext')
 
 

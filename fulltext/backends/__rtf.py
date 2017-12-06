@@ -3,7 +3,7 @@ from fulltext.util import run
 from fulltext.util import assert_cmd_exists
 
 
-def test():
+def check():
     assert_cmd_exists('unrtf')
 
 

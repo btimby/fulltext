@@ -4,6 +4,8 @@
 import os
 import unittest
 import tempfile
+import sys
+import subprocess
 try:
     from unittest import mock  # py3
 except ImportError:
@@ -15,7 +17,7 @@ import textwrap
 import warnings
 
 import fulltext
-from fulltext.util import ShellError
+from fulltext.util import run, ShellError
 from fulltext.compat import which
 
 from six import PY3
@@ -166,6 +168,18 @@ class FullTextStripTestCase(BaseTestCase):
         self.assertMultiLineEqual('Test leading and trailing spaces removal. '
                                   'Test punctuation removal! Test spaces '
                                   'removal!', stripped)
+
+
+class TestCLI(BaseTestCase):
+
+    def test_extract(self):
+        subprocess.check_output(
+            "%s -m fulltext extract %s" % (sys.executable, "files/test.txt"),
+            shell=True)
+
+    def test_test(self):
+        subprocess.check_call("%s -m fulltext test" % sys.executable,
+                              shell=True)
 
 
 # --- Mixin tests

@@ -33,8 +33,8 @@ def test_backends():
             os.path.splitext(os.path.basename(name))[0])
         mod = __import__(mod_name, fromlist=[' '])
         print("checking %r" % mod)
-        if hasattr(mod, "test"):
-            mod.test()
+        if hasattr(mod, "check"):
+            mod.check()
 
 
 def main(args=sys.argv[1:]):

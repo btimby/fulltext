@@ -4,7 +4,7 @@ from fulltext.backends import __html
 from fulltext.util import run, assert_cmd_exists
 
 
-def test():
+def check():
     assert_cmd_exists('hwp5proc')
 
 

@@ -6,7 +6,7 @@ from fulltext.util import run, ShellError, MissingCommandException
 from fulltext.util import assert_cmd_exists
 
 
-def test():
+def check():
     assert_cmd_exists('antiword')
     assert_cmd_exists('abiword')
 

@@ -19,7 +19,7 @@ EXIF_ROTATION = {
 }
 
 
-def test():
+def check():
     assert_cmd_exists('tesseract')
 
 

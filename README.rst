@@ -1,5 +1,5 @@
-. figure:: https://travis-ci.org/btimby/fulltext.png
-   :alt: Travis CI Status
+.. figure:: https://travis-ci.org/btimby/fulltext.png
+   :alt: Linux tests (Travis)
    :target: https://travis-ci.org/btimby/fulltext
 
 .. figure:: https://www.smartfile.com/assets/img/smartfile-logo-new.png

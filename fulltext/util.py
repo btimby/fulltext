@@ -90,15 +90,28 @@ def run(*cmd, **kwargs):
             # This is equivalent to getting exitcode 127 from sh
             raise MissingCommandException(cmd[0])
 
-    # pipe.wait() ends up hanging on large files. using
-    # pipe.communicate appears to avoid this issue
-    stdout, stderr = pipe.communicate()
+    try:
+        # pipe.wait() ends up hanging on large files. using
+        # pipe.communicate appears to avoid this issue
+        stdout, stderr = pipe.communicate()
+        if stderr:
+            warn(stderr)
+        # if pipe is busted, raise an error (unlike Fabric)
+        if pipe.returncode != 0:
+            raise ShellError(' '.join(cmd), pipe.returncode, stdout, stderr)
 
-    # if pipe is busted, raise an error (unlike Fabric)
-    if pipe.returncode != 0:
-        raise ShellError(' '.join(cmd), pipe.returncode, stdout, stderr)
-
-    return stdout
+        return stdout
+    finally:
+        if pipe.stdout:
+            pipe.stdout.close()
+        if pipe.stderr:
+            pipe.stderr.close()
+        try:  # Flushing a BufferedWriter may raise an error
+            if pipe.stdin:
+                pipe.stdin.close()
+        finally:
+            # Wait for the process to terminate, to avoid zombies.
+            pipe.wait()
 
 
 def warn(msg):
