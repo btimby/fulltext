@@ -9,5 +9,6 @@ install:
   - pip install --timeout=60 -q -e .
 before_script:
   - make check
+  - python -m fulltext test
 script:
   - make test

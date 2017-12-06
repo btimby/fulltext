@@ -2,7 +2,7 @@
 Fulltext CLI interface.
 """
 
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 import os
 import sys
@@ -11,6 +11,7 @@ import logging
 from docopt import docopt
 
 import fulltext
+from fulltext.util import hilite
 
 
 HERE = os.path.abspath(os.path.dirname(__file__))
@@ -21,20 +22,28 @@ def _handle_open(path):
         return fulltext.get(f)
 
 
-def test_backends():
+def check_backends():
     """Invoke test() for all backends and fail (raise) if some dep
     is missing.
     """
     path = os.path.join(HERE, "backends")
+    errs = []
     for name in os.listdir(path):
         if not name.endswith('.py'):
             continue
         mod_name = "fulltext.backends.%s" % (
             os.path.splitext(os.path.basename(name))[0])
         mod = __import__(mod_name, fromlist=[' '])
-        print("checking %r" % mod)
         if hasattr(mod, "check"):
-            mod.check()
+            try:
+                mod.check()
+            except Exception as err:
+                errs.append((mod, str(err)))
+    if errs:
+        for mod, err in errs:
+            msg = hilite("%s: %s" % (mod.__name__, err), ok=False)
+            print(msg, file=sys.stderr)
+        sys.exit(1)
 
 
 def main(args=sys.argv[1:]):
@@ -57,7 +66,7 @@ def main(args=sys.argv[1:]):
     logger.addHandler(logging.StreamHandler())
 
     if opt['test']:
-        test_backends()
+        check_backends()
     else:
         handler = fulltext.get
 

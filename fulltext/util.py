@@ -4,6 +4,7 @@ import os
 import subprocess
 import warnings
 import sys
+import functools
 
 from os.path import dirname, abspath
 from os.path import join as pathjoin
@@ -164,3 +165,64 @@ else:
 def assert_cmd_exists(cmd):
     if not which(cmd):
         raise MissingCommandException(cmd)
+
+
+def memoize(fun):
+    """A simple memoize decorator for functions supporting (hashable)
+    positional arguments.
+    It also provides a cache_clear() function for clearing the cache:
+
+    >>> @memoize
+    ... def foo()
+    ...     return 1
+        ...
+    >>> foo()
+    1
+    >>> foo.cache_clear()
+    >>>
+    """
+    @functools.wraps(fun)
+    def wrapper(*args, **kwargs):
+        key = (args, frozenset(sorted(kwargs.items())))
+        try:
+            return cache[key]
+        except KeyError:
+            ret = cache[key] = fun(*args, **kwargs)
+            return ret
+
+    def cache_clear():
+        """Clear cache."""
+        cache.clear()
+
+    cache = {}
+    wrapper.cache_clear = cache_clear
+    return wrapper
+
+
+@memoize
+def term_supports_colors():
+    try:
+        import curses
+        assert sys.stderr.isatty()
+        curses.setupterm()
+        assert curses.tigetnum("colors") > 0
+    except Exception:
+        return False
+    else:
+        return True
+
+
+def hilite(s, ok=True, bold=False):
+    """Return an highlighted version of 'string'."""
+    if not term_supports_colors():
+        return s
+    attr = []
+    if ok is None:  # no color
+        pass
+    elif ok:   # green
+        attr.append('32')
+    else:   # red
+        attr.append('31')
+    if bold:
+        attr.append('1')
+    return '\x1b[%sm%s\x1b[0m' % (';'.join(attr), s)
