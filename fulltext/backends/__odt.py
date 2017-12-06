@@ -16,10 +16,7 @@ def _qn(ns):
 
 def _to_string(text, elem):
     if elem.text is not None:
-        try:
-            text.write(elem.text.decode('utf8'))
-        except AttributeError:
-            text.write(elem.text)
+        text.write(elem.text)
     for c in elem:
         if c.tag == _qn('text:tab'):
             text.write(' ')

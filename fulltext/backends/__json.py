@@ -28,11 +28,11 @@ def _to_text(text, obj):
 
 
 def _get_file(f, **kwargs):
-    encoding = kwargs.get('encoding', ENCODING)
+    encoding, errors = kwargs['encoding'], kwargs['encoding_errors']
     text, data = StringIO(), f.read()
 
     # TODO: catch exception and attempt to use regex to strip formatting.
-    obj = json.loads(data.decode(encoding))
+    obj = json.loads(data.decode(encoding, errors))
 
     _to_text(text, obj)
 

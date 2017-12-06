@@ -26,4 +26,6 @@ def to_text_with_backend(html):
 
 
 def _get_path(path, **kwargs):
-    return to_text_with_backend(run(*_cmd(path, **kwargs)).decode('utf-8'))
+    encoding, errors = kwargs['encoding'], kwargs['encoding_errors']
+    return to_text_with_backend(run(*_cmd(path, **kwargs)).decode(
+        encoding, errors))
