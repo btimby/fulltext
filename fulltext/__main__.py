@@ -1,3 +1,6 @@
+"""
+Fulltext CLI interface.
+"""
 
 from __future__ import absolute_import
 
@@ -18,7 +21,10 @@ def _handle_open(path):
         return fulltext.get(f)
 
 
-def test_modules():
+def test_backends():
+    """Invoke test() for all backends and fail (raise) if some dep
+    is missing.
+    """
     path = os.path.join(HERE, "backends")
     for name in os.listdir(path):
         if not name.endswith('.py'):
@@ -51,7 +57,7 @@ def main(args=sys.argv[1:]):
     logger.addHandler(logging.StreamHandler())
 
     if opt['test']:
-        test_modules()
+        test_backends()
     else:
         handler = fulltext.get
 
