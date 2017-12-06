@@ -51,11 +51,11 @@ def main(args=sys.argv[1:]):
 
     Commands:
         extract - extract text from path
-        test    - make sure all deps are installed
+        check   - make sure all deps are installed
 
     Usage:
         fulltext extract [-f] [-t] <path>...
-        fulltext test
+        fulltext check
 
     Options:
         -f      Open file first.
@@ -65,9 +65,9 @@ def main(args=sys.argv[1:]):
     logger = logging.getLogger()
     logger.addHandler(logging.StreamHandler())
 
-    if opt['test']:
+    if opt['check']:
         check_backends()
-    else:
+    elif opt['extract']:
         handler = fulltext.get
 
         if opt['-f']:
@@ -75,6 +75,9 @@ def main(args=sys.argv[1:]):
 
         for path in opt['<path>']:
             print(handler(path))
+    else:
+        # we should never get here
+        raise ValueError("don't know how to handle cmd")
 
 
 if __name__ == '__main__':
