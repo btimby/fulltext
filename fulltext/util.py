@@ -8,6 +8,8 @@ import sys
 from os.path import dirname, abspath
 from os.path import join as pathjoin
 
+from six import PY3
+
 from fulltext.compat import which
 
 
@@ -95,7 +97,11 @@ def run(*cmd, **kwargs):
         # pipe.communicate appears to avoid this issue
         stdout, stderr = pipe.communicate()
         if stderr:
-            warn(stderr)
+            if PY3:
+                warn(stderr.decode(sys.getfilesystemencoding(), "ignore"))
+            else:
+                warn(stderr)
+
         # if pipe is busted, raise an error (unlike Fabric)
         if pipe.returncode != 0:
             raise ShellError(' '.join(cmd), pipe.returncode, stdout, stderr)
