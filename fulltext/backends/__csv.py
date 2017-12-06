@@ -7,10 +7,12 @@ from six import PY3
 
 
 if PY3:
-    def readlines(f, encoding, errors):
-        for line in f.readlines():
-            yield line.decode(encoding, errors)
+    def unicode_reader(f, encoding, encoding_errors, **opts):
+        def readlines(f):
+            for line in f.readlines():
+                yield line.decode(encoding, encoding_errors)
 
+        return csv.reader(readlines(f), **opts)
 else:
     def unicode_reader(f, encoding, encoding_errors, **opts):
         reader = csv.reader(f, **opts)
@@ -34,13 +36,8 @@ def _get_file(f, **kwargs):
     elif mimetype == 'text/psv':
         options['delimiter'] = '|'
 
-    if PY3:
-        gen = readlines(f, encoding, errors)
-        reader = csv.reader(gen, **options)
-    else:
-        reader = unicode_reader(f, encoding, errors, **options)
-
     text = StringIO()
+    reader = unicode_reader(f, encoding, errors, **options)
     for row in reader:
         text.write(u' '.join(row))
         text.write(u'\n')
