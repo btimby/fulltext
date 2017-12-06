@@ -1,6 +1,7 @@
 import docx2txt
 
 
+# Note: docx2txt does not support encoding.
 def _get_file(path_or_file, **kwargs):
     return docx2txt.process(path_or_file)
 

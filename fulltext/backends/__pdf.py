@@ -26,8 +26,10 @@ def _cmd(path, **kwargs):
 
 
 def _get_file(f, **kwargs):
-    return run(*_cmd('-', **kwargs), stdin=f).decode('utf-8')
+    encoding, errors = kwargs['encoding'], kwargs['encoding_errors']
+    return run(*_cmd('-', **kwargs), stdin=f).decode(encoding, errors)
 
 
 def _get_path(path, **kwargs):
-    return run(*_cmd(path, **kwargs)).decode('utf-8')
+    encoding, errors = kwargs['encoding'], kwargs['encoding_errors']
+    return run(*_cmd(path, **kwargs)).decode(encoding, errors)

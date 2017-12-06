@@ -18,8 +18,10 @@ if which('pstotext') is None:
 
 
 def _get_file(f, **kwargs):
-    return run('pstotext', '-', stdin=f).decode('utf8')
+    out = run('pstotext', '-', stdin=f)
+    return out.decode(kwargs['encoding'], kwargs['encoding_errors'])
 
 
 def _get_path(path, **kwargs):
-    return run('pstotext', path).decode('utf8')
+    out = run('pstotext', path)
+    return out.decode(kwargs['encoding'], kwargs['encoding_errors'])

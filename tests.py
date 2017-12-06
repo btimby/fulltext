@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import os
 import unittest
 import tempfile
@@ -39,6 +42,9 @@ TEXT_WITH_NEWLINES = u"Lorem ipsum\ndolor sit amet, consectetur adipiscing e" \
 TEXT = TEXT_WITH_NEWLINES.replace('\n', ' ')
 
 
+# --- Utils
+
+
 class BaseTestCase(unittest.TestCase):
     """Base TestCase Class."""
 
@@ -57,10 +63,19 @@ class BaseTestCase(unittest.TestCase):
     # --- utils
 
     def touch(self, fname, content=b""):
-        with open(fname, 'wb') as f:
+        if isinstance(content, bytes):
+            f = open(fname, "wb")
+        else:
+            if PY3:
+                f = open(fname, "wt")
+            else:
+                f = codecs.open(fname, "wt", encoding="utf8")
+
+        self.addCleanup(os.remove, fname)
+        with f:
             if content:
                 f.write(content)
-        self.addCleanup(os.remove, fname)
+
         return fname
 
     def touch_fobj(self, content=b""):
@@ -151,6 +166,9 @@ class FullTextStripTestCase(BaseTestCase):
         self.assertMultiLineEqual('Test leading and trailing spaces removal. '
                                   'Test punctuation removal! Test spaces '
                                   'removal!', stripped)
+
+
+# --- Mixin tests
 
 
 class PathAndFileTests(object):
@@ -300,6 +318,9 @@ class GzTestCase(BaseTestCase, PathAndFileTests):
         self.assertMultiLineEqual(self.text, text)
 
 
+# ---
+
+
 class FilesTestCase(BaseTestCase):
 
     def test_old_doc_file(self):
@@ -314,6 +335,9 @@ class FilesTestCase(BaseTestCase):
         text = fulltext.get('files/test.old.doc', backend='doc')
         self.assertStartsWith('eZ-Audit', text)
         self.assertIsInstance(text, u"".__class__)
+
+
+# --- Pickups
 
 
 class TestPickups(BaseTestCase):
@@ -398,6 +422,9 @@ class TestPickups(BaseTestCase):
             fulltext.get(fname, backend='yoo')
 
 
+# --- File objects
+
+
 class TestFileObj(BaseTestCase):
 
     def test_returned_content(self):
@@ -464,6 +491,183 @@ class TestUtils(BaseTestCase):
         assert fulltext.is_file_path('foo')
         assert fulltext.is_file_path(b'foo')
         assert not fulltext.is_file_path(open(__file__))
+
+
+# --- Encodings
+
+
+class TestEncodingGeneric(BaseTestCase):
+
+    def test_global_vars(self):
+        # Make sure the globla vars are taken into consideration and
+        # passed to the underlying backends.
+        encoding, errors = fulltext.ENCODING, fulltext.ENCODING_ERRORS
+        fname = self.touch("file.txt", content=b"hello")
+        try:
+            fulltext.ENCODING = "foo"
+            fulltext.ENCODING_ERRORS = "bar"
+            with mock.patch('fulltext._get_path', return_value="") as m:
+                fulltext.get(fname)
+            self.assertEqual(m.call_args[1]['encoding'], 'foo')
+            self.assertEqual(m.call_args[1]['encoding_errors'], 'bar')
+        finally:
+            fulltext.ENCODING = encoding
+            fulltext.ENCODING_ERRORS = errors
+
+
+class TestUnicodeBase(object):
+    ext = None
+    italian = u"ciao bella àèìòù "
+    japanese = u"かいおうせい海王星"
+    invalid = u"helloworld"
+
+    def compare(self, content_s, fulltext_s):
+        if PY3:
+            self.assertEqual(content_s, fulltext_s)
+        else:
+            # Don't test for equality on Python 2 because unicode
+            # support is basically broken.
+            self.assertEqual(content_s, fulltext_s)
+            pass
+
+    def doit(self, fname, expected_txt):
+        ret = fulltext.get(fname)
+        self.compare(ret, expected_txt)
+
+    def test_italian(self):
+        self.doit("files/unicode/it.%s" % self.ext, self.italian)
+
+    def test_japanese(self):
+        self.doit("files/unicode/jp.%s" % self.ext, self.japanese)
+
+    def test_invalid_char(self):
+        fname = "files/unicode/invalid.%s" % self.ext
+        if os.path.exists(fname):
+            with self.assertRaises(UnicodeDecodeError):
+                fulltext.get(fname)
+            ret = fulltext.get(fname, encoding_errors="ignore")
+            self.assertEqual(ret, self.invalid)
+        #
+        fname = "files/unicode/it.%s" % self.ext
+        with self.assertRaises(UnicodeDecodeError):
+            fulltext.get(fname, encoding='ascii')
+        ret = fulltext.get(
+            fname, encoding='ascii', encoding_errors="ignore")
+        against = self.italian.replace(
+            u"àèìòù", u"").replace(u"  ", u" ").strip()
+        self.assertEqual(ret, against)
+
+
+class TestUnicodeTxt(BaseTestCase, TestUnicodeBase):
+    ext = "txt"
+
+
+class TestUnicodeCsv(BaseTestCase, TestUnicodeBase):
+    ext = "csv"
+
+
+class TestUnicodeOdt(BaseTestCase, TestUnicodeBase):
+    ext = "odt"
+
+    # A binary file is passed and text is not de/encoded.
+    @unittest.skipIf(1, "no conversion happening")
+    def test_invalid_char(self):
+        pass
+
+
+# ps backend uses `pstotext` CLI tool, which does not correctly
+# handle unicode. Just make sure we don't crash if passed the
+# error handler.
+class TestUnicodePs(BaseTestCase):
+
+    def test_italian(self):
+        fname = "files/unicode/it.ps"
+        with self.assertRaises(UnicodeDecodeError):
+            fulltext.get(fname)
+        ret = fulltext.get(fname, encoding_errors="ignore")
+        assert ret.startswith("ciao bella")  # the rest is garbage
+
+
+class TestUnicodeHtml(BaseTestCase, TestUnicodeBase):
+    ext = "html"
+
+
+# backend uses `unrtf` CLI tool, which does not correctly
+# handle unicode. Just make sure we don't crash if passed the
+# error handler.
+class TestUnicodeRtf(BaseTestCase):
+    ext = "rtf"
+
+    def test_italian(self):
+        fname = "files/unicode/it.rtf"
+        with self.assertRaises(UnicodeDecodeError):
+            fulltext.get(fname)
+        ret = fulltext.get(fname, encoding_errors="ignore")
+        assert ret.startswith("ciao bella")  # the rest is garbage
+
+
+class TestUnicodeDoc(BaseTestCase, TestUnicodeBase):
+    ext = "doc"
+    italian = ' '.join([u"ciao bella àèìòù" for x in range(20)])
+    japanese = ' '.join([u"かいおうせい海王星" for x in range(30)])
+
+
+class TestUnicodeXml(BaseTestCase, TestUnicodeBase):
+    ext = "xml"
+
+
+class TestUnicodeXlsx(BaseTestCase, TestUnicodeBase):
+    ext = "xlsx"
+
+    # A binary file is passed and text is not de/encoded.
+    @unittest.skipIf(1, "no conversion happening")
+    def test_invalid_char(self):
+        pass
+
+
+class TestUnicodePptx(BaseTestCase, TestUnicodeBase):
+    ext = "pptx"
+
+    # A binary file is passed and text is not de/encoded.
+    @unittest.skipIf(1, "no conversion happening")
+    def test_invalid_char(self):
+        pass
+
+
+class TestUnicodePdf(BaseTestCase, TestUnicodeBase):
+    ext = "pdf"
+
+
+class TestUnicodePng(BaseTestCase, TestUnicodeBase):
+    ext = "png"
+
+    def compare(self, content_s, fulltext_s):
+        pass
+
+    @unittest.skipIf(1, "not compatible")
+    def test_invalid_char(self):
+        pass
+
+
+class TestUnicodeJson(BaseTestCase, TestUnicodeBase):
+    ext = "json"
+
+
+class TestUnicodeDocx(BaseTestCase, TestUnicodeBase):
+    ext = "docx"
+
+    # Underlying lib doesn't allow to specify an encoding.
+    @unittest.skipIf(1, "not compatible")
+    def test_invalid_char(self):
+        pass
+
+
+class TestUnicodeEml(BaseTestCase, TestUnicodeBase):
+    ext = "eml"
+
+
+class TestUnicodeMbox(BaseTestCase, TestUnicodeBase):
+    ext = "mbox"
 
 
 if __name__ == '__main__':

@@ -18,8 +18,9 @@ if which('abiword') is None:
 
 
 def _get_file(f, **kwargs):
+    encoding, errors = kwargs['encoding'], kwargs['encoding_errors']
     try:
-        return run('antiword', '-', stdin=f).decode('utf8')
+        return run('antiword', '-', stdin=f).decode(encoding, errors)
     except ShellError as e:
         if b'not a Word Document' not in e.stderr:
             raise
@@ -32,12 +33,13 @@ def _get_file(f, **kwargs):
     # Try abiword, slower, but supports more formats.
     return run(
         'abiword', '--to=txt', '--to-name=fd://1', 'fd://0', stdin=f
-    ).decode('utf8')
+    ).decode(encoding, errors)
 
 
 def _get_path(path, **kwargs):
+    encoding, errors = kwargs['encoding'], kwargs['encoding_errors']
     try:
-        return run('antiword', path).decode('utf8')
+        return run('antiword', path).decode(encoding, errors)
     except ShellError as e:
         if b'not a Word Document' not in e.stderr:
             raise
@@ -46,4 +48,5 @@ def _get_path(path, **kwargs):
         LOGGER.warning('CLI tool "antiword" missing, using "abiword"')
 
     # Try abiword, slower, but supports more formats.
-    return run('abiword', '--to=txt', '--to-name=fd://1', path).decode('utf8')
+    return run('abiword', '--to=txt', '--to-name=fd://1', path).decode(
+        encoding, errors)
