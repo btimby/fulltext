@@ -16,7 +16,7 @@ from six import StringIO
 BUFFER_MAX = 1024 * 1024
 
 
-def _get_file(f, **kwargs):
+def handle_fobj(f, **kwargs):
     encoding, errors = kwargs['encoding'], kwargs['encoding_errors']
     buffer = StringIO()
 

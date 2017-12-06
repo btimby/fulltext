@@ -17,11 +17,11 @@ def _cmd(path, **kwargs):
     return cmd
 
 
-def _get_file(f, **kwargs):
+def handle_fobj(f, **kwargs):
     encoding, errors = kwargs['encoding'], kwargs['encoding_errors']
     return run(*_cmd('-', **kwargs), stdin=f).decode(encoding, errors)
 
 
-def _get_path(path, **kwargs):
+def handle_path(path, **kwargs):
     encoding, errors = kwargs['encoding'], kwargs['encoding_errors']
     return run(*_cmd(path, **kwargs)).decode(encoding, errors)

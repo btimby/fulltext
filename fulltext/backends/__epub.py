@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 from six import StringIO
 
 
-def _get_path(path, **kwargs):
+def handle_path(path, **kwargs):
     text, book = StringIO(), epub.read_epub(path)
 
     for id, _ in book.spine:

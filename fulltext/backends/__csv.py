@@ -19,7 +19,7 @@ else:
                    for cell in row]
 
 
-def _get_file(f, **kwargs):
+def handle_fobj(f, **kwargs):
     encoding, errors = kwargs['encoding'], kwargs['encoding_errors']
     options = {
         'dialect': 'excel',

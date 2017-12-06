@@ -15,7 +15,7 @@ def _has_ext(s):
     return bool(splitext(s)[1])
 
 
-def _get_file(path_or_file, **kwargs):
+def handle_fobj(path_or_file, **kwargs):
     if is_file_path(path_or_file):
         f = gzip.GzipFile(path_or_file)
         path = path_or_file
@@ -32,4 +32,4 @@ def _get_file(path_or_file, **kwargs):
         return get(f, backend=backend)
 
 
-_get_path = _get_file
+handle_path = handle_fobj

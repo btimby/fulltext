@@ -9,11 +9,11 @@ def test():
     assert_cmd_exists('pstotext')
 
 
-def _get_file(f, **kwargs):
+def handle_fobj(f, **kwargs):
     out = run('pstotext', '-', stdin=f)
     return out.decode(kwargs['encoding'], kwargs['encoding_errors'])
 
 
-def _get_path(path, **kwargs):
+def handle_path(path, **kwargs):
     out = run('pstotext', path)
     return out.decode(kwargs['encoding'], kwargs['encoding_errors'])

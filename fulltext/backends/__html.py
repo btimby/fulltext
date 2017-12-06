@@ -20,7 +20,7 @@ def _is_visible(elem, encoding, errors):
     return True
 
 
-def _get_file(f, **kwargs):
+def handle_fobj(f, **kwargs):
     encoding, errors = kwargs['encoding'], kwargs['encoding_errors']
     data = f.read()
     data = data.decode(encoding, errors)

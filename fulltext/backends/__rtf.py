@@ -11,13 +11,13 @@ def _strip(text, encoding, errors):
     return text.partition(b'-----------------')[2].decode(encoding, errors)
 
 
-def _get_file(f, **kwargs):
+def handle_fobj(f, **kwargs):
     encoding, errors = kwargs['encoding'], kwargs['encoding_errors']
     return _strip(run('unrtf', '--text', '--nopict', stdin=f),
                   encoding, errors)
 
 
-def _get_path(path, **kwargs):
+def handle_path(path, **kwargs):
     encoding, errors = kwargs['encoding'], kwargs['encoding_errors']
     return _strip(run('unrtf', '--text', '--nopict', path),
                   encoding, errors)

@@ -239,48 +239,48 @@ def is_file_path(obj):
     return isinstance(obj, string_types) or isinstance(obj, bytes)
 
 
-def _get_path(backend, path, **kwargs):
+def handle_path(backend, path, **kwargs):
     """
     Handle a path.
 
     Called by `get()` when provided a path. This function will prefer the
-    backend's `_get_path()` if one is provided Otherwise, it will open the
-    given path then use `_get_file()`.
+    backend's `handle_path()` if one is provided Otherwise, it will open the
+    given path then use `handle_fobj()`.
     """
-    if callable(getattr(backend, '_get_path', None)):
-        # Prefer _get_path() if present.
-        return backend._get_path(path, **kwargs)
+    if callable(getattr(backend, 'handle_path', None)):
+        # Prefer handle_path() if present.
+        return backend.handle_path(path, **kwargs)
 
-    elif callable(getattr(backend, '_get_file', None)):
-        # Fallback to _get_file(). No warning here since the performance hit
+    elif callable(getattr(backend, 'handle_fobj', None)):
+        # Fallback to handle_fobj(). No warning here since the performance hit
         # is minimal.
         with open(path, 'rb') as f:
-            return backend._get_file(f, **kwargs)
+            return backend.handle_fobj(f, **kwargs)
 
     else:
         raise AssertionError(
             'Backend %s has no _get functions' % backend.__name__)
 
 
-def _get_file(backend, f, **kwargs):
+def handle_fobj(backend, f, **kwargs):
     """
     Handle a file-like object.
 
     Called by `get()` when provided a file-like. This function will prefer the
-    backend's `_get_file()` if one is provided. Otherwise, it will write the
-    data to a temporary file and call `_get_path()`.
+    backend's `handle_fobj()` if one is provided. Otherwise, it will write the
+    data to a temporary file and call `handle_path()`.
     """
     if not is_binary(f):
         raise AssertionError('File must be opened in binary mode.')
 
-    if callable(getattr(backend, '_get_file', None)):
-        # Prefer _get_file() if present.
-        return backend._get_file(f, **kwargs)
+    if callable(getattr(backend, 'handle_fobj', None)):
+        # Prefer handle_fobj() if present.
+        return backend.handle_fobj(f, **kwargs)
 
-    elif callable(getattr(backend, '_get_path', None)):
-        # Fallback to _get_path(). Warn user since this is potentially
+    elif callable(getattr(backend, 'handle_path', None)):
+        # Fallback to handle_path(). Warn user since this is potentially
         # expensive.
-        LOGGER.warning("Using disk, backend does not provide `_get_file()`")
+        LOGGER.warning("Using disk, backend does not provide `handle_fobj()`")
 
         ext = ''
         if 'ext' in kwargs:
@@ -289,7 +289,7 @@ def _get_file(backend, f, **kwargs):
         with tempfile.NamedTemporaryFile(dir=TEMPDIR, suffix=ext) as t:
             shutil.copyfileobj(f, t)
             t.flush()
-            return backend._get_path(t.name, **kwargs)
+            return backend.handle_path(t.name, **kwargs)
 
     else:
         raise AssertionError(
@@ -379,7 +379,7 @@ def _get(path_or_file, default, mime, name, backend, encoding,
             backend_mod = backend
 
     # Call backend.
-    fun = _get_path if is_file_path(path_or_file) else _get_file
+    fun = handle_path if is_file_path(path_or_file) else handle_fobj
     text = fun(backend_mod, path_or_file, **kwargs)
     assert text is not None, "backend function returned None"
     text = STRIP_WHITE.sub(' ', text)

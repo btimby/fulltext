@@ -15,10 +15,10 @@ def _cmd(path, **kwargs):
 
 
 def to_text_with_backend(html):
-    return __html._get_file(html)
+    return __html.handle_fobj(html)
 
 
-def _get_path(path, **kwargs):
+def handle_path(path, **kwargs):
     encoding, errors = kwargs['encoding'], kwargs['encoding_errors']
     return to_text_with_backend(run(*_cmd(path, **kwargs)).decode(
         encoding, errors))

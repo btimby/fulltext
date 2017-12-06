@@ -15,7 +15,7 @@ LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
 
-def _get_file(f, **kwargs):
+def handle_fobj(f, **kwargs):
     encoding, errors = kwargs['encoding'], kwargs['encoding_errors']
     try:
         return run('antiword', '-', stdin=f).decode(encoding, errors)
@@ -34,7 +34,7 @@ def _get_file(f, **kwargs):
     ).decode(encoding, errors)
 
 
-def _get_path(path, **kwargs):
+def handle_path(path, **kwargs):
     encoding, errors = kwargs['encoding'], kwargs['encoding_errors']
     try:
         return run('antiword', path).decode(encoding, errors)

@@ -29,7 +29,7 @@ def _to_string(text, elem):
     text.write(u'\n')
 
 
-def _get_file(f, **kwargs):
+def handle_fobj(f, **kwargs):
     text = StringIO()
 
     with zipfile.ZipFile(f, 'r') as z:
@@ -43,4 +43,4 @@ def _get_file(f, **kwargs):
     return text.getvalue()
 
 
-_get_path = _get_file
+handle_path = handle_fobj
