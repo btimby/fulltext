@@ -1,5 +1,5 @@
 .. figure:: https://travis-ci.org/btimby/fulltext.png
-   :alt: Travis CI Status
+   :alt: Linux tests (Travis)
    :target: https://travis-ci.org/btimby/fulltext
 
 .. figure:: https://www.smartfile.com/assets/img/smartfile-logo-new.png
@@ -135,26 +135,33 @@ the new backend against fulltext.
 
     import fulltext
 
-    def _get_file(f, **kwargs):
-        # Extract text from a file-like object. This should be defined when
-        # possible.
-        pass
-
-    def _get_path(path, **kwargs):
-        # Extract text from a path. This should only be defined if it can be
-        # done more efficiently than having Python open() and read() the file,
-        # passing it to _get_file().
-        pass
-
     fulltext.register_backend(
         'application/x-rar-compressed',
         'path.to.this.module',
         ['.rar'])
 
-If you only implement ``_get_file()`` Fulltext will open any paths and pass
+    def check():
+        # This is invoked before `handle_` functions. In here you can
+        # import third party deps or raise an exception if a CLI tool
+        # is missing. Both conditions will be turned into a warning
+        # on `get()` and bin backend will be used as fallback.
+        pass
+
+    def handle_fobj(f, **kwargs):
+        # Extract text from a file-like object. This should be defined when
+        # possible.
+        pass
+
+    def handle_path(path, **kwargs):
+        # Extract text from a path. This should only be defined if it can be
+        # done more efficiently than having Python open() and read() the file,
+        # passing it to handle_fobj().
+        pass
+
+If you only implement ``handle_fobj()`` Fulltext will open any paths and pass
 them to that function. Therefore if possible, define at least this function. If
 working with file-like objects is not possible and you only define
-``_get_path()`` then Fulltext will save any file-like objects to a temporary
+``handle_path()`` then Fulltext will save any file-like objects to a temporary
 file and use that function. Sometimes it is advantageous to define both
 functions in cases when you can do each efficiently.
 

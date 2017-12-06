@@ -1,18 +1,11 @@
 from __future__ import absolute_import
 
-import logging
 from fulltext.backends import __html
-from fulltext.util import run, warn
-from fulltext.compat import which
+from fulltext.util import run, assert_cmd_exists
 
 
-LOGGER = logging.getLogger(__name__)
-LOGGER.addHandler(logging.NullHandler())
-
-
-if which('hwp5proc') is None:
-    warn('CLI tool "hwp5proc" is required for .hwp backend. use '
-         '"pip2 install --pre pyhwp"')
+def check():
+    assert_cmd_exists('hwp5proc')
 
 
 def _cmd(path, **kwargs):
@@ -22,10 +15,10 @@ def _cmd(path, **kwargs):
 
 
 def to_text_with_backend(html):
-    return __html._get_file(html)
+    return __html.handle_fobj(html)
 
 
-def _get_path(path, **kwargs):
+def handle_path(path, **kwargs):
     encoding, errors = kwargs['encoding'], kwargs['encoding_errors']
     return to_text_with_backend(run(*_cmd(path, **kwargs)).decode(
         encoding, errors))

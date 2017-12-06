@@ -27,7 +27,7 @@ def _to_text(text, obj):
         raise ValueError('Unrecognized type: %s' % obj.__class__)
 
 
-def _get_file(f, **kwargs):
+def handle_fobj(f, **kwargs):
     encoding, errors = kwargs['encoding'], kwargs['encoding_errors']
     text, data = StringIO(), f.read()
 

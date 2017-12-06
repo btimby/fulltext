@@ -5,7 +5,7 @@ import xlrd
 from six import StringIO
 
 
-def _get_path(path, **kwargs):
+def handle_path(path, **kwargs):
     text = StringIO()
     wb = xlrd.open_workbook(path)
     for n in wb.sheet_names():

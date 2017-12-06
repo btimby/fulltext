@@ -5,7 +5,7 @@ import pptx
 from six import StringIO
 
 
-def _get_path(path, **kwargs):
+def handle_path(path, **kwargs):
     text, p = StringIO(), pptx.Presentation(path)
     for slide in p.slides:
         for shape in slide.shapes:

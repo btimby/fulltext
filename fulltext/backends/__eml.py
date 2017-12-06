@@ -5,7 +5,7 @@ import codecs
 from six import StringIO
 
 
-def _get_file(f, **kwargs):
+def handle_fobj(f, **kwargs):
     encoding, errors = kwargs['encoding'], kwargs['encoding_errors']
     text = StringIO()
     f2 = codecs.getreader(encoding)(f, errors=errors)
