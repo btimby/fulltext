@@ -8,6 +8,8 @@ import sys
 from os.path import dirname, abspath
 from os.path import join as pathjoin
 
+from fulltext.compat import which
+
 
 LOGGER = logging.getLogger(__file__)
 LOGGER.addHandler(logging.NullHandler())
@@ -32,7 +34,16 @@ class CommandLineError(Exception):
 
 
 class MissingCommandException(CommandLineError):
-    pass
+
+    def __init__(self, cmd, msg=""):
+        self.cmd = cmd
+        self.msg = msg
+
+    def __str__(self):
+        if self.msg:
+            return self.msg
+        else:
+            return "%r CLI tool is not installed" % self.cmd
 
 
 class ShellError(CommandLineError):
@@ -129,3 +140,8 @@ else:
     # On linux things are simpler. Linter disabled for next line since we
     # import here for export.
     import magic  # NOQA
+
+
+def assert_cmd_exists(cmd):
+    if not which(cmd):
+        raise MissingCommandException(cmd)

@@ -296,6 +296,19 @@ def _get_file(backend, f, **kwargs):
             'Backend %s has no _get functions' % backend.__name__)
 
 
+def import_mod(mod_name):
+    try:
+        mod = __import__(mod_name, fromlist=[' '])
+        if hasattr(mod, "test"):
+            mod.test()
+        return mod
+    except Exception as err:
+        bin_mod = "fulltext.backends.__bin"
+        warn("can't import %r due to %r; use %r instead" % (
+            mod_name, str(err), bin_mod))
+        return __import__(bin_mod, fromlist=[' '])
+
+
 def backend_from_mime(mime):
     """Determine backend module object from a mime string."""
     try:
@@ -304,7 +317,7 @@ def backend_from_mime(mime):
         warn("don't know how to handle %r mime; assume %r" % (
             mime, DEFAULT_MIME))
         mod_name = MIMETYPE_TO_BACKENDS[DEFAULT_MIME]
-    mod = __import__(mod_name, fromlist=[' '])
+    mod = import_mod(mod_name)
     return mod
 
 
@@ -318,7 +331,7 @@ def backend_from_fname(name):
             return backend_from_fobj(f)
     else:
         mod_name = MIMETYPE_TO_BACKENDS[mime]
-        mod = __import__(mod_name, fromlist=[' '])
+        mod = import_mod(mod_name)
         return mod
 
 

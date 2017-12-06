@@ -2,19 +2,11 @@
 # enscript -B --word-wrap -ptest.ps test.txt
 
 from __future__ import absolute_import
-
-import logging
-
-from fulltext.util import run, warn
-from fulltext.compat import which
+from fulltext.util import run, assert_cmd_exists
 
 
-LOGGER = logging.getLogger(__name__)
-LOGGER.addHandler(logging.NullHandler())
-
-
-if which('pstotext') is None:
-    warn('CLI tool "pstotext" is required for .ps backend.')
+def test():
+    assert_cmd_exists('pstotext')
 
 
 def _get_file(f, **kwargs):

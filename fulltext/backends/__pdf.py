@@ -1,17 +1,9 @@
 from __future__ import absolute_import
-
-import logging
-
-from fulltext.util import run, warn
-from fulltext.compat import which
+from fulltext.util import run, assert_cmd_exists
 
 
-LOGGER = logging.getLogger(__name__)
-LOGGER.addHandler(logging.NullHandler())
-
-
-if which('pdftotext') is None:
-    warn('CLI tool "pdftotext" is required for .pdf backend.')
+def test():
+    assert_cmd_exists('pdftotext')
 
 
 def _cmd(path, **kwargs):

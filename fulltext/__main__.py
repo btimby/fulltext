@@ -26,7 +26,9 @@ def test_modules():
         mod_name = "fulltext.backends.%s" % (
             os.path.splitext(os.path.basename(name))[0])
         mod = __import__(mod_name, fromlist=[' '])
-        print(mod)
+        print("checking %r" % mod)
+        if hasattr(mod, "test"):
+            mod.test()
 
 
 def main(args=sys.argv[1:]):

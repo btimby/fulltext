@@ -2,19 +2,17 @@ from __future__ import absolute_import
 
 import logging
 
-from fulltext.util import run, ShellError, MissingCommandException, warn
-from fulltext.compat import which
+from fulltext.util import run, ShellError, MissingCommandException
+from fulltext.util import assert_cmd_exists
+
+
+def test():
+    assert_cmd_exists('antiword')
+    assert_cmd_exists('abiword')
 
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
-
-
-if which('antiword') is None:
-    warn('CLI tool "antiword" is required for .doc backend.')
-
-if which('abiword') is None:
-    warn('CLI tool "abiword" is optional for .doc backend.')
 
 
 def _get_file(f, **kwargs):

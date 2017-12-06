@@ -3,29 +3,24 @@
 # sudo apt-get install tesseract-ocr-[lang]
 
 import errno
-import logging
 
 from PIL import Image
 
 import pytesseract
 
-from fulltext.util import MissingCommandException, warn
-from fulltext.compat import which
+from fulltext.util import assert_cmd_exists
 
-
-LOGGER = logging.getLogger(__name__)
-LOGGER.addHandler(logging.NullHandler())
 
 EXIF_ORIENTATION = 274  # cf ExifTags
-
 EXIF_ROTATION = {
     3: 180,
     6: 270,
     8: 90
 }
 
-if which('tesseract') is None:
-    warn('CLI tool "tesseract" is required for image files backend.')
+
+def test():
+    assert_cmd_exists('tesseract')
 
 
 def read(img, **kargs):
