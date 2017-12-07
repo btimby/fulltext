@@ -183,6 +183,63 @@ class TestCLI(BaseTestCase):
     #                           shell=True)
 
 
+class TestBackendInterface(BaseTestCase):
+
+    def test_params(self):
+        # Make sure Backend class receives the right params.
+        fname = self.touch('testfn.doc')
+        with mock.patch('fulltext.handle_path', return_value="") as m:
+            fulltext.get(fname, encoding='foo', encoding_errors='bar')
+            klass = m.call_args[0][0]
+            self.assertEqual(klass.encoding, 'foo')
+            self.assertEqual(klass.encoding_errors, 'bar')
+
+    def test_callbacks(self):
+        # Make sure callback methods are called (also in the right order).
+        flags = []
+
+        class Backend:
+
+            def setup(self):
+                flags.append("setup")
+
+            def teardown(self):
+                flags.append("teardown")
+
+            def handle_fobj(self, path):
+                flags.append("handle_fobj")
+                return "text"
+
+        fname = self.touch('testfn.doc')
+        with mock.patch('fulltext.backend_inst_from_mod',
+                        return_value=Backend()):
+            fulltext.get(fname, encoding='foo', encoding_errors='bar')
+        self.assertEqual(flags, ['setup', 'handle_fobj', 'teardown'])
+
+    def test_teardown_on_err(self):
+        # Make sure teardown methods is called also on error.
+        flags = []
+
+        class Backend:
+
+            def setup(self):
+                flags.append("setup")
+
+            def teardown(self):
+                flags.append("teardown")
+
+            def handle_fobj(self, path):
+                1 / 0
+
+        fname = self.touch('testfn.doc')
+        with mock.patch('fulltext.backend_inst_from_mod',
+                        return_value=Backend()):
+            with self.assertRaises(ZeroDivisionError):
+                fulltext.get(fname, encoding='foo', encoding_errors='bar')
+
+        self.assertEqual(flags, ['setup', 'teardown'])
+
+
 # --- Mixin tests
 
 
@@ -364,24 +421,24 @@ class TestPickups(BaseTestCase):
         fname = self.touch('testfn.doc')
         with mock.patch('fulltext.handle_path', return_value="") as m:
             fulltext.get(fname)
-            mod = m.call_args[0][0]
-            self.assertEqual(mod.__name__, 'fulltext.backends.__doc')
+            klass = m.call_args[0][0]
+            self.assertEqual(klass.__module__, 'fulltext.backends.__doc')
 
     def test_no_ext(self):
         # File with no extension == use bin backend.
         fname = self.touch('testfn')
         with mock.patch('fulltext.handle_path', return_value="") as m:
             fulltext.get(fname)
-            mod = m.call_args[0][0]
-            self.assertEqual(mod.__name__, 'fulltext.backends.__bin')
+            klass = m.call_args[0][0]
+            self.assertEqual(klass.__module__, 'fulltext.backends.__bin')
 
     def test_unknown_ext(self):
         # File with unknown extension == use bin backend.
         fname = self.touch('testfn.unknown')
         with mock.patch('fulltext.handle_path', return_value="") as m:
             fulltext.get(fname)
-            mod = m.call_args[0][0]
-            self.assertEqual(mod.__name__, 'fulltext.backends.__bin')
+            klass = m.call_args[0][0]
+            self.assertEqual(klass.__module__, 'fulltext.backends.__bin')
 
     # --- by mime opt
 
@@ -389,8 +446,8 @@ class TestPickups(BaseTestCase):
         fname = self.touch('testfn.doc')
         with mock.patch('fulltext.handle_path', return_value="") as m:
             fulltext.get(fname, mime='application/vnd.ms-excel')
-            mod = m.call_args[0][0]
-            self.assertEqual(mod.__name__, 'fulltext.backends.__xlsx')
+            klass = m.call_args[0][0]
+            self.assertEqual(klass.__module__, 'fulltext.backends.__xlsx')
 
     def test_by_unknown_mime(self):
         fname = self.touch('testfn.doc')
@@ -398,8 +455,8 @@ class TestPickups(BaseTestCase):
             with warnings.catch_warnings(record=True) as ws:
                 fulltext.get(fname, mime='application/yo!')
             assert ws
-            mod = m.call_args[0][0]
-            self.assertEqual(mod.__name__, 'fulltext.backends.__bin')
+            klass = m.call_args[0][0]
+            self.assertEqual(klass.__module__, 'fulltext.backends.__bin')
 
     # -- by name opt
 
@@ -407,8 +464,8 @@ class TestPickups(BaseTestCase):
         fname = self.touch('testfn')
         with mock.patch('fulltext.handle_path', return_value="") as m:
             fulltext.get(fname, name="woodstock.doc")
-            mod = m.call_args[0][0]
-            self.assertEqual(mod.__name__, 'fulltext.backends.__doc')
+            klass = m.call_args[0][0]
+            self.assertEqual(klass.__module__, 'fulltext.backends.__doc')
 
     def test_by_name_with_no_ext(self):
         # Assume bin backend is picked up.
@@ -417,8 +474,8 @@ class TestPickups(BaseTestCase):
             with warnings.catch_warnings(record=True) as ws:
                 fulltext.get(fname, name=fname)
             assert ws
-            mod = m.call_args[0][0]
-            self.assertEqual(mod.__name__, 'fulltext.backends.__bin')
+            klass = m.call_args[0][0]
+            self.assertEqual(klass.__module__, 'fulltext.backends.__bin')
 
     # --- by backend opt
 
@@ -427,8 +484,8 @@ class TestPickups(BaseTestCase):
         fname = self.touch('testfn.doc')
         with mock.patch('fulltext.handle_path', return_value="") as m:
             fulltext.get(fname, backend='pdf')
-            mod = m.call_args[0][0]
-            self.assertEqual(mod.__name__, 'fulltext.backends.__pdf')
+            klass = m.call_args[0][0]
+            self.assertEqual(klass.__module__, 'fulltext.backends.__pdf')
 
     def test_by_invalid_backend(self):
         # Assert file ext is ignored if backend opt is used.
@@ -453,8 +510,8 @@ class TestFileObj(BaseTestCase):
         f = tempfile.NamedTemporaryFile(suffix='.pdf')
         with mock.patch('fulltext.handle_fobj', return_value="") as m:
             fulltext.get(f)
-            mod = m.call_args[0][0]
-            self.assertEqual(mod.__name__, 'fulltext.backends.__pdf')
+            klass = m.call_args[0][0]
+            self.assertEqual(klass.__module__, 'fulltext.backends.__pdf')
 
     def test_fobj_offset(self):
         # Make sure offset is unaltered after guessing mime type.
@@ -488,16 +545,16 @@ class TestGuessingFromFileContent(BaseTestCase):
         self.touch(fname, content=open('files/test.pdf', 'rb').read())
         with mock.patch('fulltext.handle_path', return_value="") as m:
             fulltext.get(fname)
-            mod = m.call_args[0][0]
-            self.assertEqual(mod.__name__, 'fulltext.backends.__pdf')
+            klass = m.call_args[0][0]
+            self.assertEqual(klass.__module__, 'fulltext.backends.__pdf')
 
     def test_html(self):
         fname = "file-noext"
         self.touch(fname, content=open('files/test.html', 'rb').read())
         with mock.patch('fulltext.handle_path', return_value="") as m:
             fulltext.get(fname)
-            mod = m.call_args[0][0]
-            self.assertEqual(mod.__name__, 'fulltext.backends.__html')
+            klass = m.call_args[0][0]
+            self.assertEqual(klass.__module__, 'fulltext.backends.__html')
 
 
 class TestUtils(BaseTestCase):
@@ -523,8 +580,9 @@ class TestEncodingGeneric(BaseTestCase):
             fulltext.ENCODING_ERRORS = "bar"
             with mock.patch('fulltext.handle_path', return_value="") as m:
                 fulltext.get(fname)
-            self.assertEqual(m.call_args[1]['encoding'], 'foo')
-            self.assertEqual(m.call_args[1]['encoding_errors'], 'bar')
+                klass = m.call_args[0][0]
+                self.assertEqual(klass.encoding, 'foo')
+                self.assertEqual(klass.encoding_errors, 'bar')
         finally:
             fulltext.ENCODING = encoding
             fulltext.ENCODING_ERRORS = errors

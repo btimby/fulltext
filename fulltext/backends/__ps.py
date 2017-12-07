@@ -3,17 +3,18 @@
 
 from __future__ import absolute_import
 from fulltext.util import run, assert_cmd_exists
+from fulltext import BaseBackend
 
 
-def check():
-    assert_cmd_exists('pstotext')
+class Backend(BaseBackend):
 
+    def check(self):
+        assert_cmd_exists('pstotext')
 
-def handle_fobj(f, **kwargs):
-    out = run('pstotext', '-', stdin=f)
-    return out.decode(kwargs['encoding'], kwargs['encoding_errors'])
+    def handle_fobj(self, f):
+        out = run('pstotext', '-', stdin=f)
+        return self.decode(out)
 
-
-def handle_path(path, **kwargs):
-    out = run('pstotext', path)
-    return out.decode(kwargs['encoding'], kwargs['encoding_errors'])
+    def handle_path(self, path):
+        out = run('pstotext', path)
+        return self.decode(out)

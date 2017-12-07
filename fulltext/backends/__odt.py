@@ -5,6 +5,8 @@ from lxml import etree
 
 from six import StringIO
 
+from fulltext import BaseBackend
+
 
 def qn(ns):
     nsmap = {
@@ -29,18 +31,19 @@ def to_string(text, elem):
     text.write(u'\n')
 
 
-def handle_fobj(f, **kwargs):
-    text = StringIO()
+class Backend(BaseBackend):
 
-    with zipfile.ZipFile(f, 'r') as z:
-        with z.open('content.xml', 'r') as c:
-            xml = etree.parse(c)
+    def handle_fobj(self, f):
+        text = StringIO()
 
-            for c in xml.iter():
-                if c.tag in (qn('text:p'), qn('text:h')):
-                    to_string(text, c)
+        with zipfile.ZipFile(f, 'r') as z:
+            with z.open('content.xml', 'r') as c:
+                xml = etree.parse(c)
 
-    return text.getvalue()
+                for c in xml.iter():
+                    if c.tag in (qn('text:p'), qn('text:h')):
+                        to_string(text, c)
 
+        return text.getvalue()
 
-handle_path = handle_fobj
+    handle_path = handle_fobj

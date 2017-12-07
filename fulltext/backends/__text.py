@@ -11,24 +11,26 @@ Any decoding issues are ignored.
 from __future__ import absolute_import
 
 from six import StringIO
+from fulltext import BaseBackend
 
 
 BUFFER_MAX = 1024 * 1024
 
 
-def handle_fobj(f, **kwargs):
-    encoding, errors = kwargs['encoding'], kwargs['encoding_errors']
-    buffer = StringIO()
+class Backend(BaseBackend):
 
-    while True:
-        text = f.read(BUFFER_MAX)
+    def handle_fobj(self, f):
+        buffer = StringIO()
 
-        if not text:
-            break
+        while True:
+            text = f.read(BUFFER_MAX)
 
-        text = text.decode(encoding, errors)
+            if not text:
+                break
 
-        # Emulate the `strings` CLI tool.
-        buffer.write(text)
+            text = self.decode(text)
 
-    return buffer.getvalue()
+            # Emulate the `strings` CLI tool.
+            buffer.write(text)
+
+        return buffer.getvalue()

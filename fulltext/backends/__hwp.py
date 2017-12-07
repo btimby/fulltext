@@ -2,10 +2,7 @@ from __future__ import absolute_import
 
 from fulltext.backends import __html
 from fulltext.util import run, assert_cmd_exists
-
-
-def check():
-    assert_cmd_exists('hwp5proc')
+from fulltext import BaseBackend
 
 
 def cmd(path, **kwargs):
@@ -18,7 +15,11 @@ def to_text_with_backend(html):
     return __html.handle_fobj(html)
 
 
-def handle_path(path, **kwargs):
-    encoding, errors = kwargs['encoding'], kwargs['encoding_errors']
-    return to_text_with_backend(run(*cmd(path, **kwargs)).decode(
-        encoding, errors))
+class Backend(BaseBackend):
+
+    def check(self):
+        assert_cmd_exists('hwp5proc')
+
+    def handle_path(self, path):
+        out = self.decode(run(*cmd(path)))
+        return to_text_with_backend(out)

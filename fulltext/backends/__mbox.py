@@ -4,13 +4,18 @@ import mailbox
 from six import StringIO
 
 from fulltext.backends.__eml import handle_fobj
+from fulltext import BaseBackend
 
 
-def handle_path(path, **kwargs):
-    text, mb = StringIO(), mailbox.mbox(path, create=False)
-    with contextlib.closing(mb):
-        for k in mb.keys():
-            text.write(handle_fobj(mb.get_file(k), **kwargs))
-            text.write(u'\n\n')
+class Backend(BaseBackend):
 
-    return text.getvalue()
+    def handle_path(self, path):
+        text, mb = StringIO(), mailbox.mbox(path, create=False)
+        with contextlib.closing(mb):
+            for k in mb.keys():
+                t = handle_fobj(mb.get_file(k), self.encoding,
+                                self.encoding_errors)
+                text.write(t)
+                text.write(u'\n\n')
+
+        return text.getvalue()

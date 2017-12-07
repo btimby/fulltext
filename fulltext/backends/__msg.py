@@ -1,13 +1,16 @@
 from six import StringIO
 
 from ExtractMsg import Message
+from fulltext import BaseBackend
 
 
-def handle_path(path, **kwargs):
-    text, m = StringIO(), Message(path)
+class Backend(BaseBackend):
 
-    text.write(m.subject)
-    text.write(u'\n\n')
-    text.write(m.body)
+    def handle_path(self, path):
+        text, m = StringIO(), Message(path)
 
-    return text.getvalue()
+        text.write(m.subject)
+        text.write(u'\n\n')
+        text.write(m.body)
+
+        return text.getvalue()

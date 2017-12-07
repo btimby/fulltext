@@ -14,6 +14,8 @@ try:
 except ImportError:
     maketrans = bytes.maketrans
 
+from fulltext import BaseBackend
+
 
 BUFFER_MAX = 1024 * 1024
 
@@ -32,22 +34,24 @@ STRIP_PUNCTUATION = re.compile(
     r'|}~0-9])[^\w]*\b')
 
 
-def handle_fobj(f, **kwargs):
-    buffer = StringIO()
+class Backend(BaseBackend):
 
-    while True:
-        text = f.read(BUFFER_MAX)
+    def handle_fobj(self, f):
+        buffer = StringIO()
 
-        if not text:
-            break
+        while True:
+            text = f.read(BUFFER_MAX)
 
-        # Emulate the `strings` CLI tool.
-        text = text.translate(TRANSLATE)
-        text = text.decode('ascii', 'ignore')
+            if not text:
+                break
 
-        # Remove any "words" that consist mainly of punctuation.
-        text = STRIP_PUNCTUATION.sub(' ', text)
+            # Emulate the `strings` CLI tool.
+            text = text.translate(TRANSLATE)
+            text = text.decode('ascii', 'ignore')
 
-        buffer.write(text)
+            # Remove any "words" that consist mainly of punctuation.
+            text = STRIP_PUNCTUATION.sub(' ', text)
 
-    return buffer.getvalue()
+            buffer.write(text)
+
+        return buffer.getvalue()
