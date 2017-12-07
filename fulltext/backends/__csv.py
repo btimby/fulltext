@@ -5,6 +5,8 @@ import csv
 from six import StringIO
 from six import PY3
 
+from fulltext import BaseBackend
+
 
 if PY3:
     def unicode_reader(f, encoding, encoding_errors, **opts):
@@ -21,25 +23,27 @@ else:
                    for cell in row]
 
 
-def handle_fobj(f, **kwargs):
-    encoding, errors = kwargs['encoding'], kwargs['encoding_errors']
-    options = {
-        'dialect': 'excel',
-        'delimiter': ',',
-    }
+class Backend(BaseBackend):
 
-    mimetype = kwargs.get('mime', None)
+    def handle_fobj(self, f):
+        options = {
+            'dialect': 'excel',
+            'delimiter': ',',
+        }
 
-    if mimetype == 'text/tsv':
-        options['delimiter'] = '\t'
+        mimetype = self.kwargs.get('mime', None)
 
-    elif mimetype == 'text/psv':
-        options['delimiter'] = '|'
+        if mimetype == 'text/tsv':
+            options['delimiter'] = '\t'
 
-    text = StringIO()
-    reader = unicode_reader(f, encoding, errors, **options)
-    for row in reader:
-        text.write(u' '.join(row))
-        text.write(u'\n')
+        elif mimetype == 'text/psv':
+            options['delimiter'] = '|'
 
-    return text.getvalue()
+        text = StringIO()
+        reader = unicode_reader(
+            f, self.encoding, self.encoding_errors, **options)
+        for row in reader:
+            text.write(u' '.join(row))
+            text.write(u'\n')
+
+        return text.getvalue()
