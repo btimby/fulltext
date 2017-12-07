@@ -189,12 +189,8 @@ class TestBackendInterface(BaseTestCase):
         # Make sure Backend class receives the right params.
         fname = self.touch('testfn.doc')
         with mock.patch('fulltext.handle_path', return_value="") as m:
-            fulltext.get(fname,
-                         mime='application/zip',
-                         encoding='foo',
-                         encoding_errors='bar')
+            fulltext.get(fname, encoding='foo', encoding_errors='bar')
             klass = m.call_args[0][0]
-            self.assertEqual(klass.mime, 'application/zip')
             self.assertEqual(klass.encoding, 'foo')
             self.assertEqual(klass.encoding_errors, 'bar')
 

@@ -352,8 +352,8 @@ def backend_from_fobj(f):
             f.seek(offset)
 
 
-def backend_inst_from_mod(mod, mime, encoding, encoding_errors, kwargs):
-    kw = dict(mime=mime, encoding=encoding, encoding_errors=encoding_errors,
+def backend_inst_from_mod(mod, encoding, encoding_errors, kwargs):
+    kw = dict(encoding=encoding, encoding_errors=encoding_errors,
               kwargs=kwargs)
     try:
         klass = getattr(mod, "Backend")
@@ -379,9 +379,8 @@ def backend_inst_from_mod(mod, mime, encoding, encoding_errors, kwargs):
 class BaseBackend(object):
     """Base class for defining custom backend classes."""
 
-    def __init__(self, mime, encoding, encoding_errors, kwargs):
+    def __init__(self, encoding, encoding_errors, kwargs):
         """These are the same args passed to get() function."""
-        self.mime = mime
         self.encoding = encoding
         self.encoding_errors = encoding_errors
         self.kwargs = kwargs
@@ -438,7 +437,7 @@ def _get(path_or_file, default, mime, name, backend, encoding,
 
     # Call backend.
     inst = backend_inst_from_mod(
-        backend_mod, mime, encoding, encoding_errors, kwargs)
+        backend_mod, encoding, encoding_errors, kwargs)
     fun = handle_path if is_file_path(path_or_file) else handle_fobj
     try:
         text = fun(inst, path_or_file)
@@ -472,6 +471,9 @@ def get(path_or_file, default=SENTINAL, mime=None, name=None, backend=None,
         encoding = ENCODING
     if encoding_errors is None:
         encoding_errors = ENCODING_ERRORS
+
+    kwargs = kwargs.copy() if kwargs is not None else {}
+    kwargs.setdefault("mime", mime)
 
     try:
         return _get(path_or_file, default=default, mime=mime, name=name,
