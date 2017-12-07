@@ -488,16 +488,16 @@ class TestGuessingFromFileContent(BaseTestCase):
         self.touch(fname, content=open('files/test.pdf', 'rb').read())
         with mock.patch('fulltext.handle_path', return_value="") as m:
             fulltext.get(fname)
-            mod = m.call_args[0][0]
-            self.assertEqual(mod.__name__, 'fulltext.backends.__pdf')
+            klass = m.call_args[0][0]
+            self.assertEqual(klass.__module__, 'fulltext.backends.__pdf')
 
     def test_html(self):
         fname = "file-noext"
         self.touch(fname, content=open('files/test.html', 'rb').read())
         with mock.patch('fulltext.handle_path', return_value="") as m:
             fulltext.get(fname)
-            mod = m.call_args[0][0]
-            self.assertEqual(mod.__name__, 'fulltext.backends.__html')
+            klass = m.call_args[0][0]
+            self.assertEqual(klass.__module__, 'fulltext.backends.__html')
 
 
 class TestUtils(BaseTestCase):
