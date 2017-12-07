@@ -7,29 +7,31 @@ import bs4
 from six import StringIO
 from six import PY3
 
-
-def is_visible(elem, encoding, errors):
-    if isinstance(elem, (bs4.element.ProcessingInstruction,
-                         bs4.element.Doctype)):
-        return False
-
-    if not PY3:
-        elem = elem.encode(encoding, errors)
-    if re.match('<!--.*-->', elem):
-        return False
-
-    return True
+from fulltext import BaseBackend
 
 
-def handle_fobj(f, **kwargs):
-    encoding, errors = kwargs['encoding'], kwargs['encoding_errors']
-    bdata = f.read()
-    tdata = bdata.decode(encoding, errors)
-    text, bs = StringIO(), bs4.BeautifulSoup(tdata, 'lxml')
+class Backend(BaseBackend):
 
-    for elem in bs.findAll(text=True):
-        if is_visible(elem, encoding, errors):
-            text.write(elem)
-            text.write(u' ')
+    def is_visible(self, elem):
+        if isinstance(elem, (bs4.element.ProcessingInstruction,
+                             bs4.element.Doctype)):
+            return False
 
-    return text.getvalue()
+        if not PY3:
+            elem = elem.encode(self.encoding, self.encoding_errors)
+        if re.match('<!--.*-->', elem):
+            return False
+
+        return True
+
+    def handle_fobj(self, f):
+        bdata = f.read()
+        tdata = self.decode(bdata)
+        text, bs = StringIO(), bs4.BeautifulSoup(tdata, 'lxml')
+
+        for elem in bs.findAll(text=True):
+            if self.is_visible(elem):
+                text.write(elem)
+                text.write(u' ')
+
+        return text.getvalue()
