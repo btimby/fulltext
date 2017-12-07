@@ -6,6 +6,7 @@ from six import StringIO
 from fulltext import BaseBackend
 
 
+# This is used by other modules, hence it's here.
 def handle_fobj(f, encoding, errors):
     text = StringIO()
     f2 = codecs.getreader(encoding)(f, errors=errors)
