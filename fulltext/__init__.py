@@ -367,7 +367,6 @@ def backend_inst_from_mod(mod, encoding, encoding_errors, kwargs):
         warn("can't use %r due to %r; use %r backend instead" % (
              mod, str(err), bin_mod))
         inst = import_mod(bin_mod).Backend(**kw)
-    inst.setup()
     return inst
 
 
@@ -435,14 +434,18 @@ def _get(path_or_file, default, mime, name, backend, encoding,
         else:
             backend_mod = backend
 
-    # Call backend.
+    # Get backend class.
     inst = backend_inst_from_mod(
         backend_mod, encoding, encoding_errors, kwargs)
     fun = handle_path if is_file_path(path_or_file) else handle_fobj
+
+    # Run handle_ function, handle callbacks.
+    inst.setup()
     try:
         text = fun(inst, path_or_file)
     finally:
         inst.teardown()
+
     assert text is not None, "backend function returned None"
     text = STRIP_WHITE.sub(' ', text)
     return text.strip()

@@ -194,6 +194,51 @@ class TestBackendInterface(BaseTestCase):
             self.assertEqual(klass.encoding, 'foo')
             self.assertEqual(klass.encoding_errors, 'bar')
 
+    def test_callbacks(self):
+        # Make sure callback methods are called (also in the right order).
+        flags = []
+
+        class Backend:
+
+            def setup(self):
+                flags.append("setup")
+
+            def teardown(self):
+                flags.append("teardown")
+
+            def handle_fobj(self, path):
+                flags.append("handle_fobj")
+                return "text"
+
+        fname = self.touch('testfn.doc')
+        with mock.patch('fulltext.backend_inst_from_mod',
+                        return_value=Backend()):
+            fulltext.get(fname, encoding='foo', encoding_errors='bar')
+        self.assertEqual(flags, ['setup', 'handle_fobj', 'teardown'])
+
+    def test_teardown_on_err(self):
+        # Make sure teardown methods is called also on error.
+        flags = []
+
+        class Backend:
+
+            def setup(self):
+                flags.append("setup")
+
+            def teardown(self):
+                flags.append("teardown")
+
+            def handle_fobj(self, path):
+                1 / 0
+
+        fname = self.touch('testfn.doc')
+        with mock.patch('fulltext.backend_inst_from_mod',
+                        return_value=Backend()):
+            with self.assertRaises(ZeroDivisionError):
+                fulltext.get(fname, encoding='foo', encoding_errors='bar')
+
+        self.assertEqual(flags, ['setup', 'teardown'])
+
 
 # --- Mixin tests
 
