@@ -4,6 +4,7 @@ import sys
 from six import StringIO
 from six import string_types
 from six import integer_types
+from fulltext import BaseBackend
 
 
 SCALAR_TYPES = string_types + integer_types
@@ -27,13 +28,14 @@ def to_text(text, obj):
         raise ValueError('Unrecognized type: %s' % obj.__class__)
 
 
-def handle_fobj(f, **kwargs):
-    encoding, errors = kwargs['encoding'], kwargs['encoding_errors']
-    text, data = StringIO(), f.read()
+class Backend(BaseBackend):
 
-    # TODO: catch exception and attempt to use regex to strip formatting.
-    obj = json.loads(data.decode(encoding, errors))
+    def handle_fobj(self, f):
+        text, data = StringIO(), f.read()
 
-    to_text(text, obj)
+        # TODO: catch exception and attempt to use regex to strip formatting.
+        obj = json.loads(self.decode(data))
 
-    return text.getvalue()
+        to_text(text, obj)
+
+        return text.getvalue()
