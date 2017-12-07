@@ -21,7 +21,7 @@ class Backend(BaseBackend):
         def unicode_reader(self, f, **opts):
             reader = csv.reader(f, **opts)
             for row in reader:
-                yield [unicode(cell, self.encoding, self.encoding_errors)
+                yield [unicode(cell, self.encoding, self.encoding_errors)  # NOQA
                        for cell in row]
 
     def handle_fobj(self, f):
