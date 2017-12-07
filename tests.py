@@ -453,8 +453,8 @@ class TestFileObj(BaseTestCase):
         f = tempfile.NamedTemporaryFile(suffix='.pdf')
         with mock.patch('fulltext.handle_fobj', return_value="") as m:
             fulltext.get(f)
-            mod = m.call_args[0][0]
-            self.assertEqual(mod.__name__, 'fulltext.backends.__pdf')
+            klass = m.call_args[0][0]
+            self.assertEqual(klass.__module__, 'fulltext.backends.__pdf')
 
     def test_fobj_offset(self):
         # Make sure offset is unaltered after guessing mime type.
@@ -523,8 +523,9 @@ class TestEncodingGeneric(BaseTestCase):
             fulltext.ENCODING_ERRORS = "bar"
             with mock.patch('fulltext.handle_path', return_value="") as m:
                 fulltext.get(fname)
-            self.assertEqual(m.call_args[1]['encoding'], 'foo')
-            self.assertEqual(m.call_args[1]['encoding_errors'], 'bar')
+                klass = m.call_args[0][0]
+                self.assertEqual(klass.encoding, 'foo')
+                self.assertEqual(klass.encoding_errors, 'bar')
         finally:
             fulltext.ENCODING = encoding
             fulltext.ENCODING_ERRORS = errors
