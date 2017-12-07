@@ -1,9 +1,6 @@
 from __future__ import absolute_import
 from fulltext.util import run, assert_cmd_exists
-
-
-def check():
-    assert_cmd_exists('pdftotext')
+from fulltext import BaseBackend
 
 
 def cmd(path, **kwargs):
@@ -17,11 +14,15 @@ def cmd(path, **kwargs):
     return cmd
 
 
-def handle_fobj(f, **kwargs):
-    encoding, errors = kwargs['encoding'], kwargs['encoding_errors']
-    return run(*cmd('-', **kwargs), stdin=f).decode(encoding, errors)
+class Backend(BaseBackend):
 
+    def handle_fobj(self, f):
+        out = run(*cmd('-', **self.kwargs), stdin=f)
+        return self.decode(out)
 
-def handle_path(path, **kwargs):
-    encoding, errors = kwargs['encoding'], kwargs['encoding_errors']
-    return run(*cmd(path, **kwargs)).decode(encoding, errors)
+    def handle_path(self, path):
+        out = run(*cmd(path, **self.kwargs))
+        return self.decode(out)
+
+    def check(self):
+        assert_cmd_exists('pdftotext')

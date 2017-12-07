@@ -352,8 +352,9 @@ def backend_from_fobj(f):
             f.seek(offset)
 
 
-def backend_inst_from_mod(mod, mime, encoding, encoding_errors):
-    kw = dict(mime=mime, encoding=encoding, encoding_errors=encoding_errors)
+def backend_inst_from_mod(mod, mime, encoding, encoding_errors, kwargs):
+    kw = dict(mime=mime, encoding=encoding, encoding_errors=encoding_errors,
+              kwargs=kwargs)
     try:
         klass = getattr(mod, "Backend")
     except AttributeError:
@@ -436,7 +437,8 @@ def _get(path_or_file, default, mime, name, backend, encoding,
             backend_mod = backend
 
     # Call backend.
-    inst = backend_inst_from_mod(backend_mod, mime, encoding, encoding_errors)
+    inst = backend_inst_from_mod(
+        backend_mod, mime, encoding, encoding_errors, kwargs)
     fun = handle_path if is_file_path(path_or_file) else handle_fobj
     try:
         text = fun(inst, path_or_file)
