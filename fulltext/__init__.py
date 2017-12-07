@@ -40,6 +40,10 @@ mimetypes.init()
 _MIMETYPES_TO_EXT = dict([(v, k) for k, v in mimetypes.types_map.items()])
 
 
+# =====================================================================
+# --- backends
+# =====================================================================
+
 def register_backend(mimetype, module, extensions=None):
     """Register a backend.
     `mimetype`: a mimetype string (e.g. 'text/plain')
@@ -198,6 +202,11 @@ register_backend(
     extensions=['.a', '.bin'])
 
 
+# =====================================================================
+# --- utils
+# =====================================================================
+
+
 def is_binary(f):
     """Return True if binary mode."""
     # NOTE: order matters here. We don't bail on Python 2 just yet. Both
@@ -239,7 +248,7 @@ def is_file_path(obj):
     return isinstance(obj, string_types) or isinstance(obj, bytes)
 
 
-def handle_path(backend, path, **kwargs):
+def handle_path(backend_inst, path, **kwargs):
     """
     Handle a path.
 
@@ -247,19 +256,19 @@ def handle_path(backend, path, **kwargs):
     backend's `handle_path()` if one is provided Otherwise, it will open the
     given path then use `handle_fobj()`.
     """
-    if callable(getattr(backend, 'handle_path', None)):
+    if callable(getattr(backend_inst, 'handle_path', None)):
         # Prefer handle_path() if present.
-        return backend.handle_path(path, **kwargs)
+        return backend_inst.handle_path(path)
 
-    elif callable(getattr(backend, 'handle_fobj', None)):
+    elif callable(getattr(backend_inst, 'handle_fobj', None)):
         # Fallback to handle_fobj(). No warning here since the performance hit
         # is minimal.
         with open(path, 'rb') as f:
-            return backend.handle_fobj(f, **kwargs)
+            return backend_inst.handle_fobj(f)
 
     else:
         raise AssertionError(
-            'Backend %s has no _get functions' % backend.__name__)
+            'Backend %s has no _get functions' % backend_inst.__name__)
 
 
 def handle_fobj(backend, f, **kwargs):
@@ -275,7 +284,7 @@ def handle_fobj(backend, f, **kwargs):
 
     if callable(getattr(backend, 'handle_fobj', None)):
         # Prefer handle_fobj() if present.
-        return backend.handle_fobj(f, **kwargs)
+        return backend.handle_fobj(f)
 
     elif callable(getattr(backend, 'handle_path', None)):
         # Fallback to handle_path(). Warn user since this is potentially
@@ -297,16 +306,7 @@ def handle_fobj(backend, f, **kwargs):
 
 
 def import_mod(mod_name):
-    try:
-        mod = __import__(mod_name, fromlist=[' '])
-        if hasattr(mod, "check"):
-            mod.check()
-        return mod
-    except Exception as err:
-        bin_mod = "fulltext.backends.__bin"
-        warn("can't import %r due to %r; use %r instead" % (
-            mod_name, str(err), bin_mod))
-        return __import__(bin_mod, fromlist=[' '])
+    return __import__(mod_name, fromlist=[' '])
 
 
 def backend_from_mime(mime):
@@ -352,6 +352,63 @@ def backend_from_fobj(f):
             f.seek(offset)
 
 
+def backend_inst_from_mod(mod, mime, encoding, encoding_errors):
+    kw = dict(mime=mime, encoding=encoding, encoding_errors=encoding_errors)
+    try:
+        klass = getattr(mod, "Backend")
+    except AttributeError:
+        raise AttributeError("%r mod does not define any backend class" % mod)
+    inst = klass(**kw)
+    try:
+        inst.check()
+    except Exception as err:
+        bin_mod = "fulltext.backends.__bin"
+        warn("can't use %r due to %r; use %r backend instead" % (
+             mod, str(err), bin_mod))
+        inst = import_mod(bin_mod).Backend(**kw)
+    inst.setup()
+    return inst
+
+
+# =====================================================================
+# --- public API
+# =====================================================================
+
+
+class BaseBackend(object):
+    """Base class for defining custom backend classes."""
+
+    def __init__(self, mime, encoding, encoding_errors, kwargs):
+        """These are the same args passed to get() function."""
+        self.mime = mime
+        self.encoding = encoding
+        self.encoding_errors = encoding_errors
+        self.kwargs = kwargs
+
+    def setup(self):
+        """May be overridden by subclass. This is called before handle_
+        methods.
+        """
+        pass
+
+    def teardown(self):
+        """May be overridden by subclass. This is called after text
+        is extracted, also in case of exception.
+        """
+        pass
+
+    def check(self):
+        """May be overridden by subclass. This is called before text
+        extraction. If the overriding method raises an exception
+        a warning is printed and bin backend is used.
+        """
+        pass
+
+    def decode(self, s):
+        """Decode string."""
+        return s.decode(self.encoding, self.encoding_errors)
+
+
 def _get(path_or_file, default, mime, name, backend, encoding,
          encoding_errors, kwargs):
     # Find backend module.
@@ -379,8 +436,12 @@ def _get(path_or_file, default, mime, name, backend, encoding,
             backend_mod = backend
 
     # Call backend.
+    inst = backend_inst_from_mod(backend_mod, mime, encoding, encoding_errors)
     fun = handle_path if is_file_path(path_or_file) else handle_fobj
-    text = fun(backend_mod, path_or_file, **kwargs)
+    try:
+        text = fun(inst, path_or_file)
+    finally:
+        inst.teardown()
     assert text is not None, "backend function returned None"
     text = STRIP_WHITE.sub(' ', text)
     return text.strip()
