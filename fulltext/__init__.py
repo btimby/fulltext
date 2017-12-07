@@ -353,6 +353,9 @@ def backend_from_fobj(f):
 
 
 def backend_inst_from_mod(mod, encoding, encoding_errors, kwargs):
+    """Given a mod and a set of opts return an instantiated
+    Backend class.
+    """
     kw = dict(encoding=encoding, encoding_errors=encoding_errors,
               kwargs=kwargs)
     try:
@@ -367,6 +370,7 @@ def backend_inst_from_mod(mod, encoding, encoding_errors, kwargs):
         warn("can't use %r due to %r; use %r backend instead" % (
              mod, str(err), bin_mod))
         inst = import_mod(bin_mod).Backend(**kw)
+        inst.check()
     return inst
 
 
