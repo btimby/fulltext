@@ -39,8 +39,7 @@ class Backend(BaseBackend):
             options['delimiter'] = '|'
 
         text = StringIO()
-        reader = self.unicode_reader(
-            f, self.encoding, self.encoding_errors, **options)
+        reader = self.unicode_reader(f, **options)
         for row in reader:
             text.write(u' '.join(row))
             text.write(u'\n')
