@@ -33,15 +33,21 @@ def check_backends():
             continue
         mod_name = "fulltext.backends.%s" % (
             os.path.splitext(os.path.basename(name))[0])
-        mod = __import__(mod_name, fromlist=[' '])
+
+        try:
+            mod = __import__(mod_name, fromlist=[' '])
+        except ImportError as err:
+            errs.append((mod_name, str(err)))
+            continue
+
         if hasattr(mod, "check"):
             try:
                 mod.check()
             except Exception as err:
-                errs.append((mod, str(err)))
+                errs.append((mod.__name__, str(err)))
     if errs:
         for mod, err in errs:
-            msg = hilite("%s: %s" % (mod.__name__, err), ok=False)
+            msg = hilite("%s: %s" % (mod, err), ok=False)
             print(msg, file=sys.stderr)
         sys.exit(1)
 
