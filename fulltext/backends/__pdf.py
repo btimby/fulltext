@@ -16,6 +16,9 @@ def cmd(path, **kwargs):
 
 class Backend(BaseBackend):
 
+    def check(self):
+        assert_cmd_exists('pdftotext')
+
     def handle_fobj(self, f):
         out = run(*cmd('-', **self.kwargs), stdin=f)
         return self.decode(out)
@@ -23,6 +26,3 @@ class Backend(BaseBackend):
     def handle_path(self, path):
         out = run(*cmd(path, **self.kwargs))
         return self.decode(out)
-
-    def check(self):
-        assert_cmd_exists('pdftotext')
