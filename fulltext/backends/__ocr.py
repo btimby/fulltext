@@ -9,6 +9,7 @@ from PIL import Image
 import pytesseract
 
 from fulltext.util import assert_cmd_exists, MissingCommandException
+from fulltext import BaseBackend
 
 
 EXIF_ORIENTATION = 274  # cf ExifTags
@@ -17,10 +18,6 @@ EXIF_ROTATION = {
     6: 270,
     8: 90
 }
-
-
-def check():
-    assert_cmd_exists('tesseract')
 
 
 def read(img, **kargs):
@@ -52,8 +49,12 @@ def read(img, **kargs):
         raise
 
 
-def handle_fobj(path_or_file, **kwargs):
-    return read(path_or_file, **kwargs)
+class Backend(BaseBackend):
 
+    def check(self):
+        assert_cmd_exists('tesseract')
 
-handle_path = handle_fobj
+    def handle_fobj(self, path_or_file):
+        return read(path_or_file, **self.kwargs)
+
+    handle_path = handle_fobj
