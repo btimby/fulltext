@@ -791,6 +791,11 @@ class TestTitle(BaseTestCase):
         self.assertEqual(
             fulltext.get_with_title(fname)[1], 'JQuery Hello World')
 
+    def test_pptx(self):
+        fname = "files/others/test.pptx"
+        self.assertEqual(
+            fulltext.get_with_title(fname)[1], 'lorem ipsum')
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
