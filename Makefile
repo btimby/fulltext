@@ -8,7 +8,8 @@ SYSDEPS = \
 	poppler-utils \
 	tesseract-ocr abiword \
 	unrtf \
-	pstotext
+	pstotext \
+	libimage-exiftool-perl
 
 test:  ## Run tests.
 	${MAKE} install-git-hooks

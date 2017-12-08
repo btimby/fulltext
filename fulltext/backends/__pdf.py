@@ -31,10 +31,9 @@ class Backend(BaseBackend):
 
     def handle_title(self, f):
         if is_path_str(f):
+            # Doesn't work with file objs.
             bout = run("pdfinfo", f)
-        else:
-            bout = run("pdfinfo", f, stdin=f)
-        out = self.decode(bout)
-        for line in out.split("\n"):
-            if line.startswith("Title:"):
-                return line.partition("Title:")[2].strip()
+            out = self.decode(bout)
+            for line in out.split("\n"):
+                if line.startswith("Title:"):
+                    return line.partition("Title:")[2].strip()

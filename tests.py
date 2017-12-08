@@ -753,10 +753,16 @@ class TestTitle(BaseTestCase):
         self.assertEqual(
             fulltext.get_with_title(fname)[1], "Lorem ipsum")
 
-    def test_pdb(self):
+    def test_pdf(self):
         fname = "files/governing-the-iot.pdf"
         self.assertEqual(
             fulltext.get_with_title(fname)[1], "Governing the IoT")
+
+    def test_pdf_fobj(self):
+        # Not supported.
+        fname = "files/governing-the-iot.pdf"
+        with open(fname, "rb") as f:
+            self.assertEqual(fulltext.get_with_title(f)[1], None)
 
 
 if __name__ == '__main__':
