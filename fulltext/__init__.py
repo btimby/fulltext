@@ -243,7 +243,7 @@ def is_binary(f):
     return hasattr(byte, 'decode')
 
 
-def is_file_path(obj):
+def is_path_str(obj):
     """Return True if obj is a possible file path or name."""
     return isinstance(obj, string_types) or isinstance(obj, bytes)
 
@@ -412,6 +412,7 @@ class BaseBackend(object):
         return s.decode(self.encoding, self.encoding_errors)
 
     def handle_title(self, path_or_file):
+        """May be overridden by sublass in order to retrieve file title."""
         return None
 
 
@@ -432,7 +433,7 @@ def _get(path_or_file, default, mime, name, backend, encoding,
         elif name:
             backend_mod = backend_from_fname(name)
         else:
-            if is_file_path(path_or_file):
+            if is_path_str(path_or_file):
                 backend_mod = backend_from_fname(path_or_file)
             else:
                 if hasattr(path_or_file, "name"):
@@ -452,7 +453,7 @@ def _get(path_or_file, default, mime, name, backend, encoding,
     # Get backend class.
     inst = backend_inst_from_mod(
         backend_mod, encoding, encoding_errors, kwargs)
-    fun = handle_path if is_file_path(path_or_file) else handle_fobj
+    fun = handle_path if is_path_str(path_or_file) else handle_fobj
 
     # Run handle_ function, handle callbacks.
     title = None
@@ -463,7 +464,7 @@ def _get(path_or_file, default, mime, name, backend, encoding,
             try:
                 title = inst.handle_title(path_or_file)
             except Exception:
-                LOGGER.exception("could not determine title (ignoring)")
+                LOGGER.exception("error while getting title (setting to None)")
     finally:
         inst.teardown()
 

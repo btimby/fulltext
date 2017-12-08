@@ -750,9 +750,13 @@ class TestTitle(BaseTestCase):
 
     def test_html(self):
         fname = "files/test.html"
-        self.assertEqual(fulltext.get_with_title(fname)[1],
-                         "Lorem ipsum")
+        self.assertEqual(
+            fulltext.get_with_title(fname)[1], "Lorem ipsum")
 
+    def test_pdb(self):
+        fname = "files/governing-the-iot.pdf"
+        self.assertEqual(
+            fulltext.get_with_title(fname)[1], "Governing the IoT")
 
 
 if __name__ == '__main__':
