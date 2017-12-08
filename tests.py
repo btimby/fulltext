@@ -801,6 +801,11 @@ class TestTitle(BaseTestCase):
         self.assertEqual(
             fulltext.get_with_title(fname)[1], 'Hey there')
 
+    def test_rtf(self):
+        fname = "files/others/test.rtf"
+        self.assertEqual(
+            fulltext.get_with_title(fname)[1], 'hello there')
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
