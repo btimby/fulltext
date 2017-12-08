@@ -414,6 +414,14 @@ class BaseBackend(object):
 
 def _get(path_or_file, default, mime, name, backend, encoding,
          encoding_errors, kwargs):
+    if encoding is None:
+        encoding = ENCODING
+    if encoding_errors is None:
+        encoding_errors = ENCODING_ERRORS
+
+    kwargs = kwargs.copy() if kwargs is not None else {}
+    kwargs.setdefault("mime", mime)
+
     # Find backend module.
     if backend is None:
         if mime:
@@ -452,11 +460,13 @@ def _get(path_or_file, default, mime, name, backend, encoding,
 
     assert text is not None, "backend function returned None"
     text = STRIP_WHITE.sub(' ', text)
-    return text.strip()
+    text = text.strip()
+    return (text, None)
 
 
 def get(path_or_file, default=SENTINAL, mime=None, name=None, backend=None,
-        encoding=None, encoding_errors=None, kwargs=None):
+        encoding=None, encoding_errors=None, kwargs=None,
+        _wtitle=False):
     """
     Get document full text.
 
@@ -474,20 +484,25 @@ def get(path_or_file, default=SENTINAL, mime=None, name=None, backend=None,
        Default to "utf8" and "strict" respectively.
      * `kwargs` are passed to the underlying backend.
     """
-    if encoding is None:
-        encoding = ENCODING
-    if encoding_errors is None:
-        encoding_errors = ENCODING_ERRORS
-
-    kwargs = kwargs.copy() if kwargs is not None else {}
-    kwargs.setdefault("mime", mime)
-
     try:
-        return _get(path_or_file, default=default, mime=mime, name=name,
-                    backend=backend, kwargs=kwargs, encoding=encoding,
-                    encoding_errors=encoding_errors)
+        text, title = _get(
+            path_or_file, default=default, mime=mime, name=name,
+            backend=backend, kwargs=kwargs, encoding=encoding,
+            encoding_errors=encoding_errors)
+        if _wtitle:
+            return (text, title)
+        else:
+            return text
     except Exception as e:
         if default is not SENTINAL:
             LOGGER.exception(e)
             return default
         raise
+
+
+def get_with_title(*args, **kwargs):
+    """Like get() but also tries to determine document title.
+    Returns a (text, title) tuple.
+    """
+    kwargs['_wtitle'] = True
+    return get(*args, **kwargs)
