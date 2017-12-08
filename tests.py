@@ -811,6 +811,11 @@ class TestTitle(BaseTestCase):
         self.assertEqual(
             fulltext.get_with_title(fname)[1], 'hey there')
 
+    def test_xlsx(self):
+        fname = "files/others/test.xlsx"
+        self.assertEqual(
+            fulltext.get_with_title(fname)[1], 'yo man!')
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

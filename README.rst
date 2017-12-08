@@ -75,6 +75,7 @@ file extensions:
 * ``.ps`` - Uses ``/bin/exiftool`` CLI tool.
 * ``.rtf`` - Uses ``/bin/exiftool`` CLI tool.
 * ``.xls`` - Uses ``/bin/exiftool`` CLI tool.
+* ``.xlsx`` - Uses ``/bin/exiftool`` CLI tool.
 
 Installing tools
 ----------------
