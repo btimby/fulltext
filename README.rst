@@ -65,9 +65,12 @@ Supported title formats
 Other than extracting text fulltext lib is able to determine title for certain
 file extensions:
 
+* ``.doc`` - Uses ``/bin/exiftool`` CLI tool.
+* ``.docx`` - Uses ``/bin/exiftool`` CLI tool.
+* ``.epub`` - Uses ``/bin/exiftool`` CLI tool.
 * ``.html`` - Uses Python ``BeautifulSoup`` module.
-* ``.pdf`` - Uses ``/bin/pdfinfo`` CLI tool.
 * ``.odt`` - Uses ``/bin/exiftool`` CLI tool.
+* ``.pdf`` - Uses ``/bin/pdfinfo`` CLI tool.
 
 Installing tools
 ----------------
@@ -193,6 +196,10 @@ Second, register the new backend against fulltext.
             # Extract text from a path. This should only be defined if it can be
             # done more efficiently than having Python open() and read() the file,
             # passing it to handle_fobj().
+            pass
+
+        def handle_title(file_or_path):
+            # Extract title
             pass
 
 If you only implement ``handle_fobj()`` Fulltext will open any paths and pass
