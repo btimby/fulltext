@@ -1,9 +1,15 @@
 import docx2txt
+import os
 from fulltext import BaseBackend
 from fulltext.util import exiftool_title
+from fulltext.util import assert_cmd_exists
 
 
 class Backend(BaseBackend):
+
+    def check(self):
+        if "FULLTEXT_TESTING" in os.environ:
+            assert_cmd_exists('pdfinfo')
 
     # Note: docx2txt does not support encoding.
     def handle_fobj(self, path_or_file):

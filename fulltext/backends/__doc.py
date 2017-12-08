@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 import logging
+import os
 
 from fulltext.util import run, ShellError, MissingCommandException
 from fulltext.util import assert_cmd_exists
@@ -17,6 +18,8 @@ class Backend(BaseBackend):
     def check(self):
         assert_cmd_exists('antiword')
         assert_cmd_exists('abiword')
+        if "FULLTEXT_TESTING" in os.environ:
+            assert_cmd_exists('pdfinfo')
 
     def handle_fobj(self, f):
         try:
