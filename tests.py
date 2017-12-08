@@ -796,6 +796,11 @@ class TestTitle(BaseTestCase):
         self.assertEqual(
             fulltext.get_with_title(fname)[1], 'lorem ipsum')
 
+    def test_ps(self):
+        fname = "files/others/lecture.ps"
+        self.assertEqual(
+            fulltext.get_with_title(fname)[1], 'Hey there')
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

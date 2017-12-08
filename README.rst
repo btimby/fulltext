@@ -72,6 +72,7 @@ file extensions:
 * ``.odt`` - Uses ``/bin/exiftool`` CLI tool.
 * ``.pdf`` - Uses ``/bin/pdfinfo`` CLI tool.
 * ``.pptx`` - Uses ``/bin/pdfinfo`` CLI tool.
+* ``.ps`` - Uses ``/bin/exiftool`` CLI tool.
 
 Installing tools
 ----------------
