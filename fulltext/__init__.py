@@ -411,9 +411,12 @@ class BaseBackend(object):
         """Decode string."""
         return s.decode(self.encoding, self.encoding_errors)
 
+    def handle_title(self, path_or_file):
+        return None
+
 
 def _get(path_or_file, default, mime, name, backend, encoding,
-         encoding_errors, kwargs):
+         encoding_errors, kwargs, _wtitle):
     if encoding is None:
         encoding = ENCODING
     if encoding_errors is None:
@@ -452,16 +455,22 @@ def _get(path_or_file, default, mime, name, backend, encoding,
     fun = handle_path if is_file_path(path_or_file) else handle_fobj
 
     # Run handle_ function, handle callbacks.
+    title = None
     inst.setup()
     try:
         text = fun(inst, path_or_file)
+        if _wtitle:
+            try:
+                title = inst.handle_title(path_or_file)
+            except Exception:
+                LOGGER.exception("could not determine title (ignoring)")
     finally:
         inst.teardown()
 
     assert text is not None, "backend function returned None"
     text = STRIP_WHITE.sub(' ', text)
     text = text.strip()
-    return (text, None)
+    return (text, title)
 
 
 def get(path_or_file, default=SENTINAL, mime=None, name=None, backend=None,
@@ -488,7 +497,7 @@ def get(path_or_file, default=SENTINAL, mime=None, name=None, backend=None,
         text, title = _get(
             path_or_file, default=default, mime=mime, name=name,
             backend=backend, kwargs=kwargs, encoding=encoding,
-            encoding_errors=encoding_errors)
+            encoding_errors=encoding_errors, _wtitle=_wtitle)
         if _wtitle:
             return (text, title)
         else:

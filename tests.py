@@ -743,5 +743,17 @@ class TestUnicodeMbox(BaseTestCase, TestUnicodeBase):
     ext = "mbox"
 
 
+# --- Test titles
+
+
+class TestTitle(BaseTestCase):
+
+    def test_html(self):
+        fname = "files/test.html"
+        self.assertEqual(fulltext.get_with_title(fname)[1],
+                         "Lorem ipsum")
+
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)
