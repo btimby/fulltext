@@ -14,6 +14,7 @@ from six import string_types
 from six import PY3
 from fulltext.util import warn
 from fulltext.util import magic
+from fulltext.util import is_file_path
 
 
 __all__ = ["get", "register_backend"]
@@ -241,11 +242,6 @@ def is_binary(f):
     byte = f.read(1)
     f.seek(-1, os.SEEK_CUR)
     return hasattr(byte, 'decode')
-
-
-def is_file_path(obj):
-    """Return True if obj is a possible file path or name."""
-    return isinstance(obj, string_types) or isinstance(obj, bytes)
 
 
 def handle_path(backend_inst, path, **kwargs):

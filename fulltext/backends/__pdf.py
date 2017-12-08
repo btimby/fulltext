@@ -4,8 +4,7 @@ import os
 
 from fulltext.util import run, assert_cmd_exists
 from fulltext import BaseBackend
-from fulltext import is_file_path
-
+from fulltext.util import is_file_path
 
 def cmd(path, **kwargs):
     cmd = ['pdftotext']

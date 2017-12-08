@@ -560,9 +560,10 @@ class TestGuessingFromFileContent(BaseTestCase):
 class TestUtils(BaseTestCase):
 
     def test_is_file_path(self):
-        assert fulltext.is_file_path('foo')
-        assert fulltext.is_file_path(b'foo')
-        assert not fulltext.is_file_path(open(__file__))
+        from fulltext.util import is_file_path
+        assert is_file_path('foo')
+        assert is_file_path(b'foo')
+        assert not is_file_path(open(__file__))
 
 
 # --- Encodings

@@ -9,6 +9,7 @@ import functools
 from os.path import dirname, abspath
 from os.path import join as pathjoin
 
+import six
 from six import PY3
 
 from fulltext.compat import which
@@ -226,3 +227,15 @@ def hilite(s, ok=True, bold=False):
     if bold:
         attr.append('1')
     return '\x1b[%sm%s\x1b[0m' % (';'.join(attr), s)
+
+
+def is_file_path(obj):
+    """Return True if obj is a possible file path or name."""
+    return isinstance(obj, six.string_types) or isinstance(obj, bytes)
+
+
+def exiftool_title(path, encoding, encoding_error):
+    out = run("exiftool", "-title", path)
+    out = out.decode(encoding, encoding_error)
+    if out:
+        return out[out.find(':') + 1:].strip() or None

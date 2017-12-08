@@ -1,8 +1,9 @@
 import gzip
 from os.path import splitext, basename
 
-from fulltext import get, backend_from_fname, backend_from_fobj, is_file_path
+from fulltext import get, backend_from_fname, backend_from_fobj
 from fulltext import BaseBackend
+from fulltext.util import is_file_path
 
 
 def orig_fname(s):
