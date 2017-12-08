@@ -9,7 +9,7 @@ class Backend(BaseBackend):
 
     def check(self):
         if "FULLTEXT_TESTING" in os.environ:
-            assert_cmd_exists('pdfinfo')
+            assert_cmd_exists('exiftool')
 
     # Note: docx2txt does not support encoding.
     def handle_fobj(self, path_or_file):

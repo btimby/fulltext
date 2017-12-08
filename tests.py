@@ -786,6 +786,11 @@ class TestTitle(BaseTestCase):
         self.assertEqual(
             fulltext.get_with_title(fname)[1], 'MPI example')
 
+    def test_epub(self):
+        fname = "files/others/jquery.epub"
+        self.assertEqual(
+            fulltext.get_with_title(fname)[1], 'JQuery Hello World')
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
