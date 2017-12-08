@@ -59,6 +59,16 @@ Supported formats
 * ``.msg`` - Uses ``msg-extractor`` Python module (from github).
 * ``.bin`` - Uses Python stdlib modules to emulate ``strings`` CLI tool.
 
+Supported title formats
+-----------------------
+
+Other than extracting text fulltext lib is able to determine title for certain
+file extensions:
+
+* ``.html`` - Uses Python ``BeautifulSoup`` module.
+* ``.pdf`` - Uses ``/bin/pdfinfo`` CLI tool.
+* ``.odt`` - Uses ``/bin/exiftool`` CLI tool.
+
 Installing tools
 ----------------
 
@@ -115,6 +125,13 @@ Some backends accept additonal parameters. You can pass these using the
 .. code:: python
 
     >>> fulltext.get('foo.pdf', kwargs={'option': 'value'})
+
+You can also get the title for certain file formats:
+
+.. code:: python
+
+    >>> fulltext.get_with_title('foo.pdf')
+    ('file content', 'file title')
 
 You can specify the encoding to use (defaults to `sys.getfilesystemencoding()`
 + `strict` error handler):
