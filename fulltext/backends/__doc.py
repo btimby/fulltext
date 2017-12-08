@@ -5,6 +5,7 @@ import logging
 from fulltext.util import run, ShellError, MissingCommandException
 from fulltext.util import assert_cmd_exists
 from fulltext import BaseBackend
+from fulltext.util import exiftool_title
 
 
 LOGGER = logging.getLogger(__name__)
@@ -47,3 +48,6 @@ class Backend(BaseBackend):
         # Try abiword, slower, but supports more formats.
         return self.decode(
             run('abiword', '--to=txt', '--to-name=fd://1', path))
+
+    def handle_title(self, f):
+        return exiftool_title(f, self.encoding, self.encoding_errors)

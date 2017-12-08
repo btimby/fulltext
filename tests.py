@@ -764,6 +764,11 @@ class TestTitle(BaseTestCase):
         self.assertEqual(
             fulltext.get_with_title(fname)[1], "PRETTY ONES")
 
+    def test_doc(self):
+        fname = "files/others/hello-world.doc"
+        self.assertEqual(
+            fulltext.get_with_title(fname)[1], 'Lab 1: Hello World')
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
