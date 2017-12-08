@@ -71,6 +71,7 @@ file extensions:
 * ``.html`` - Uses Python ``BeautifulSoup`` module.
 * ``.odt`` - Uses ``/bin/exiftool`` CLI tool.
 * ``.pdf`` - Uses ``/bin/pdfinfo`` CLI tool.
+* ``.pptx`` - Uses ``/bin/pdfinfo`` CLI tool.
 
 Installing tools
 ----------------
