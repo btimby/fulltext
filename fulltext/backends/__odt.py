@@ -7,8 +7,7 @@ from lxml import etree
 from six import StringIO
 
 from fulltext import BaseBackend
-from fulltext.util import run, assert_cmd_exists
-from fulltext.util import is_file_path
+from fulltext.util import assert_cmd_exists
 from fulltext.util import exiftool_title
 
 
