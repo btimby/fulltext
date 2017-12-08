@@ -749,17 +749,17 @@ class TestUnicodeMbox(BaseTestCase, TestUnicodeBase):
 class TestTitle(BaseTestCase):
 
     def test_html(self):
-        fname = "files/test.html"
+        fname = "files/others/title.html"
         self.assertEqual(
             fulltext.get_with_title(fname)[1], "Lorem ipsum")
 
     def test_pdf(self):
-        fname = "files/governing-the-iot.pdf"
+        fname = "files/others/test.pdf"
         self.assertEqual(
-            fulltext.get_with_title(fname)[1], "Governing the IoT")
+            fulltext.get_with_title(fname)[1], "This is a test PDF file")
 
     def test_odt(self):
-        fname = "files/pretty-ones.odt"
+        fname = "files/others/pretty-ones.odt"
         self.assertEqual(
             fulltext.get_with_title(fname)[1], "PRETTY ONES")
 
