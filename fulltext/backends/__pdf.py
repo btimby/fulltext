@@ -4,7 +4,7 @@ import os
 
 from fulltext.util import run, assert_cmd_exists
 from fulltext import BaseBackend
-from fulltext import is_path_str
+from fulltext import is_file_path
 
 
 def cmd(path, **kwargs):
@@ -34,7 +34,7 @@ class Backend(BaseBackend):
         return self.decode(out)
 
     def handle_title(self, f):
-        if is_path_str(f):
+        if is_file_path(f):
             # Doesn't work with file objs.
             bout = run("pdfinfo", f)
             out = self.decode(bout)

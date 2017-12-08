@@ -8,7 +8,7 @@ from six import StringIO
 
 from fulltext import BaseBackend
 from fulltext.util import run, assert_cmd_exists
-from fulltext import is_path_str
+from fulltext import is_file_path
 
 
 def qn(ns):
@@ -56,7 +56,7 @@ class Backend(BaseBackend):
     handle_path = handle_fobj
 
     def handle_title(self, f):
-        if is_path_str(f):
+        if is_file_path(f):
             out = run("exiftool", "-title", f)
             out = self.decode(out).strip()
             if out:
