@@ -1,11 +1,13 @@
 from __future__ import absolute_import
 
+import os
 import zipfile
 from lxml import etree
 
 from six import StringIO
 
 from fulltext import BaseBackend
+from fulltext.util import run, assert_cmd_exists
 
 
 def qn(ns):
@@ -33,6 +35,10 @@ def to_string(text, elem):
 
 class Backend(BaseBackend):
 
+    def check(self):
+        if "FULLTEXT_TESTING" in os.environ:
+            assert_cmd_exists('exiftool')
+
     def handle_fobj(self, f):
         text = StringIO()
 
@@ -47,3 +53,9 @@ class Backend(BaseBackend):
         return text.getvalue()
 
     handle_path = handle_fobj
+
+    def handle_title(self, f):
+        out = run("exiftool", "-title", f)
+        out = self.decode(out).strip()
+        if out:
+            return out[out.find(':') + 1:].strip() or None

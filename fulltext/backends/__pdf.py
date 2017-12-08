@@ -1,4 +1,7 @@
 from __future__ import absolute_import
+
+import os
+
 from fulltext.util import run, assert_cmd_exists
 from fulltext import BaseBackend
 from fulltext import is_path_str
@@ -19,7 +22,8 @@ class Backend(BaseBackend):
 
     def check(self):
         assert_cmd_exists('pdftotext')
-        assert_cmd_exists('pdfinfo')
+        if "FULLTEXT_TESTING" in os.environ:
+            assert_cmd_exists('pdfinfo')
 
     def handle_fobj(self, f):
         out = run(*cmd('-', **self.kwargs), stdin=f)

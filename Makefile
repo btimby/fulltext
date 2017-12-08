@@ -11,9 +11,11 @@ SYSDEPS = \
 	pstotext \
 	libimage-exiftool-perl
 
+TEST_PREFIX = PYTHONWARNINGS=all FULLTEXT_TESTING=1
+
 test:  ## Run tests.
 	${MAKE} install-git-hooks
-	PYTHONWARNINGS=all $(PYTHON) tests.py
+	$(TEST_PREFIX) $(PYTHON) tests.py
 
 check:  ## Run linters.
 	${MAKE} install-git-hooks
@@ -62,8 +64,8 @@ clean:  ## Remove all build files.
 		tmp/
 
 install-git-hooks:  ## Install GIT pre-commit hook.
-	ln -sf ../../.git-pre-commit .git/hooks/pre-commit
-	chmod +x .git/hooks/pre-commit
+	@ln -sf ../../.git-pre-commit .git/hooks/pre-commit
+	@chmod +x .git/hooks/pre-commit
 
 help: ## Display callable targets.
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'

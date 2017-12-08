@@ -764,6 +764,11 @@ class TestTitle(BaseTestCase):
         with open(fname, "rb") as f:
             self.assertEqual(fulltext.get_with_title(f)[1], None)
 
+    def test_odt(self):
+        fname = "files/pretty-ones.odt"
+        self.assertEqual(
+            fulltext.get_with_title(fname)[1], "PRETTY ONES")
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
