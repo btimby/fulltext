@@ -74,6 +74,7 @@ file extensions:
 * ``.pptx`` - Uses ``/bin/pdfinfo`` CLI tool.
 * ``.ps`` - Uses ``/bin/exiftool`` CLI tool.
 * ``.rtf`` - Uses ``/bin/exiftool`` CLI tool.
+* ``.xls`` - Uses ``/bin/exiftool`` CLI tool.
 
 Installing tools
 ----------------

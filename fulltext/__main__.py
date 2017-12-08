@@ -55,7 +55,7 @@ def check_backends():
 def config_logging(verbose):
     handler = logging.StreamHandler(sys.stdout)
     handler.setFormatter(logging.Formatter(
-        '[%(levelname)1.1s %(name)1s] %(message)s'))
+        '[%(levelname)1.1s %(name)s] %(message)s'))
     logger = logging.getLogger()
     logger.addHandler(handler)
     logger.setLevel(logging.DEBUG if verbose else logging.INFO)

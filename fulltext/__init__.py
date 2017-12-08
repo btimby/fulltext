@@ -29,7 +29,7 @@ DEFAULT_MIME = 'application/octet-stream'
 
 # --- others
 
-LOGGER = logging.getLogger(__file__)
+LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 STRIP_WHITE = re.compile(r'[ \t\v\f\r\n]+')
 SENTINAL = object()
