@@ -254,11 +254,13 @@ def handle_path(backend_inst, path, **kwargs):
     """
     if callable(getattr(backend_inst, 'handle_path', None)):
         # Prefer handle_path() if present.
+        LOGGER.debug("using handle_path")
         return backend_inst.handle_path(path)
 
     elif callable(getattr(backend_inst, 'handle_fobj', None)):
         # Fallback to handle_fobj(). No warning here since the performance hit
         # is minimal.
+        LOGGER.debug("using handle_fobj")
         with open(path, 'rb') as f:
             return backend_inst.handle_fobj(f)
 
@@ -280,11 +282,13 @@ def handle_fobj(backend, f, **kwargs):
 
     if callable(getattr(backend, 'handle_fobj', None)):
         # Prefer handle_fobj() if present.
+        LOGGER.debug("using handle_fobj")
         return backend.handle_fobj(f)
 
     elif callable(getattr(backend, 'handle_path', None)):
         # Fallback to handle_path(). Warn user since this is potentially
         # expensive.
+        LOGGER.debug("using handle_path")
         LOGGER.warning("Using disk, backend does not provide `handle_fobj()`")
 
         ext = ''
@@ -367,6 +371,7 @@ def backend_inst_from_mod(mod, encoding, encoding_errors, kwargs):
              mod, str(err), bin_mod))
         inst = import_mod(bin_mod).Backend(**kw)
         inst.check()
+    LOGGER.debug("using %r" % inst)
     return inst
 
 

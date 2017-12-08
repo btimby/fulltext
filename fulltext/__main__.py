@@ -52,6 +52,15 @@ def check_backends():
         sys.exit(1)
 
 
+def config_logging(verbose):
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setFormatter(logging.Formatter(
+        '[%(levelname)1.1s %(name)1s] %(message)s'))
+    logger = logging.getLogger()
+    logger.addHandler(handler)
+    logger.setLevel(logging.DEBUG if verbose else logging.INFO)
+
+
 def main(args=sys.argv[1:]):
     """Extract text from a file.
 
@@ -60,23 +69,23 @@ def main(args=sys.argv[1:]):
         check   - make sure all deps are installed
 
     Usage:
-        fulltext extract [-f] [-t] <path>...
+        fulltext extract [-v] [-f] <path>...
         fulltext check
 
     Options:
-        -f      Open file first.
+        -f, --file           Open file first.
+        -v, --verbose        More verbose output.
     """
     opt = docopt(main.__doc__.strip(), args, options_first=True)
 
-    logger = logging.getLogger()
-    logger.addHandler(logging.StreamHandler())
+    config_logging(opt['--verbose'])
 
     if opt['check']:
         check_backends()
     elif opt['extract']:
         handler = fulltext.get
 
-        if opt['-f']:
+        if opt['--file']:
             handler = _handle_open
 
         for path in opt['<path>']:
