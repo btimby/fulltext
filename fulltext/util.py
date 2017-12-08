@@ -235,7 +235,8 @@ def is_file_path(obj):
 
 
 def exiftool_title(path, encoding, encoding_error):
-    out = run("exiftool", "-title", path)
-    out = out.decode(encoding, encoding_error)
-    if out:
-        return out[out.find(':') + 1:].strip() or None
+    if is_file_path(path):
+        out = run("exiftool", "-title", path)
+        out = out.decode(encoding, encoding_error)
+        if out:
+            return out[out.find(':') + 1:].strip() or None
