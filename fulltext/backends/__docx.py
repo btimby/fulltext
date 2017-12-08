@@ -1,5 +1,6 @@
 import docx2txt
 from fulltext import BaseBackend
+from fulltext.util import exiftool_title
 
 
 class Backend(BaseBackend):
@@ -10,3 +11,6 @@ class Backend(BaseBackend):
 
     # They are equivalent, process() uses zipfile.ZipFile().
     handle_path = handle_fobj
+
+    def handle_title(self, f):
+        return exiftool_title(f, self.encoding, self.encoding_errors)

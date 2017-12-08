@@ -44,7 +44,9 @@ TEXT_WITH_NEWLINES = u"Lorem ipsum\ndolor sit amet, consectetur adipiscing e" \
 TEXT = TEXT_WITH_NEWLINES.replace('\n', ' ')
 
 
+# ===================================================================
 # --- Utils
+# ===================================================================
 
 
 class BaseTestCase(unittest.TestCase):
@@ -240,7 +242,9 @@ class TestBackendInterface(BaseTestCase):
         self.assertEqual(flags, ['setup', 'teardown'])
 
 
+# ===================================================================
 # --- Mixin tests
+# ===================================================================
 
 
 class PathAndFileTests(object):
@@ -409,7 +413,9 @@ class FilesTestCase(BaseTestCase):
         self.assertIsInstance(text, u"".__class__)
 
 
+# ===================================================================
 # --- Pickups
+# ===================================================================
 
 
 class TestPickups(BaseTestCase):
@@ -494,7 +500,9 @@ class TestPickups(BaseTestCase):
             fulltext.get(fname, backend='yoo')
 
 
+# ===================================================================
 # --- File objects
+# ===================================================================
 
 
 class TestFileObj(BaseTestCase):
@@ -566,7 +574,9 @@ class TestUtils(BaseTestCase):
         assert not is_file_path(open(__file__))
 
 
+# ===================================================================
 # --- Encodings
+# ===================================================================
 
 
 class TestEncodingGeneric(BaseTestCase):
@@ -744,7 +754,9 @@ class TestUnicodeMbox(BaseTestCase, TestUnicodeBase):
     ext = "mbox"
 
 
+# ===================================================================
 # --- Test titles
+# ===================================================================
 
 
 class TestTitle(BaseTestCase):
@@ -768,6 +780,11 @@ class TestTitle(BaseTestCase):
         fname = "files/others/hello-world.doc"
         self.assertEqual(
             fulltext.get_with_title(fname)[1], 'Lab 1: Hello World')
+
+    def test_docx(self):
+        fname = "files/others/hello-world.docx"
+        self.assertEqual(
+            fulltext.get_with_title(fname)[1], 'MPI example')
 
 
 if __name__ == '__main__':
