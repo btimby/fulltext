@@ -9,7 +9,8 @@ SYSDEPS = \
 	tesseract-ocr abiword \
 	unrtf \
 	pstotext \
-	libimage-exiftool-perl
+	libimage-exiftool-perl \
+	unoconv
 
 TEST_PREFIX = PYTHONWARNINGS=all FULLTEXT_TESTING=1
 
