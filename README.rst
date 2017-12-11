@@ -171,7 +171,7 @@ Second, register the new backend against fulltext.
 
     class Backend(BaseBackend):
 
-        def check():
+        def check(title):
             # This is invoked before `handle_` functions. In here you can
             # import third party deps or raise an exception if a CLI tool
             # is missing. Both conditions will be turned into a warning

@@ -1,5 +1,4 @@
 import docx2txt
-import os
 from fulltext import BaseBackend
 from fulltext.util import exiftool_title
 from fulltext.util import assert_cmd_exists
@@ -7,8 +6,8 @@ from fulltext.util import assert_cmd_exists
 
 class Backend(BaseBackend):
 
-    def check(self):
-        if "FULLTEXT_TESTING" in os.environ:
+    def check(self, title):
+        if title:
             assert_cmd_exists('exiftool')
 
     # Note: docx2txt does not support encoding.

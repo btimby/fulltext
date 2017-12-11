@@ -1,7 +1,6 @@
 from __future__ import absolute_import
 
 import logging
-import os
 
 from fulltext.util import run, ShellError, MissingCommandException
 from fulltext.util import assert_cmd_exists
@@ -15,11 +14,11 @@ LOGGER.addHandler(logging.NullHandler())
 
 class Backend(BaseBackend):
 
-    def check(self):
+    def check(self, title):
         assert_cmd_exists('antiword')
         assert_cmd_exists('abiword')
-        if "FULLTEXT_TESTING" in os.environ:
-            assert_cmd_exists('pdfinfo')
+        if title:
+            assert_cmd_exists('exiftool')
 
     def handle_fobj(self, f):
         try:

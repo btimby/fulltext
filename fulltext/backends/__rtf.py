@@ -1,5 +1,4 @@
 from __future__ import absolute_import
-import os
 
 from fulltext.util import run, assert_cmd_exists, exiftool_title
 from fulltext import BaseBackend
@@ -7,10 +6,10 @@ from fulltext import BaseBackend
 
 class Backend(BaseBackend):
 
-    def check(self):
+    def check(self, title):
         assert_cmd_exists('unrtf')
-        if "FULLTEXT_TESTING" in os.environ:
-            assert_cmd_exists('pdfinfo')
+        if title:
+            assert_cmd_exists('exiftool')
 
     def strip(self, text):
         return self.decode(text.partition(b'-----------------')[2])

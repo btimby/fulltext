@@ -36,8 +36,8 @@ def to_string(text, elem):
 
 class Backend(BaseBackend):
 
-    def check(self):
-        if "FULLTEXT_TESTING" in os.environ:
+    def check(self, title):
+        if title:
             assert_cmd_exists('exiftool')
 
     def handle_fobj(self, f):

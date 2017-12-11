@@ -364,13 +364,13 @@ def backend_inst_from_mod(mod, encoding, encoding_errors, kwargs):
         raise AttributeError("%r mod does not define any backend class" % mod)
     inst = klass(**kw)
     try:
-        inst.check()
+        inst.check(title=False)
     except Exception as err:
         bin_mod = "fulltext.backends.__bin"
         warn("can't use %r due to %r; use %r backend instead" % (
              mod, str(err), bin_mod))
         inst = import_mod(bin_mod).Backend(**kw)
-        inst.check()
+        inst.check(title=False)
     LOGGER.debug("using %r" % inst)
     return inst
 
@@ -401,7 +401,7 @@ class BaseBackend(object):
         """
         pass
 
-    def check(self):
+    def check(self, title):
         """May be overridden by subclass. This is called before text
         extraction. If the overriding method raises an exception
         a warning is printed and bin backend is used.

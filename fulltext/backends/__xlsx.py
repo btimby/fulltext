@@ -1,5 +1,4 @@
 from __future__ import absolute_import
-import os
 
 import xlrd
 from six import StringIO
@@ -10,9 +9,9 @@ from fulltext.util import assert_cmd_exists, exiftool_title
 
 class Backend(BaseBackend):
 
-    def check(self):
-        if "FULLTEXT_TESTING" in os.environ:
-            assert_cmd_exists('pdfinfo')
+    def check(self, title):
+        if title:
+            assert_cmd_exists('exiftool')
 
     def handle_path(self, path):
         text = StringIO()

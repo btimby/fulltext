@@ -12,6 +12,7 @@ from docopt import docopt
 
 import fulltext
 from fulltext.util import hilite
+from fulltext import import_mod
 
 
 HERE = os.path.abspath(os.path.dirname(__file__))
@@ -22,7 +23,7 @@ def _handle_open(path):
         return fulltext.get(f)
 
 
-def check_backends():
+def check_backends(title):
     """Invoke test() for all backends and fail (raise) if some dep
     is missing.
     """
@@ -31,6 +32,9 @@ def check_backends():
     for name in os.listdir(path):
         if not name.endswith('.py'):
             continue
+        if name == '__init__.py':
+            continue
+
         mod_name = "fulltext.backends.%s" % (
             os.path.splitext(os.path.basename(name))[0])
 
@@ -40,11 +44,14 @@ def check_backends():
             errs.append((mod_name, str(err)))
             continue
 
-        if hasattr(mod, "check"):
-            try:
-                mod.check()
-            except Exception as err:
-                errs.append((mod.__name__, str(err)))
+        kw = dict(encoding='utf8', encoding_errors='strict',
+                  kwargs={})
+        try:
+            inst = getattr(mod, "Backend")(**kw)
+            if hasattr(inst, "check"):
+                inst.check(title=title)
+        except Exception as err:
+            errs.append((mod.__name__, str(err)))
     if errs:
         for mod, err in errs:
             msg = hilite("%s: %s" % (mod, err), ok=False)
@@ -70,10 +77,11 @@ def main(args=sys.argv[1:]):
 
     Usage:
         fulltext extract [-v] [-f] <path>...
-        fulltext check
+        fulltext check [-t]
 
     Options:
         -f, --file           Open file first.
+        -t, --title          Check deps for title.
         -v, --verbose        More verbose output.
     """
     opt = docopt(main.__doc__.strip(), args, options_first=True)
@@ -81,7 +89,7 @@ def main(args=sys.argv[1:]):
     config_logging(opt['--verbose'])
 
     if opt['check']:
-        check_backends()
+        check_backends(opt['--title'])
     elif opt['extract']:
         handler = fulltext.get
 

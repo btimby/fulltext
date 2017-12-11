@@ -180,10 +180,9 @@ class TestCLI(BaseTestCase):
             "%s -m fulltext extract %s" % (sys.executable, "files/test.txt"),
             shell=True)
 
-    # XXX: disabled because hwp5proc CLI tool is missing.
-    # def test_test(self):
-    #     subprocess.check_call("%s -m fulltext test" % sys.executable,
-    #                           shell=True)
+    def test_test(self):
+        subprocess.check_output(
+            "%s -m fulltext -t check" % sys.executable, shell=True)
 
 
 class TestBackendInterface(BaseTestCase):

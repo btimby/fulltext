@@ -17,7 +17,7 @@ def to_text_with_backend(html):
 
 class Backend(BaseBackend):
 
-    def check(self):
+    def check(self, title):
         assert_cmd_exists('hwp5proc')
 
     def handle_path(self, path):

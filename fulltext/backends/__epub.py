@@ -1,8 +1,6 @@
 # To create a .epub file for test:
 # run "sigil", open test.txt and save as epub.
 
-import os
-
 from ebooklib import epub
 
 from bs4 import BeautifulSoup
@@ -15,8 +13,8 @@ from fulltext.util import exiftool_title
 
 class Backend(BaseBackend):
 
-    def check(self):
-        if "FULLTEXT_TESTING" in os.environ:
+    def check(self, title):
+        if title:
             assert_cmd_exists('exiftool')
 
     def handle_path(self, path):
