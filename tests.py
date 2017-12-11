@@ -320,6 +320,10 @@ class XmlTestCase(BaseTestCase, PathAndFileTests):
     ext = "xml"
 
 
+class PptTestCase(BaseTestCase, PathAndFileTests):
+    ext = "ppt"
+
+
 class ZipTestCase(BaseTestCase, PathAndFileTests):
     ext = "zip"
 

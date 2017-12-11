@@ -105,6 +105,11 @@ register_backend(
     'fulltext.backends.__pptx')
 
 register_backend(
+    'application/vnd.ms-powerpoint',
+    'fulltext.backends.__ppt',
+    extensions=['ppt'])
+
+register_backend(
     'application/pdf',
     'fulltext.backends.__pdf')
 
