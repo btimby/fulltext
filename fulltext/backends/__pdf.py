@@ -1,6 +1,8 @@
 from __future__ import absolute_import
+
 from fulltext.util import run, assert_cmd_exists
 from fulltext import BaseBackend
+from fulltext.util import is_file_path
 
 
 def cmd(path, **kwargs):
@@ -16,8 +18,10 @@ def cmd(path, **kwargs):
 
 class Backend(BaseBackend):
 
-    def check(self):
+    def check(self, title):
         assert_cmd_exists('pdftotext')
+        if title:
+            assert_cmd_exists('pdfinfo')
 
     def handle_fobj(self, f):
         out = run(*cmd('-', **self.kwargs), stdin=f)
@@ -26,3 +30,12 @@ class Backend(BaseBackend):
     def handle_path(self, path):
         out = run(*cmd(path, **self.kwargs))
         return self.decode(out)
+
+    def handle_title(self, f):
+        if is_file_path(f):
+            # Doesn't work with file objs.
+            bout = run("pdfinfo", f)
+            out = self.decode(bout)
+            for line in out.split("\n"):
+                if line.startswith("Title:"):
+                    return line.partition("Title:")[2].strip()

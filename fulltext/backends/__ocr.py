@@ -51,7 +51,7 @@ def read(img, **kargs):
 
 class Backend(BaseBackend):
 
-    def check(self):
+    def check(self, title):
         assert_cmd_exists('tesseract')
 
     def handle_fobj(self, path_or_file):

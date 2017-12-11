@@ -12,6 +12,9 @@ from fulltext import BaseBackend
 
 class Backend(BaseBackend):
 
+    def setup(self):
+        self.bs = None
+
     def is_visible(self, elem):
         if elem.parent.name in ['style', 'script', '[document]', 'head']:
             return False
@@ -26,11 +29,14 @@ class Backend(BaseBackend):
     def handle_fobj(self, f):
         data = f.read()
         data = self.decode(data)
-        text, bs = StringIO(), BeautifulSoup(data, 'lxml')
+        text, self.bs = StringIO(), BeautifulSoup(data, 'lxml')
 
-        for elem in bs.findAll(text=True):
+        for elem in self.bs.findAll(text=True):
             if self.is_visible(elem):
                 text.write(elem)
                 text.write(u' ')
 
         return text.getvalue()
+
+    def handle_title(self, f):
+        return self.bs.title.string

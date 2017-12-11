@@ -6,6 +6,8 @@ from lxml import etree
 from six import StringIO
 
 from fulltext import BaseBackend
+from fulltext.util import assert_cmd_exists
+from fulltext.util import exiftool_title
 
 
 def qn(ns):
@@ -33,6 +35,10 @@ def to_string(text, elem):
 
 class Backend(BaseBackend):
 
+    def check(self, title):
+        if title:
+            assert_cmd_exists('exiftool')
+
     def handle_fobj(self, f):
         text = StringIO()
 
@@ -47,3 +53,6 @@ class Backend(BaseBackend):
         return text.getvalue()
 
     handle_path = handle_fobj
+
+    def handle_title(self, f):
+        return exiftool_title(f, self.encoding, self.encoding_errors)

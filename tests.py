@@ -24,6 +24,7 @@ from six import PY3
 from six import BytesIO
 
 
+TRAVIS = bool(os.environ.get('TRAVIS'))
 TEXT_WITH_NEWLINES = u"Lorem ipsum\ndolor sit amet, consectetur adipiscing e" \
                      u"lit. Nunc ipsum augue, iaculis quis\nauctor eu, adipi" \
                      u"scing non est. Nullam id sem diam, eget varius dui. E" \
@@ -44,7 +45,9 @@ TEXT_WITH_NEWLINES = u"Lorem ipsum\ndolor sit amet, consectetur adipiscing e" \
 TEXT = TEXT_WITH_NEWLINES.replace('\n', ' ')
 
 
+# ===================================================================
 # --- Utils
+# ===================================================================
 
 
 class BaseTestCase(unittest.TestCase):
@@ -177,10 +180,9 @@ class TestCLI(BaseTestCase):
             "%s -m fulltext extract %s" % (sys.executable, "files/test.txt"),
             shell=True)
 
-    # XXX: disabled because hwp5proc CLI tool is missing.
-    # def test_test(self):
-    #     subprocess.check_call("%s -m fulltext test" % sys.executable,
-    #                           shell=True)
+    def test_test(self):
+        subprocess.check_output(
+            "%s -m fulltext -t check" % sys.executable, shell=True)
 
 
 class TestBackendInterface(BaseTestCase):
@@ -240,7 +242,9 @@ class TestBackendInterface(BaseTestCase):
         self.assertEqual(flags, ['setup', 'teardown'])
 
 
+# ===================================================================
 # --- Mixin tests
+# ===================================================================
 
 
 class PathAndFileTests(object):
@@ -409,7 +413,9 @@ class FilesTestCase(BaseTestCase):
         self.assertIsInstance(text, u"".__class__)
 
 
+# ===================================================================
 # --- Pickups
+# ===================================================================
 
 
 class TestPickups(BaseTestCase):
@@ -494,7 +500,9 @@ class TestPickups(BaseTestCase):
             fulltext.get(fname, backend='yoo')
 
 
+# ===================================================================
 # --- File objects
+# ===================================================================
 
 
 class TestFileObj(BaseTestCase):
@@ -560,12 +568,15 @@ class TestGuessingFromFileContent(BaseTestCase):
 class TestUtils(BaseTestCase):
 
     def test_is_file_path(self):
-        assert fulltext.is_file_path('foo')
-        assert fulltext.is_file_path(b'foo')
-        assert not fulltext.is_file_path(open(__file__))
+        from fulltext.util import is_file_path
+        assert is_file_path('foo')
+        assert is_file_path(b'foo')
+        assert not is_file_path(open(__file__))
 
 
+# ===================================================================
 # --- Encodings
+# ===================================================================
 
 
 class TestEncodingGeneric(BaseTestCase):
@@ -741,6 +752,70 @@ class TestUnicodeEml(BaseTestCase, TestUnicodeBase):
 
 class TestUnicodeMbox(BaseTestCase, TestUnicodeBase):
     ext = "mbox"
+
+
+# ===================================================================
+# --- Test titles
+# ===================================================================
+
+
+class TestTitle(BaseTestCase):
+
+    def test_html(self):
+        fname = "files/others/title.html"
+        self.assertEqual(
+            fulltext.get_with_title(fname)[1], "Lorem ipsum")
+
+    def test_pdf(self):
+        fname = "files/others/test.pdf"
+        self.assertEqual(
+            fulltext.get_with_title(fname)[1], "This is a test PDF file")
+
+    def test_odt(self):
+        fname = "files/others/pretty-ones.odt"
+        self.assertEqual(
+            fulltext.get_with_title(fname)[1], "PRETTY ONES")
+
+    def test_doc(self):
+        fname = "files/others/hello-world.doc"
+        self.assertEqual(
+            fulltext.get_with_title(fname)[1], 'Lab 1: Hello World')
+
+    def test_docx(self):
+        fname = "files/others/hello-world.docx"
+        self.assertEqual(
+            fulltext.get_with_title(fname)[1], 'MPI example')
+
+    @unittest.skipIf(TRAVIS, "fails on travis")
+    def test_epub(self):
+        fname = "files/others/jquery.epub"
+        self.assertEqual(
+            fulltext.get_with_title(fname)[1], 'JQuery Hello World')
+
+    def test_pptx(self):
+        fname = "files/others/test.pptx"
+        self.assertEqual(
+            fulltext.get_with_title(fname)[1], 'lorem ipsum')
+
+    def test_ps(self):
+        fname = "files/others/lecture.ps"
+        self.assertEqual(
+            fulltext.get_with_title(fname)[1], 'Hey there')
+
+    def test_rtf(self):
+        fname = "files/others/test.rtf"
+        self.assertEqual(
+            fulltext.get_with_title(fname)[1], 'hello there')
+
+    def test_xls(self):
+        fname = "files/others/test.xls"
+        self.assertEqual(
+            fulltext.get_with_title(fname)[1], 'hey there')
+
+    def test_xlsx(self):
+        fname = "files/others/test.xlsx"
+        self.assertEqual(
+            fulltext.get_with_title(fname)[1], 'yo man!')
 
 
 if __name__ == '__main__':

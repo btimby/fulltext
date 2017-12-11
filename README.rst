@@ -59,6 +59,24 @@ Supported formats
 * ``.msg`` - Uses ``msg-extractor`` Python module (from github).
 * ``.bin`` - Uses Python stdlib modules to emulate ``strings`` CLI tool.
 
+Supported title formats
+-----------------------
+
+Other than extracting text fulltext lib is able to determine title for certain
+file extensions:
+
+* ``.doc`` - Uses ``/bin/exiftool`` CLI tool.
+* ``.docx`` - Uses ``/bin/exiftool`` CLI tool.
+* ``.epub`` - Uses ``/bin/exiftool`` CLI tool.
+* ``.html`` - Uses Python ``BeautifulSoup`` module.
+* ``.odt`` - Uses ``/bin/exiftool`` CLI tool.
+* ``.pdf`` - Uses ``/bin/pdfinfo`` CLI tool.
+* ``.pptx`` - Uses ``/bin/pdfinfo`` CLI tool.
+* ``.ps`` - Uses ``/bin/exiftool`` CLI tool.
+* ``.rtf`` - Uses ``/bin/exiftool`` CLI tool.
+* ``.xls`` - Uses ``/bin/exiftool`` CLI tool.
+* ``.xlsx`` - Uses ``/bin/exiftool`` CLI tool.
+
 Installing tools
 ----------------
 
@@ -116,6 +134,13 @@ Some backends accept additonal parameters. You can pass these using the
 
     >>> fulltext.get('foo.pdf', kwargs={'option': 'value'})
 
+You can also get the title for certain file formats:
+
+.. code:: python
+
+    >>> fulltext.get_with_title('foo.pdf')
+    ('file content', 'file title')
+
 You can specify the encoding to use (defaults to `sys.getfilesystemencoding()`
 + `strict` error handler):
 
@@ -146,7 +171,7 @@ Second, register the new backend against fulltext.
 
     class Backend(BaseBackend):
 
-        def check():
+        def check(title):
             # This is invoked before `handle_` functions. In here you can
             # import third party deps or raise an exception if a CLI tool
             # is missing. Both conditions will be turned into a warning
@@ -176,6 +201,10 @@ Second, register the new backend against fulltext.
             # Extract text from a path. This should only be defined if it can be
             # done more efficiently than having Python open() and read() the file,
             # passing it to handle_fobj().
+            pass
+
+        def handle_title(file_or_path):
+            # Extract title
             pass
 
 If you only implement ``handle_fobj()`` Fulltext will open any paths and pass

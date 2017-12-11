@@ -14,6 +14,7 @@ from six import string_types
 from six import PY3
 from fulltext.util import warn
 from fulltext.util import magic
+from fulltext.util import is_file_path
 
 
 __all__ = ["get", "register_backend"]
@@ -28,7 +29,7 @@ DEFAULT_MIME = 'application/octet-stream'
 
 # --- others
 
-LOGGER = logging.getLogger(__file__)
+LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 STRIP_WHITE = re.compile(r'[ \t\v\f\r\n]+')
 SENTINAL = object()
@@ -243,11 +244,6 @@ def is_binary(f):
     return hasattr(byte, 'decode')
 
 
-def is_file_path(obj):
-    """Return True if obj is a possible file path or name."""
-    return isinstance(obj, string_types) or isinstance(obj, bytes)
-
-
 def handle_path(backend_inst, path, **kwargs):
     """
     Handle a path.
@@ -258,11 +254,13 @@ def handle_path(backend_inst, path, **kwargs):
     """
     if callable(getattr(backend_inst, 'handle_path', None)):
         # Prefer handle_path() if present.
+        LOGGER.debug("using handle_path")
         return backend_inst.handle_path(path)
 
     elif callable(getattr(backend_inst, 'handle_fobj', None)):
         # Fallback to handle_fobj(). No warning here since the performance hit
         # is minimal.
+        LOGGER.debug("using handle_fobj")
         with open(path, 'rb') as f:
             return backend_inst.handle_fobj(f)
 
@@ -284,11 +282,13 @@ def handle_fobj(backend, f, **kwargs):
 
     if callable(getattr(backend, 'handle_fobj', None)):
         # Prefer handle_fobj() if present.
+        LOGGER.debug("using handle_fobj")
         return backend.handle_fobj(f)
 
     elif callable(getattr(backend, 'handle_path', None)):
         # Fallback to handle_path(). Warn user since this is potentially
         # expensive.
+        LOGGER.debug("using handle_path")
         LOGGER.warning("Using disk, backend does not provide `handle_fobj()`")
 
         ext = ''
@@ -364,13 +364,14 @@ def backend_inst_from_mod(mod, encoding, encoding_errors, kwargs):
         raise AttributeError("%r mod does not define any backend class" % mod)
     inst = klass(**kw)
     try:
-        inst.check()
+        inst.check(title=False)
     except Exception as err:
         bin_mod = "fulltext.backends.__bin"
         warn("can't use %r due to %r; use %r backend instead" % (
              mod, str(err), bin_mod))
         inst = import_mod(bin_mod).Backend(**kw)
-        inst.check()
+        inst.check(title=False)
+    LOGGER.debug("using %r" % inst)
     return inst
 
 
@@ -400,7 +401,7 @@ class BaseBackend(object):
         """
         pass
 
-    def check(self):
+    def check(self, title):
         """May be overridden by subclass. This is called before text
         extraction. If the overriding method raises an exception
         a warning is printed and bin backend is used.
@@ -411,9 +412,21 @@ class BaseBackend(object):
         """Decode string."""
         return s.decode(self.encoding, self.encoding_errors)
 
+    def handle_title(self, path_or_file):
+        """May be overridden by sublass in order to retrieve file title."""
+        return None
+
 
 def _get(path_or_file, default, mime, name, backend, encoding,
-         encoding_errors, kwargs):
+         encoding_errors, kwargs, _wtitle):
+    if encoding is None:
+        encoding = ENCODING
+    if encoding_errors is None:
+        encoding_errors = ENCODING_ERRORS
+
+    kwargs = kwargs.copy() if kwargs is not None else {}
+    kwargs.setdefault("mime", mime)
+
     # Find backend module.
     if backend is None:
         if mime:
@@ -444,19 +457,27 @@ def _get(path_or_file, default, mime, name, backend, encoding,
     fun = handle_path if is_file_path(path_or_file) else handle_fobj
 
     # Run handle_ function, handle callbacks.
+    title = None
     inst.setup()
     try:
         text = fun(inst, path_or_file)
+        if _wtitle:
+            try:
+                title = inst.handle_title(path_or_file)
+            except Exception:
+                LOGGER.exception("error while getting title (setting to None)")
     finally:
         inst.teardown()
 
     assert text is not None, "backend function returned None"
     text = STRIP_WHITE.sub(' ', text)
-    return text.strip()
+    text = text.strip()
+    return (text, title)
 
 
 def get(path_or_file, default=SENTINAL, mime=None, name=None, backend=None,
-        encoding=None, encoding_errors=None, kwargs=None):
+        encoding=None, encoding_errors=None, kwargs=None,
+        _wtitle=False):
     """
     Get document full text.
 
@@ -474,20 +495,25 @@ def get(path_or_file, default=SENTINAL, mime=None, name=None, backend=None,
        Default to "utf8" and "strict" respectively.
      * `kwargs` are passed to the underlying backend.
     """
-    if encoding is None:
-        encoding = ENCODING
-    if encoding_errors is None:
-        encoding_errors = ENCODING_ERRORS
-
-    kwargs = kwargs.copy() if kwargs is not None else {}
-    kwargs.setdefault("mime", mime)
-
     try:
-        return _get(path_or_file, default=default, mime=mime, name=name,
-                    backend=backend, kwargs=kwargs, encoding=encoding,
-                    encoding_errors=encoding_errors)
+        text, title = _get(
+            path_or_file, default=default, mime=mime, name=name,
+            backend=backend, kwargs=kwargs, encoding=encoding,
+            encoding_errors=encoding_errors, _wtitle=_wtitle)
+        if _wtitle:
+            return (text, title)
+        else:
+            return text
     except Exception as e:
         if default is not SENTINAL:
             LOGGER.exception(e)
             return default
         raise
+
+
+def get_with_title(*args, **kwargs):
+    """Like get() but also tries to determine document title.
+    Returns a (text, title) tuple.
+    """
+    kwargs['_wtitle'] = True
+    return get(*args, **kwargs)

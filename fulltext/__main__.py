@@ -22,7 +22,7 @@ def _handle_open(path):
         return fulltext.get(f)
 
 
-def check_backends():
+def check_backends(title):
     """Invoke test() for all backends and fail (raise) if some dep
     is missing.
     """
@@ -31,6 +31,9 @@ def check_backends():
     for name in os.listdir(path):
         if not name.endswith('.py'):
             continue
+        if name == '__init__.py':
+            continue
+
         mod_name = "fulltext.backends.%s" % (
             os.path.splitext(os.path.basename(name))[0])
 
@@ -40,16 +43,28 @@ def check_backends():
             errs.append((mod_name, str(err)))
             continue
 
-        if hasattr(mod, "check"):
-            try:
-                mod.check()
-            except Exception as err:
-                errs.append((mod.__name__, str(err)))
+        kw = dict(encoding='utf8', encoding_errors='strict',
+                  kwargs={})
+        try:
+            inst = getattr(mod, "Backend")(**kw)
+            if hasattr(inst, "check"):
+                inst.check(title=title)
+        except Exception as err:
+            errs.append((mod.__name__, str(err)))
     if errs:
         for mod, err in errs:
             msg = hilite("%s: %s" % (mod, err), ok=False)
             print(msg, file=sys.stderr)
         sys.exit(1)
+
+
+def config_logging(verbose):
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setFormatter(logging.Formatter(
+        '[%(levelname)1.1s %(name)s] %(message)s'))
+    logger = logging.getLogger()
+    logger.addHandler(handler)
+    logger.setLevel(logging.DEBUG if verbose else logging.INFO)
 
 
 def main(args=sys.argv[1:]):
@@ -60,23 +75,24 @@ def main(args=sys.argv[1:]):
         check   - make sure all deps are installed
 
     Usage:
-        fulltext extract [-f] [-t] <path>...
-        fulltext check
+        fulltext extract [-v] [-f] <path>...
+        fulltext check [-t]
 
     Options:
-        -f      Open file first.
+        -f, --file           Open file first.
+        -t, --title          Check deps for title.
+        -v, --verbose        More verbose output.
     """
     opt = docopt(main.__doc__.strip(), args, options_first=True)
 
-    logger = logging.getLogger()
-    logger.addHandler(logging.StreamHandler())
+    config_logging(opt['--verbose'])
 
     if opt['check']:
-        check_backends()
+        check_backends(opt['--title'])
     elif opt['extract']:
         handler = fulltext.get
 
-        if opt['-f']:
+        if opt['--file']:
             handler = _handle_open
 
         for path in opt['<path>']:
