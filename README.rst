@@ -47,6 +47,7 @@ Supported formats
 * ``.xlsx`` - Uses Python ``xlrd`` module.
 * ``.xml`` - Uses Python ``lxml`` module.
 * ``.pptx`` - Uses Python ``pptx`` module
+* ``.ppt`` - Uses ``/bin/unoconv`` CLI tool and Python ``BeautifulSoup`` module.
 * ``.zip`` - Uses Python ``zipfile`` module.
 * ``.gz`` - Uses Python ``gzip`` module.
 * ``.jpg``, ``.jpeg``, ``.png``, ``.bmp``, ``.gif`` - Uses ``/usr/bin/tesseract`` CLI tool and ``pytesseract`` module.
