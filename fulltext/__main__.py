@@ -12,7 +12,6 @@ from docopt import docopt
 
 import fulltext
 from fulltext.util import hilite
-from fulltext import import_mod
 
 
 HERE = os.path.abspath(os.path.dirname(__file__))
