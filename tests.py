@@ -713,6 +713,10 @@ class TestUnicodeXlsx(BaseTestCase, TestUnicodeBase):
         pass
 
 
+class TestUnicodePpt(BaseTestCase, TestUnicodeBase):
+    ext = "ppt"
+
+
 class TestUnicodePptx(BaseTestCase, TestUnicodeBase):
     ext = "pptx"
 
@@ -795,6 +799,11 @@ class TestTitle(BaseTestCase):
         fname = "files/others/jquery.epub"
         self.assertEqual(
             fulltext.get_with_title(fname)[1], 'JQuery Hello World')
+
+    def test_ppt(self):
+        fname = "files/others/test.ppt"
+        self.assertEqual(
+            fulltext.get_with_title(fname)[1], 'lorem ipsum')
 
     def test_pptx(self):
         fname = "files/others/test.pptx"
