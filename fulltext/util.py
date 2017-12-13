@@ -248,7 +248,9 @@ def exiftool_title(path, encoding, encoding_error):
 
 @contextlib.contextmanager
 def fobj_to_tempfile(f, suffix=''):
-    # See: https://github.com/btimby/fulltext/issues/56
+    """Context manager which copies a file object to disk and return its
+    name. When done the file is deleted.
+    """
     with tempfile.NamedTemporaryFile(dir=TEMPDIR, suffix=suffix) as t:
         shutil.copyfileobj(f, t)
         t.flush()

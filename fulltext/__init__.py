@@ -3,7 +3,6 @@ from __future__ import absolute_import
 import re
 import logging
 import os
-import tempfile
 import mimetypes
 import sys
 
