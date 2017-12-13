@@ -15,6 +15,7 @@ from fulltext.util import run
 
 SERVER_TIMEOUT = 3
 SERVER_PORT = 2002
+TRAVIS = bool(os.environ.get('TRAVIS'))
 
 
 def connect_to_server(timeout):
@@ -53,6 +54,9 @@ class Backend(BaseBackend):
 
     def check(self, title):
         assert_cmd_exists('unoconv')
+        if not TRAVIS:
+            if not os.environ.get('DISPLAY', None):
+                raise RuntimeError("requires an X server running")
 
     def setup(self):
         self.html_backend = HTMLBackend(
