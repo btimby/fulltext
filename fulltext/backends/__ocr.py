@@ -35,7 +35,8 @@ def read(img, **kargs):
             pass
 
         else:
-            rotate = EXIF_ROTATION.get(exif.get(EXIF_ORIENTATION, None), 0)
+            if exif is not None:
+                rotate = EXIF_ROTATION.get(exif.get(EXIF_ORIENTATION, None), 0)
 
     if rotate:
         im = im.rotate(rotate)
