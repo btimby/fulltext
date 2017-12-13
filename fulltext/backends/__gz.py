@@ -1,4 +1,6 @@
 import gzip
+import tempfile
+import shutil
 from os.path import splitext, basename
 
 from fulltext import get, backend_from_fname, backend_from_fobj
@@ -33,6 +35,14 @@ class Backend(BaseBackend):
                 backend = backend_from_fname(orig_name)
             else:
                 backend = backend_from_fobj(f)
-            return get(f, backend=backend)
+
+            if splitext(orig_name)[1].lower() == '.pdf':
+                # See: https://github.com/btimby/fulltext/issues/56
+                with tempfile.NamedTemporaryFile(suffix='.pdf') as t:
+                    shutil.copyfileobj(f, t)
+                    t.flush()
+                    return get(t.name, backend=backend)
+            else:
+                return get(f, backend=backend)
 
     handle_path = handle_fobj

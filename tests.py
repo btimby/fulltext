@@ -380,10 +380,10 @@ class HwpTestCase(BaseTestCase, PathAndFileTests):
 class GzTestCase(BaseTestCase, PathAndFileTests):
     ext = "gz"
 
-    # TODO: pdf backend can't handle file objects
-    # def test_pdf(self):
-    #     text = fulltext.get("files/gz/test.pdf.gz")
-    #     self.assertMultiLineEqual(self.text, text)
+    def test_pdf(self):
+        # See: https://github.com/btimby/fulltext/issues/56
+        text = fulltext.get("files/gz/test.pdf.gz")
+        self.assertMultiLineEqual(self.text, text)
 
     def test_csv(self):
         text = fulltext.get("files/gz/test.csv.gz")
