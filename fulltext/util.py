@@ -1,3 +1,4 @@
+import contextlib
 import errno
 import logging
 import os
@@ -5,6 +6,8 @@ import subprocess
 import warnings
 import sys
 import functools
+import tempfile
+import shutil
 
 from os.path import dirname, abspath
 from os.path import join as pathjoin
@@ -21,6 +24,7 @@ LOGGER.addHandler(logging.NullHandler())
 # _MEIPASS attribute of sys module, otherwise, we can simply use the parent of
 # the directory containing this source file.
 BASE_PATH = getattr(sys, '_MEIPASS', dirname(dirname(abspath(__file__))))
+TEMPDIR = os.environ.get('FULLTEXT_TEMP', tempfile.gettempdir())
 
 
 class BackendError(AssertionError):
@@ -240,3 +244,12 @@ def exiftool_title(path, encoding, encoding_error):
         out = bout.decode(encoding, encoding_error)
         if out:
             return out[out.find(':') + 1:].strip() or None
+
+
+@contextlib.contextmanager
+def fobj_to_tempfile(f, suffix=''):
+    # See: https://github.com/btimby/fulltext/issues/56
+    with tempfile.NamedTemporaryFile(dir=TEMPDIR, suffix=suffix) as t:
+        shutil.copyfileobj(f, t)
+        t.flush()
+        yield t.name

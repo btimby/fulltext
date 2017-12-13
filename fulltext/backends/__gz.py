@@ -1,11 +1,10 @@
 import gzip
-import tempfile
-import shutil
 from os.path import splitext, basename
 
 from fulltext import get, backend_from_fname, backend_from_fobj
 from fulltext import BaseBackend
 from fulltext.util import is_file_path
+from fulltext.util import fobj_to_tempfile
 
 
 def orig_fname(s):
@@ -35,14 +34,10 @@ class Backend(BaseBackend):
                 backend = backend_from_fname(orig_name)
             else:
                 backend = backend_from_fobj(f)
-
-            if splitext(orig_name)[1].lower() == '.pdf':
-                # See: https://github.com/btimby/fulltext/issues/56
-                with tempfile.NamedTemporaryFile(suffix='.pdf') as t:
-                    shutil.copyfileobj(f, t)
-                    t.flush()
-                    return get(t.name, backend=backend)
-            else:
-                return get(f, backend=backend)
+            # This sucks but apparently some backends are not able to
+            # deal with gzip.GzipFile instances so we copy the file on
+            # disk. See: https://github.com/btimby/fulltext/issues/56
+            with fobj_to_tempfile(f, suffix=splitext(orig_name)[1]) as fname:
+                return get(fname, backend=backend)
 
     handle_path = handle_fobj

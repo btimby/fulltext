@@ -3,7 +3,6 @@ from __future__ import absolute_import
 import re
 import logging
 import os
-import shutil
 import tempfile
 import mimetypes
 import sys
@@ -15,6 +14,7 @@ from six import PY3
 from fulltext.util import warn
 from fulltext.util import magic
 from fulltext.util import is_file_path
+from fulltext.util import fobj_to_tempfile
 
 
 __all__ = ["get", "register_backend"]
@@ -24,7 +24,6 @@ __all__ = ["get", "register_backend"]
 
 ENCODING = sys.getfilesystemencoding()
 ENCODING_ERRORS = "strict"
-TEMPDIR = os.environ.get('FULLTEXT_TEMP', tempfile.gettempdir())
 DEFAULT_MIME = 'application/octet-stream'
 
 # --- others
@@ -295,10 +294,8 @@ def handle_fobj(backend, f, **kwargs):
         if 'ext' in kwargs:
             ext = '.' + kwargs['ext']
 
-        with tempfile.NamedTemporaryFile(dir=TEMPDIR, suffix=ext) as t:
-            shutil.copyfileobj(f, t)
-            t.flush()
-            return backend.handle_path(t.name, **kwargs)
+        with fobj_to_tempfile(f, suffix=ext) as fname:
+            return backend.handle_path(fname, **kwargs)
 
     else:
         raise AssertionError(
