@@ -7,6 +7,7 @@ from __future__ import absolute_import, print_function
 import os
 import sys
 import logging
+import traceback
 
 from docopt import docopt
 
@@ -15,6 +16,8 @@ from fulltext.util import hilite
 
 
 HERE = os.path.abspath(os.path.dirname(__file__))
+LOGGER = logging.getLogger(__file__)
+LOGGER.addHandler(logging.NullHandler())
 
 
 def _handle_open(path):
@@ -50,7 +53,10 @@ def check_backends(title):
             if hasattr(inst, "check"):
                 inst.check(title=title)
         except Exception as err:
-            errs.append((mod.__name__, str(err)))
+            if LOGGER.isEnabledFor(logging.DEBUG):
+                errs.append((mod.__name__, traceback.format_exc()))
+            else:
+                errs.append((mod.__name__, str(err)))
     if errs:
         for mod, err in errs:
             msg = hilite("%s: %s" % (mod, err), ok=False)
@@ -76,7 +82,7 @@ def main(args=sys.argv[1:]):
 
     Usage:
         fulltext extract [-v] [-f] <path>...
-        fulltext check [-t]
+        fulltext check [-v] [-t]
 
     Options:
         -f, --file           Open file first.
