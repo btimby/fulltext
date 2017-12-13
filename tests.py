@@ -320,6 +320,9 @@ class XmlTestCase(BaseTestCase, PathAndFileTests):
     ext = "xml"
 
 
+# (sadly) an X server is required.
+@unittest.skipIf(not os.environ.get('DISPLAY', None),
+                 "X server not running")
 class PptTestCase(BaseTestCase, PathAndFileTests):
     ext = "ppt"
 

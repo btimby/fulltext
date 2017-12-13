@@ -17,25 +17,36 @@ SERVER_TIMEOUT = 3
 SERVER_PORT = 2002
 
 
+def connect_to_server(timeout):
+    if not timeout:
+        with contextlib.closing(socket.socket()) as s:
+            return s.connect(("localhost", SERVER_PORT))
+
+    stop_at = time.time() + timeout
+    while time.time() < stop_at:
+        with contextlib.closing(socket.socket()) as s:
+            try:
+                return s.connect(("localhost", SERVER_PORT))
+            except socket.error:
+                continue
+    raise ValueError("timed out (can't connect to unoconv server)")
+
+
 @contextlib.contextmanager
 def get_server():
-    def connect():
-        stop_at = time.time() + SERVER_TIMEOUT
-        while time.time() < stop_at:
-            with contextlib.closing(socket.socket()) as s:
-                try:
-                    return s.connect(("localhost", SERVER_PORT))
-                except socket.error:
-                    continue
-        raise ValueError("timed out (can't connect to unoconv server)")
-
-    proc = subprocess.Popen("unoconv -l", shell=True)
     try:
-        connect()
+        # The listener may already be running.
+        connect_to_server(timeout=None)
         yield
-    finally:
-        proc.terminate()
-        proc.wait()
+    except socket.error:
+        # If not we start it, then connect() with a timeout.
+        proc = subprocess.Popen("unoconv -l", shell=True)
+        try:
+            connect_to_server(SERVER_TIMEOUT)
+            yield
+        finally:
+            proc.terminate()
+            proc.wait()
 
 
 class Backend(BaseBackend):
