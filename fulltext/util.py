@@ -123,7 +123,7 @@ def run(*cmd, **kwargs):
 
 
 def warn(msg):
-    warnings.warn(msg, UserWarning)
+    warnings.warn(msg, UserWarning, stacklevel=2)
     LOGGER.warning(msg)
 
 
