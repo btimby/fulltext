@@ -19,12 +19,14 @@ class Backend(BaseBackend):
             self.encoding, self.encoding_errors, self.kwargs)
 
     def handle_path(self, path):
-        tfile = tempfile.mkdtemp(suffix='.html')
-        run("unoconv", "-d", "presentation", "-o", tfile, "-f", "html", path)
+        fd, tfile = tempfile.mkstemp(suffix='.html')
         try:
+            run("unoconv", "-d", "presentation",
+                "-o", tfile, "-f", "html", path)
             with open(tfile, 'rb') as f:
                 return self.html_backend.handle_fobj(f)
         finally:
+            os.close(fd)
             os.remove(tfile)
 
     def handle_title(self, path):
