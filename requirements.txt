@@ -12,5 +12,6 @@ pyflakes
 python-magic
 ebooklib
 contextlib2
+mock
 git+https://github.com/btimby/mobi-python.git#egg=mobi
 https://github.com/mattgwwalker/msg-extractor/zipball/master

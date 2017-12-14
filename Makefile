@@ -2,6 +2,7 @@ PYTHON = python
 
 # In not in a virtualenv, add --user options for install commands.
 INSTALL_OPTS = `$(PYTHON) -c "import sys; print('' if hasattr(sys, 'real_prefix') else '--user')"`
+# Note: modeled after Ubuntu 16.04.
 SYSDEPS = \
 	antiword \
 	libjpeg-dev \
@@ -10,6 +11,14 @@ SYSDEPS = \
 	unrtf \
 	pstotext \
 	libimage-exiftool-perl \
+	python-setuptools \
+	python3-setuptools \
+	python-dev \
+	python3-dev \
+	python-pip \
+	python3-pip \
+	python-magic \
+	python3-magic \
 	unoconv
 
 TEST_PREFIX = PYTHONWARNINGS=all FULLTEXT_TESTING=1
@@ -17,6 +26,11 @@ TEST_PREFIX = PYTHONWARNINGS=all FULLTEXT_TESTING=1
 test:  ## Run tests.
 	${MAKE} install-git-hooks
 	$(TEST_PREFIX) $(PYTHON) tests.py
+
+ci:  ## Run CI tests.
+	${MAKE} sysdeps
+	${MAKE} pydeps
+	${MAKE} test
 
 check:  ## Run linters.
 	${MAKE} install-git-hooks
@@ -29,6 +43,7 @@ install:  ## Install this package as current user in "edit" mode.
 	PYTHONWARNINGS=all $(PYTHON) setup.py develop $(INSTALL_OPTS)
 
 pydeps:  ## Install third party python libs.
+	$(PYTHON) -m pip install $(INSTALL_OPTS) --upgrade setuptools pip
 	$(PYTHON) -m pip install $(INSTALL_OPTS) --upgrade -r requirements.txt
 	$(PYTHON) -m pip install $(INSTALL_OPTS) --upgrade flake8
 
