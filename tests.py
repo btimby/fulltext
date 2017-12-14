@@ -714,6 +714,7 @@ class TestUnicodeXlsx(BaseTestCase, TestUnicodeBase):
         pass
 
 
+@unittest.skipIf(TRAVIS, "no X server on travis")
 class TestUnicodePpt(BaseTestCase, TestUnicodeBase):
     ext = "ppt"
 
@@ -801,6 +802,7 @@ class TestTitle(BaseTestCase):
         self.assertEqual(
             fulltext.get_with_title(fname)[1], 'JQuery Hello World')
 
+    @unittest.skipIf(TRAVIS, "no X server on travis")
     def test_ppt(self):
         fname = "files/others/test.ppt"
         self.assertEqual(
