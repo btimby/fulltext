@@ -320,6 +320,11 @@ class XmlTestCase(BaseTestCase, PathAndFileTests):
     ext = "xml"
 
 
+@unittest.skipIf(TRAVIS, "no X server on travis")
+class PptTestCase(BaseTestCase, PathAndFileTests):
+    ext = "ppt"
+
+
 class ZipTestCase(BaseTestCase, PathAndFileTests):
     ext = "zip"
 
@@ -709,6 +714,11 @@ class TestUnicodeXlsx(BaseTestCase, TestUnicodeBase):
         pass
 
 
+@unittest.skipIf(TRAVIS, "no X server on travis")
+class TestUnicodePpt(BaseTestCase, TestUnicodeBase):
+    ext = "ppt"
+
+
 class TestUnicodePptx(BaseTestCase, TestUnicodeBase):
     ext = "pptx"
 
@@ -791,6 +801,12 @@ class TestTitle(BaseTestCase):
         fname = "files/others/jquery.epub"
         self.assertEqual(
             fulltext.get_with_title(fname)[1], 'JQuery Hello World')
+
+    @unittest.skipIf(TRAVIS, "no X server on travis")
+    def test_ppt(self):
+        fname = "files/others/test.ppt"
+        self.assertEqual(
+            fulltext.get_with_title(fname)[1], 'lorem ipsum')
 
     def test_pptx(self):
         fname = "files/others/test.pptx"
