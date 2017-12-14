@@ -15,7 +15,6 @@ from fulltext.util import run
 
 SERVER_TIMEOUT = 3
 SERVER_PORT = 2002
-TRAVIS = bool(os.environ.get('TRAVIS'))
 
 
 def connect_to_server(timeout):
