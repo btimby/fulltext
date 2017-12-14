@@ -54,9 +54,6 @@ class Backend(BaseBackend):
 
     def check(self, title):
         assert_cmd_exists('unoconv')
-        if not TRAVIS:
-            if not os.environ.get('DISPLAY', None):
-                raise RuntimeError("requires an X server running")
 
     def setup(self):
         self.html_backend = HTMLBackend(
