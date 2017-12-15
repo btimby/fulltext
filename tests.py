@@ -324,6 +324,10 @@ class ZipTestCase(BaseTestCase, PathAndFileTests):
     ext = "zip"
 
 
+class RarTestCase(BaseTestCase, PathAndFileTests):
+    ext = "rar"
+
+
 class RtfTestCase(BaseTestCase, PathAndFileTests):
     ext = "rtf"
 

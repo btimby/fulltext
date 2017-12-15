@@ -76,6 +76,11 @@ register_backend(
     'application/zip',
     'fulltext.backends.__zip')
 
+register_backend(
+    'application/x-rar-compressed',
+    'fulltext.backends.__rar',
+    extensions=['.rar'])
+
 for mt in ("text/xml", "application/xml", "application/x-xml"):
     register_backend(
         mt,
