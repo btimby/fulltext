@@ -9,13 +9,24 @@ SYSDEPS = \
 	tesseract-ocr abiword \
 	unrtf \
 	pstotext \
-	libimage-exiftool-perl
+	libimage-exiftool-perl \
+	python-setuptools \
+	python3-setuptools \
+	python-dev \
+	python3-dev \
+	python-pip \
+	python3-pip
 
 TEST_PREFIX = PYTHONWARNINGS=all FULLTEXT_TESTING=1
 
 test:  ## Run tests.
 	${MAKE} install-git-hooks
 	$(TEST_PREFIX) $(PYTHON) tests.py
+
++ci:  ## Run CI tests.
+	${MAKE} sysdeps
+	${MAKE} pydeps
+	${MAKE} test
 
 check:  ## Run linters.
 	${MAKE} install-git-hooks
