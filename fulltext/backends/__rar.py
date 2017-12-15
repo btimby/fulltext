@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 import logging
+import tempfile
 
 import rarfile
 from six import StringIO
@@ -7,12 +8,24 @@ from contextlib2 import ExitStack
 
 from fulltext import BaseBackend, get
 
-
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
+RARFILE_DATA = \
+    b'Rar!\x1a\x07\x00\xcf\x90s\x00\x00\r\x00\x00\x00\x00\x00\x00\x00l\x18t ' \
+    b'\x80)\x00\x17\x00\x00\x00\x0c\x00\x00\x00\x03-;\x08\xaf/\x83\x8fK' \
+    b'\x1d3\t\x00\xb4\x81\x00\x00hello.txt\x08\x0c\xcb\xec\xcfw\x8a{\x85' \
+    b'\x07\x08\x14\x1co\xfb\x7f\xfd\xbbA[^eD\xc4={\x00@\x07\x00'
 
 
 class Backend(BaseBackend):
+
+    def check(self, title):
+        # If "unrar" sysdep is not installed this will fail.
+        with tempfile.NamedTemporaryFile() as f:
+            f.write(RARFILE_DATA)
+            f.flush()
+            f.seek(0)
+            rarfile.RarFile(f).close()
 
     def handle_fobj(self, f):
         with ExitStack() as stack:
