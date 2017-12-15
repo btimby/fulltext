@@ -7,6 +7,8 @@ from six import StringIO
 from contextlib2 import ExitStack
 
 from fulltext import BaseBackend, get
+from fulltext.util import memoize
+
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
@@ -19,7 +21,9 @@ RARFILE_DATA = \
 
 class Backend(BaseBackend):
 
-    def check(self, title):
+    @staticmethod
+    @memoize
+    def check(title):
         # If "unrar" sysdep is not installed this will fail.
         with tempfile.NamedTemporaryFile() as f:
             f.write(RARFILE_DATA)
