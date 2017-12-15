@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+import errno
 import re
 import logging
 import os
@@ -326,13 +327,30 @@ def backend_from_fname(name):
     ext = splitext(name)[1]
     try:
         mime = EXTS_TO_MIMETYPES[ext]
+
     except KeyError:
-        with open(name, 'rb') as f:
-            return backend_from_fobj(f)
+        try:
+            f = open(name, 'rb')
+
+        except IOError as e:
+            # The file may not exist, we are being asked to determine it's type
+            # from it's name. Other errors are unexpected.
+            if e.errno != errno.ENOENT:
+                raise
+
+            # We will have to fall back upon the default backend.
+            warn("don't know how to handle %r mime; assume %r" % (
+                mime, DEFAULT_MIME))
+            mod_name = MIMETYPE_TO_BACKENDS[DEFAULT_MIME]
+        else:
+            with f:
+                return backend_from_fobj(f)
+
     else:
         mod_name = MIMETYPE_TO_BACKENDS[mime]
-        mod = import_mod(mod_name)
-        return mod
+
+    mod = import_mod(mod_name)
+    return mod
 
 
 def backend_from_fobj(f):
