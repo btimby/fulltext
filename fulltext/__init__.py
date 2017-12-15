@@ -339,8 +339,8 @@ def backend_from_fname(name):
                 raise
 
             # We will have to fall back upon the default backend.
-            warn("don't know how to handle %r mime; assume %r" % (
-                mime, DEFAULT_MIME))
+            warn("don't know how to handle %r; assume %r" % (
+                name, DEFAULT_MIME))
             mod_name = MIMETYPE_TO_BACKENDS[DEFAULT_MIME]
         else:
             with f:
