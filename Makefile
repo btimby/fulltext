@@ -10,6 +10,7 @@ SYSDEPS = \
 	unrtf \
 	pstotext \
 	libimage-exiftool-perl \
+	unrar \
 	python-setuptools \
 	python3-setuptools \
 	python-dev \
@@ -23,16 +24,14 @@ test:  ## Run tests.
 	${MAKE} install-git-hooks
 	$(TEST_PREFIX) $(PYTHON) tests.py
 
-+ci:  ## Run CI tests.
+ci:  ## Run CI tests.
 	${MAKE} sysdeps
 	${MAKE} pydeps
 	${MAKE} test
 
-check:  ## Run linters.
+lint:  ## Run linters.
 	${MAKE} install-git-hooks
 	@git ls-files | grep \\.py$ | xargs $(PYTHON) -m flake8
-
-lint: check
 
 install:  ## Install this package as current user in "edit" mode.
 	${MAKE} install-git-hooks
