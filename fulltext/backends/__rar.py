@@ -25,11 +25,17 @@ class Backend(BaseBackend):
     @memoize
     def check(title):
         # If "unrar" sysdep is not installed this will fail.
-        with tempfile.NamedTemporaryFile() as f:
-            f.write(RARFILE_DATA)
-            f.flush()
-            f.seek(0)
-            rarfile.RarFile(f).close()
+        with ExitStack() as stack:
+            tfile = stack.enter_context(
+                tempfile.NamedTemporaryFile(suffix='.rar'))
+            tfile.write(RARFILE_DATA)
+            tfile.flush()
+            tfile.seek(0)
+
+            archive = stack.enter_context(rarfile.RarFile(tfile))
+            for f in archive.infolist():
+                rf = stack.enter_context(archive.open(f))
+                rf.read()
 
     def handle_fobj(self, f):
         with ExitStack() as stack:
@@ -37,10 +43,12 @@ class Backend(BaseBackend):
             archive = stack.enter_context(rarfile.RarFile(f))
             for f in archive.infolist():
                 LOGGER.debug("extracting %s" % f.filename)
+
                 rf = stack.enter_context(archive.open(f))
                 ret = get(rf, name=f.filename, encoding=self.encoding,
                           encoding_errors=self.encoding_errors)
                 text.write(ret)
+
             return text.getvalue()
 
     handle_path = handle_fobj
