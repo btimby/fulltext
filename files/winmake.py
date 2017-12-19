@@ -28,23 +28,6 @@ PYTHON = os.getenv('PYTHON', sys.executable)
 TSCRIPT = os.getenv('TSCRIPT', 'tests.py')
 GET_PIP_URL = "https://bootstrap.pypa.io/get-pip.py"
 PY3 = sys.version_info[0] == 3
-DEPS = [
-    "coverage",
-    "flake8",
-    "ipaddress",
-    "mock",
-    "nose",
-    "pdbpp",
-    "perf",
-    "pip",
-    "pypiwin32",
-    "pyreadline",
-    "setuptools",
-    "unittest2",
-    "wheel",
-    "wmi",
-    "requests"
-]
 _cmds = {}
 if PY3:
     basestring = str
