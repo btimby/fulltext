@@ -17,7 +17,7 @@ import textwrap
 import warnings
 
 import fulltext
-from fulltext.util import ShellError
+from fulltext.util import ShellError, is_windows
 from fulltext.compat import which
 
 from six import PY3
@@ -43,6 +43,7 @@ TEXT_WITH_NEWLINES = u"Lorem ipsum\ndolor sit amet, consectetur adipiscing e" \
                      u"m et, aliquam quis metus. Vivamus\neget purus diam."
 
 TEXT = TEXT_WITH_NEWLINES.replace('\n', ' ')
+WINDOWS = is_windows()
 
 
 # ===================================================================
@@ -180,7 +181,8 @@ class TestCLI(BaseTestCase):
             "%s -m fulltext extract %s" % (sys.executable, "files/test.txt"),
             shell=True)
 
-    def test_test(self):
+    @unittest.skipIf(WINDOWS, "fails on Windows")
+    def test_check(self):
         subprocess.check_output(
             "%s -m fulltext -t check" % sys.executable, shell=True)
 
@@ -292,6 +294,7 @@ class OdtTestCase(BaseTestCase, PathAndFileTests):
     ext = 'odt'
 
 
+@unittest.skipIf(WINDOWS, "not supported on Windows")
 class DocTestCase(BaseTestCase, PathAndFileTests):
     ext = "doc"
 
@@ -324,6 +327,7 @@ class ZipTestCase(BaseTestCase, PathAndFileTests):
     ext = "zip"
 
 
+@unittest.skipIf(WINDOWS, "not supported on Windows")
 class RtfTestCase(BaseTestCase, PathAndFileTests):
     ext = "rtf"
 
@@ -344,6 +348,7 @@ class PsvTestCase(BaseTestCase, PathAndFileTests):
     mime = 'text/psv'
 
 
+@unittest.skipIf(WINDOWS, "not supported on Windows")
 class PngTestCase(BaseTestCase, PathAndFileTests):
     ext = "png"
 
@@ -352,6 +357,7 @@ class EpubTestCase(BaseTestCase, PathAndFileTests):
     ext = "epub"
 
 
+@unittest.skipIf(WINDOWS, "not supported on Windows")
 class PsTestCase(BaseTestCase, PathAndFileTests):
     ext = "ps"
 
@@ -399,6 +405,7 @@ class GzTestCase(BaseTestCase, PathAndFileTests):
 
 class FilesTestCase(BaseTestCase):
 
+    @unittest.skipIf(WINDOWS, "not supported on Windows")
     def test_old_doc_file(self):
         "Antiword does not support older Word documents."
         with open('files/test.old.doc', 'rb') as f:
@@ -406,6 +413,7 @@ class FilesTestCase(BaseTestCase):
             self.assertStartsWith('eZ-Audit', text)
             self.assertIsInstance(text, u"".__class__)
 
+    @unittest.skipIf(WINDOWS, "not supported on Windows")
     def test_old_doc_path(self):
         "Antiword does not support older Word documents."
         text = fulltext.get('files/test.old.doc', backend='doc')
@@ -423,6 +431,7 @@ class TestPickups(BaseTestCase):
 
     # --- by extension
 
+    @unittest.skipIf(WINDOWS, "not supported on Windows")
     def test_by_ext(self):
         fname = self.touch('testfn.doc')
         with mock.patch('fulltext.handle_path', return_value="") as m:
@@ -466,6 +475,7 @@ class TestPickups(BaseTestCase):
 
     # -- by name opt
 
+    @unittest.skipIf(WINDOWS, "not supported on Windows")
     def test_by_name(self):
         fname = self.touch('testfn')
         with mock.patch('fulltext.handle_path', return_value="") as m:
@@ -521,6 +531,7 @@ class TestFileObj(BaseTestCase):
             klass = m.call_args[0][0]
             self.assertEqual(klass.__module__, 'fulltext.backends.__pdf')
 
+    @unittest.skipIf(WINDOWS, "not supported on Windows")
     def test_fobj_offset(self):
         # Make sure offset is unaltered after guessing mime type.
         f = self.touch_fobj(content=b"hello world")
@@ -544,10 +555,12 @@ class TestGuessingFromFileContent(BaseTestCase):
     from its content.
     """
 
+    @unittest.skipIf(WINDOWS, "not supported on Windows")
     def test_magic_is_installed(self):
         from fulltext.util import magic
         self.assertIsNotNone(magic)
 
+    @unittest.skipIf(WINDOWS, "not supported on Windows")
     def test_pdf(self):
         fname = "file-noext"
         self.touch(fname, content=open('files/test.pdf', 'rb').read())
@@ -556,6 +569,7 @@ class TestGuessingFromFileContent(BaseTestCase):
             klass = m.call_args[0][0]
             self.assertEqual(klass.__module__, 'fulltext.backends.__pdf')
 
+    @unittest.skipIf(WINDOWS, "not supported on Windows")
     def test_html(self):
         fname = "file-noext"
         self.touch(fname, content=open('files/test.html', 'rb').read())
@@ -599,6 +613,7 @@ class TestEncodingGeneric(BaseTestCase):
             fulltext.ENCODING_ERRORS = errors
 
 
+@unittest.skipIf(WINDOWS, "not supported on Windows")
 class TestUnicodeBase(object):
     ext = None
     italian = u"ciao bella àèìòù "
@@ -662,6 +677,7 @@ class TestUnicodeOdt(BaseTestCase, TestUnicodeBase):
 # ps backend uses `pstotext` CLI tool, which does not correctly
 # handle unicode. Just make sure we don't crash if passed the
 # error handler.
+@unittest.skipIf(WINDOWS, "not supported on Windows")
 class TestUnicodePs(BaseTestCase):
 
     def test_italian(self):
@@ -679,6 +695,7 @@ class TestUnicodeHtml(BaseTestCase, TestUnicodeBase):
 # backend uses `unrtf` CLI tool, which does not correctly
 # handle unicode. Just make sure we don't crash if passed the
 # error handler.
+@unittest.skipIf(WINDOWS, "not supported on Windows")
 class TestUnicodeRtf(BaseTestCase):
     ext = "rtf"
 
@@ -759,6 +776,7 @@ class TestUnicodeMbox(BaseTestCase, TestUnicodeBase):
 # ===================================================================
 
 
+@unittest.skipIf(WINDOWS, "not supported on Windows")
 class TestTitle(BaseTestCase):
 
     def test_html(self):
