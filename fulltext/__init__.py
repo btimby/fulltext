@@ -307,10 +307,13 @@ def handle_fobj(backend, f, **kwargs):
         if 'ext' in kwargs:
             ext = '.' + kwargs['ext']
 
-        with tempfile.NamedTemporaryFile(dir=TEMPDIR, suffix=ext) as t:
+        with tempfile.NamedTemporaryFile(
+                dir=TEMPDIR, suffix=ext, delete=False) as t:
             shutil.copyfileobj(f, t)
-            t.flush()
+        try:
             return backend.handle_path(t.name, **kwargs)
+        finally:
+            os.remove(t.name)
 
     else:
         raise AssertionError(
