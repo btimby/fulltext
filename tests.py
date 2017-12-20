@@ -585,7 +585,8 @@ class TestUtils(BaseTestCase):
         from fulltext.util import is_file_path
         assert is_file_path('foo')
         assert is_file_path(b'foo')
-        assert not is_file_path(open(__file__))
+        with open(__file__) as f:
+            assert not is_file_path(f)
 
 
 # ===================================================================
