@@ -44,6 +44,7 @@ TEXT_WITH_NEWLINES = u"Lorem ipsum\ndolor sit amet, consectetur adipiscing e" \
 
 TEXT = TEXT_WITH_NEWLINES.replace('\n', ' ')
 WINDOWS = is_windows()
+APPVEYOR = bool(os.environ.get('APPVEYOR'))
 
 
 # ===================================================================
@@ -137,7 +138,7 @@ class FullTextTestCase(BaseTestCase):
         # In this case we hit the pdf backend which runs a command, the
         # command fails because the file does not exist resulting in
         # ShellError.
-        self.assertRaises(ShellError, fulltext.get, 'non-existent-file.pdf')
+        self.assertRaises(IOError, fulltext.get, 'non-existent-file.txt')
 
     def test_unknown_default(self):
         "Ensure unknown file type returns default instead of exception."
@@ -499,9 +500,9 @@ class TestPickups(BaseTestCase):
         # Assert file ext is ignored if backend opt is used.
         fname = self.touch('testfn.doc')
         with mock.patch('fulltext.handle_path', return_value="") as m:
-            fulltext.get(fname, backend='pdf')
+            fulltext.get(fname, backend='html')
             klass = m.call_args[0][0]
-            self.assertEqual(klass.__module__, 'fulltext.backends.__pdf')
+            self.assertEqual(klass.__module__, 'fulltext.backends.__html')
 
     def test_by_invalid_backend(self):
         # Assert file ext is ignored if backend opt is used.
@@ -525,11 +526,11 @@ class TestFileObj(BaseTestCase):
     def test_name_attr(self):
         # Make sure that fulltext attempts to determine file name
         # from "name" attr of the file obj.
-        f = tempfile.NamedTemporaryFile(suffix='.pdf')
+        f = tempfile.NamedTemporaryFile(suffix='.html')
         with mock.patch('fulltext.handle_fobj', return_value="") as m:
             fulltext.get(f)
             klass = m.call_args[0][0]
-            self.assertEqual(klass.__module__, 'fulltext.backends.__pdf')
+            self.assertEqual(klass.__module__, 'fulltext.backends.__html')
 
     @unittest.skipIf(WINDOWS, "not supported on Windows")
     def test_fobj_offset(self):
