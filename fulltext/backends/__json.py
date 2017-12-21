@@ -1,5 +1,6 @@
 import json
 import sys
+import re
 
 from six import StringIO
 from six import string_types
@@ -7,6 +8,7 @@ from six import integer_types
 from fulltext import BaseBackend
 
 
+STRIP_JSON = re.compile(r'[{}\'":\[\] ]+')
 SCALAR_TYPES = string_types + integer_types
 ENCODING = sys.getfilesystemencoding()
 
@@ -31,11 +33,19 @@ def to_text(text, obj):
 class Backend(BaseBackend):
 
     def handle_fobj(self, f):
-        text, data = StringIO(), f.read()
+        text = StringIO()
+        data = self.decode(f.read())
 
-        # TODO: catch exception and attempt to use regex to strip formatting.
-        obj = json.loads(self.decode(data))
+        try:
+            obj = json.loads(data)
 
-        to_text(text, obj)
+        except json.JSONDecodeError:
+            # If the JSON is invalid, try to cheaply strip out the JSON-related
+            # chars. In this case we don't need to recursively walk the object
+            # since it is just a stripped string.
+            text.write(STRIP_JSON.sub(' ', data))
+
+        else:
+            to_text(text, obj)
 
         return text.getvalue()
