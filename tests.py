@@ -17,7 +17,7 @@ import textwrap
 import warnings
 
 import fulltext
-from fulltext.util import ShellError, is_windows
+from fulltext.util import is_windows
 from fulltext.compat import which
 
 from six import PY3
