@@ -75,7 +75,8 @@ def register_backend(mimetype, module, extensions=None):
 
 register_backend(
     'application/zip',
-    'fulltext.backends.__zip')
+    'fulltext.backends.__zip',
+    extensions=[".zip"])
 
 for mt in ("text/xml", "application/xml", "application/x-xml"):
     register_backend(
@@ -90,7 +91,8 @@ register_backend(
 
 register_backend(
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    'fulltext.backends.__xlsx')
+    'fulltext.backends.__xlsx',
+    extensions=['.xlsx'])
 
 register_backend(
     'text/plain',
@@ -99,23 +101,28 @@ register_backend(
 
 register_backend(
     'application/rtf',
-    'fulltext.backends.__rtf')
+    'fulltext.backends.__rtf',
+    extensions=['.rtf'])
 
 register_backend(
     'application/vnd.openxmlformats-officedocument.presentationml.presentation',  # NOQA
-    'fulltext.backends.__pptx')
+    'fulltext.backends.__pptx',
+    extensions=['.pptx'])
 
 register_backend(
     'application/pdf',
-    'fulltext.backends.__pdf')
+    'fulltext.backends.__pdf',
+    extensions=['.pdf'])
 
 register_backend(
     'application/vnd.oasis.opendocument.text',
-    'fulltext.backends.__odt')
+    'fulltext.backends.__odt',
+    extensions=['.odt'])
 
 register_backend(
     'application/vnd.oasis.opendocument.spreadsheet',
-    'fulltext.backends.__odt')
+    'fulltext.backends.__odt',
+    extensions=['.ods'])
 
 # images
 register_backend(
@@ -130,15 +137,18 @@ register_backend(
 
 register_backend(
     'image/png',
-    'fulltext.backends.__ocr')
+    'fulltext.backends.__ocr',
+    extensions=['.png'])
 
 register_backend(
     'image/gif',
-    'fulltext.backends.__ocr')
+    'fulltext.backends.__ocr',
+    extensions=['.gif'])
 
 register_backend(
     'application/x-hwp',
-    'fulltext.backends.__hwp')
+    'fulltext.backends.__hwp',
+    extensions=['.hwp'])
 
 for mt in ('text/html', 'application/html', 'text/xhtml'):
     register_backend(
@@ -148,7 +158,8 @@ for mt in ('text/html', 'application/html', 'text/xhtml'):
 
 register_backend(
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'fulltext.backends.__docx')
+    'fulltext.backends.__docx',
+    extensions=['.docx'])
 
 register_backend(
     'application/msword',
@@ -296,10 +307,13 @@ def handle_fobj(backend, f, **kwargs):
         if 'ext' in kwargs:
             ext = '.' + kwargs['ext']
 
-        with tempfile.NamedTemporaryFile(dir=TEMPDIR, suffix=ext) as t:
+        with tempfile.NamedTemporaryFile(
+                dir=TEMPDIR, suffix=ext, delete=False) as t:
             shutil.copyfileobj(f, t)
-            t.flush()
+        try:
             return backend.handle_path(t.name, **kwargs)
+        finally:
+            os.remove(t.name)
 
     else:
         raise AssertionError(
