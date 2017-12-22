@@ -12,4 +12,6 @@ pyflakes
 python-magic
 ebooklib
 contextlib2
+mock
+
 https://github.com/mattgwwalker/msg-extractor/zipball/master
