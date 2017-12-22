@@ -5,24 +5,33 @@ import re
 import bs4
 
 from six import StringIO
+from six import PY3
+
+from fulltext import BaseBackend
 
 
-def _visible(elem):
-    if isinstance(elem, (bs4.element.ProcessingInstruction,
-                         bs4.element.Doctype)):
-        return False
+class Backend(BaseBackend):
 
-    elif re.match('<!--.*-->', str(elem.encode('utf8'))):
-        return False
+    def is_visible(self, elem):
+        if isinstance(elem, (bs4.element.ProcessingInstruction,
+                             bs4.element.Doctype)):
+            return False
 
-    return True
+        if not PY3:
+            elem = elem.encode(self.encoding, self.encoding_errors)
+        if re.match('<!--.*-->', elem):
+            return False
 
+        return True
 
-def _get_file(f, **kwargs):
-    text, bs = StringIO(), bs4.BeautifulSoup(f, 'lxml')
+    def handle_fobj(self, f):
+        bdata = f.read()
+        tdata = self.decode(bdata)
+        text, bs = StringIO(), bs4.BeautifulSoup(tdata, 'lxml')
 
-    for elem in filter(_visible, bs.findAll(text=True)):
-        text.write(elem)
-        text.write(u' ')
+        for elem in bs.findAll(text=True):
+            if self.is_visible(elem):
+                text.write(elem)
+                text.write(u' ')
 
-    return text.getvalue()
+        return text.getvalue()

@@ -2,47 +2,54 @@ from __future__ import absolute_import
 
 import logging
 
-from fulltext.util import run, which, ShellError, MissingCommandException, warn
+from fulltext.util import run, ShellError, MissingCommandException
+from fulltext.util import assert_cmd_exists
+from fulltext import BaseBackend
+from fulltext.util import exiftool_title
 
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
 
 
-if which('antiword') is None:
-    warn('CLI tool "antiword" is required for .doc backend.')
+class Backend(BaseBackend):
 
-if which('abiword') is None:
-    warn('CLI tool "abiword" is optional for .doc backend.')
+    def check(self, title):
+        assert_cmd_exists('antiword')
+        assert_cmd_exists('abiword')
+        if title:
+            assert_cmd_exists('exiftool')
 
+    def handle_fobj(self, f):
+        try:
+            return self.decode(run('antiword', '-', stdin=f))
+        except ShellError as e:
+            if b'not a Word Document' not in e.stderr:
+                raise
+            LOGGER.warning('.doc file unsupported format, trying abiword')
+        except MissingCommandException:
+            LOGGER.warning('CLI tool "antiword" missing, using "abiword"')
 
-def _get_file(f, **kwargs):
-    try:
-        return run('antiword', '-', stdin=f).decode('utf8')
-    except ShellError as e:
-        if b'not a Word Document' not in e.stderr:
-            raise
-        LOGGER.warning('.doc file unsupported format, trying abiword')
-    except MissingCommandException:
-        LOGGER.warning('CLI tool "antiword" missing, using "abiword"')
+        f.seek(0)
 
-    f.seek(0)
+        # Try abiword, slower, but supports more formats.
+        return self.decode(run(
+            'abiword', '--to=txt', '--to-name=fd://1', 'fd://0', stdin=f
+        ))
 
-    # Try abiword, slower, but supports more formats.
-    return run(
-        'abiword', '--to=txt', '--to-name=fd://1', 'fd://0', stdin=f
-    ).decode('utf8')
+    def handle_path(self, path):
+        try:
+            return self.decode(run('antiword', path))
+        except ShellError as e:
+            if b'not a Word Document' not in e.stderr:
+                raise
+            LOGGER.warning('.doc file unsupported format, trying abiword')
+        except MissingCommandException:
+            LOGGER.warning('CLI tool "antiword" missing, using "abiword"')
 
+        # Try abiword, slower, but supports more formats.
+        return self.decode(
+            run('abiword', '--to=txt', '--to-name=fd://1', path))
 
-def _get_path(path, **kwargs):
-    try:
-        return run('antiword', path).decode('utf8')
-    except ShellError as e:
-        if b'not a Word Document' not in e.stderr:
-            raise
-        LOGGER.warning('.doc file unsupported format, trying abiword')
-    except MissingCommandException:
-        LOGGER.warning('CLI tool "antiword" missing, using "abiword"')
-
-    # Try abiword, slower, but supports more formats.
-    return run('abiword', '--to=txt', '--to-name=fd://1', path).decode('utf8')
+    def handle_title(self, f):
+        return exiftool_title(f, self.encoding, self.encoding_errors)

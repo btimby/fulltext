@@ -1,24 +1,27 @@
 import json
 import sys
+import re
 
 from six import StringIO
 from six import string_types
 from six import integer_types
+from fulltext import BaseBackend
 
 
+STRIP_JSON = re.compile(r'[{}\'":\[\] ]+')
 SCALAR_TYPES = string_types + integer_types
 ENCODING = sys.getfilesystemencoding()
 
 
-def _to_text(text, obj):
+def to_text(text, obj):
     if isinstance(obj, dict):
         for key in sorted(obj.keys()):
-            _to_text(text, key)
-            _to_text(text, obj[key])
+            to_text(text, key)
+            to_text(text, obj[key])
 
     elif isinstance(obj, list):
         for item in obj:
-            _to_text(text, item)
+            to_text(text, item)
 
     elif isinstance(obj, SCALAR_TYPES):
         text.write(u'%s ' % obj)
@@ -27,13 +30,22 @@ def _to_text(text, obj):
         raise ValueError('Unrecognized type: %s' % obj.__class__)
 
 
-def _get_file(f, **kwargs):
-    encoding = kwargs.get('encoding', ENCODING)
-    text, data = StringIO(), f.read()
+class Backend(BaseBackend):
 
-    # TODO: catch exception and attempt to use regex to strip formatting.
-    obj = json.loads(data.decode(encoding))
+    def handle_fobj(self, f):
+        text = StringIO()
+        data = self.decode(f.read())
 
-    _to_text(text, obj)
+        try:
+            obj = json.loads(data)
 
-    return text.getvalue()
+        except json.JSONDecodeError:
+            # If the JSON is invalid, try to cheaply strip out the JSON-related
+            # chars. In this case we don't need to recursively walk the object
+            # since it is just a stripped string.
+            text.write(STRIP_JSON.sub(' ', data))
+
+        else:
+            to_text(text, obj)
+
+        return text.getvalue()

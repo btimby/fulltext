@@ -1,5 +1,5 @@
 .. figure:: https://travis-ci.org/btimby/fulltext.png
-   :alt: Travis CI Status
+   :alt: Linux tests (Travis)
    :target: https://travis-ci.org/btimby/fulltext
 
 .. figure:: https://www.smartfile.com/assets/img/smartfile-logo-new.png
@@ -57,7 +57,26 @@ Supported formats
 * ``.json`` - Uses ``json`` Python module.
 * ``.eml`` - Uses ``email`` Python module.
 * ``.mbox`` - Uses ``mailbox`` Python module.
+* ``.msg`` - Uses ``msg-extractor`` Python module (from github).
 * ``.bin`` - Uses Python stdlib modules to emulate ``strings`` CLI tool.
+
+Supported title formats
+-----------------------
+
+Other than extracting text fulltext lib is able to determine title for certain
+file extensions:
+
+* ``.doc`` - Uses ``/bin/exiftool`` CLI tool.
+* ``.docx`` - Uses ``/bin/exiftool`` CLI tool.
+* ``.epub`` - Uses ``/bin/exiftool`` CLI tool.
+* ``.html`` - Uses Python ``BeautifulSoup`` module.
+* ``.odt`` - Uses ``/bin/exiftool`` CLI tool.
+* ``.pdf`` - Uses ``/bin/pdfinfo`` CLI tool.
+* ``.pptx`` - Uses ``/bin/pdfinfo`` CLI tool.
+* ``.ps`` - Uses ``/bin/exiftool`` CLI tool.
+* ``.rtf`` - Uses ``/bin/exiftool`` CLI tool.
+* ``.xls`` - Uses ``/bin/exiftool`` CLI tool.
+* ``.xlsx`` - Uses ``/bin/exiftool`` CLI tool.
 
 Installing tools
 ----------------
@@ -116,37 +135,83 @@ Some backends accept additonal parameters. You can pass these using the
 
     >>> fulltext.get('foo.pdf', kwargs={'option': 'value'})
 
+You can also get the title for certain file formats:
+
+.. code:: python
+
+    >>> fulltext.get_with_title('foo.pdf')
+    ('file content', 'file title')
+
+You can specify the encoding to use (defaults to `sys.getfilesystemencoding()`
++ `strict` error handler):
+
+
+.. code:: python
+
+    >>> fulltext.get('foo.pdf', encoding='latin1', encoding_errors='ignore')
+
 Custom backends
 ---------------
 
-To write a new backend, you need to do two things. First, create a python
-module that implements the interface that Fulltext expects. Second, register
-the new backend against fulltext.
+To write a new backend, you need to do two things.
+First, create a python module within a `Backend` class that implements the
+interface that Fulltext expects.
+Second, register the new backend against fulltext.
 
 .. code:: python
 
     import fulltext
+    from fulltext import BaseBackend
 
-    def _get_file(f, **kwargs):
-        # Extract text from a file-like object. This should be defined when
-        # possible.
-        pass
-
-    def _get_path(path, **kwargs):
-        # Extract text from a path. This should only be defined if it can be
-        # done more efficiently than having Python open() and read() the file,
-        # passing it to _get_file().
-        pass
 
     fulltext.register_backend(
         'application/x-rar-compressed',
         'path.to.this.module',
         ['.rar'])
 
-If you only implement ``_get_file()`` Fulltext will open any paths and pass
-them to that function. Therefore if possible, define at least this function. If
+
+    class Backend(BaseBackend):
+
+        def check(title):
+            # This is invoked before `handle_` functions. In here you can
+            # import third party deps or raise an exception if a CLI tool
+            # is missing. Both conditions will be turned into a warning
+            # on `get()` and bin backend will be used as fallback.
+            pass
+
+        def setup():
+            # This is called before `handle_` functions.
+            pass
+
+        def teardown():
+            # This is called after `handle_` functions, also in case of error.
+            pass
+
+        def handle_fobj(f, **kwargs):
+            # Extract text from a file-like object. This should be defined when
+            # possible.
+
+            # These are the available instance attributes passed to `get()`
+            # function.
+            self.mime
+            self.encoding
+            self.encoding_errors
+            self.kwargs
+
+        def handle_path(path, **kwargs):
+            # Extract text from a path. This should only be defined if it can be
+            # done more efficiently than having Python open() and read() the file,
+            # passing it to handle_fobj().
+            pass
+
+        def handle_title(file_or_path):
+            # Extract title
+            pass
+
+If you only implement ``handle_fobj()`` Fulltext will open any paths and pass
+them to that function. Therefore if possible, define at least this method. If
 working with file-like objects is not possible and you only define
-``_get_path()`` then Fulltext will save any file-like objects to a temporary
+``handle_path()`` then Fulltext will save any file-like objects to a temporary
 file and use that function. Sometimes it is advantageous to define both
 functions in cases when you can do each efficiently.
 

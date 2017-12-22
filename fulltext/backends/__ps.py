@@ -3,22 +3,24 @@
 
 from __future__ import absolute_import
 
-import logging
-
-from fulltext.util import run, which, warn
-
-
-LOGGER = logging.getLogger(__name__)
-LOGGER.addHandler(logging.NullHandler())
+from fulltext.util import run, assert_cmd_exists, exiftool_title
+from fulltext import BaseBackend
 
 
-if which('pstotext') is None:
-    warn('CLI tool "pstotext" is required for .ps backend.')
+class Backend(BaseBackend):
 
+    def check(self, title):
+        assert_cmd_exists('pstotext')
+        if title:
+            assert_cmd_exists('exiftool')
 
-def _get_file(f, **kwargs):
-    return run('pstotext', '-', stdin=f).decode('utf8')
+    def handle_fobj(self, f):
+        out = run('pstotext', '-', stdin=f)
+        return self.decode(out)
 
+    def handle_path(self, path):
+        out = run('pstotext', path)
+        return self.decode(out)
 
-def _get_path(path, **kwargs):
-    return run('pstotext', path).decode('utf8')
+    def handle_title(self, f):
+        return exiftool_title(f, self.encoding, self.encoding_errors)

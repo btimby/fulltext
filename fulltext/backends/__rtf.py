@@ -1,25 +1,26 @@
 from __future__ import absolute_import
 
-import logging
-
-from fulltext.util import run, which, warn
-
-
-LOGGER = logging.getLogger(__name__)
-LOGGER.addHandler(logging.NullHandler())
+from fulltext.util import run, assert_cmd_exists, exiftool_title
+from fulltext import BaseBackend
 
 
-if which('unrtf') is None:
-    warn('CLI tool "unrtf" is required for .rtf backend.')
+class Backend(BaseBackend):
 
+    def check(self, title):
+        assert_cmd_exists('unrtf')
+        if title:
+            assert_cmd_exists('exiftool')
 
-def _strip(text):
-    return text.partition(b'-----------------')[2].decode('utf8')
+    def strip(self, text):
+        return self.decode(text.partition(b'-----------------')[2])
 
+    def handle_fobj(self, f):
+        return self.strip(
+            run('unrtf', '--text', '--nopict', stdin=f))
 
-def _get_file(f, **kwargs):
-    return _strip(run('unrtf', '--text', '--nopict', stdin=f))
+    def handle_path(self, path):
+        return self.strip(
+            run('unrtf', '--text', '--nopict', path))
 
-
-def _get_path(path, **kwargs):
-    return _strip(run('unrtf', '--text', '--nopict', path))
+    def handle_title(self, f):
+        return exiftool_title(f, self.encoding, self.encoding_errors)

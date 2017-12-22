@@ -4,9 +4,15 @@ import os
 import subprocess
 import warnings
 import sys
+import functools
 
-from os.path import isfile, dirname, abspath
+from os.path import dirname, abspath
 from os.path import join as pathjoin
+
+import six
+from six import PY3
+
+from fulltext.compat import which
 
 
 LOGGER = logging.getLogger(__file__)
@@ -32,7 +38,16 @@ class CommandLineError(Exception):
 
 
 class MissingCommandException(CommandLineError):
-    pass
+
+    def __init__(self, cmd, msg=""):
+        self.cmd = cmd
+        self.msg = msg
+
+    def __str__(self):
+        if self.msg:
+            return self.msg
+        else:
+            return "%r CLI tool is not installed" % self.cmd
 
 
 class ShellError(CommandLineError):
@@ -60,26 +75,6 @@ class ShellError(CommandLineError):
         return self.failed_message()
 
 
-# http://stackoverflow.com/questions/377017/test-if-executable-exists-in-python
-def which(program):
-    "Simply checks if a given program exists within PATH and is executable."
-    def _is_exe(fpath):
-        return isfile(fpath) and os.access(fpath, os.X_OK)
-
-    fpath = dirname(program)
-    if fpath:
-        if _is_exe(program):
-            return program
-
-    else:
-        for path in os.environ["PATH"].split(os.pathsep):
-            exe_file = pathjoin(path, program)
-            if _is_exe(exe_file):
-                return exe_file
-
-    return None
-
-
 def run(*cmd, **kwargs):
     stdin = kwargs.get('stdin', None)
     # run a subprocess and put the stdout and stderr on the pipe object
@@ -99,15 +94,32 @@ def run(*cmd, **kwargs):
             # This is equivalent to getting exitcode 127 from sh
             raise MissingCommandException(cmd[0])
 
-    # pipe.wait() ends up hanging on large files. using
-    # pipe.communicate appears to avoid this issue
-    stdout, stderr = pipe.communicate()
+    try:
+        # pipe.wait() ends up hanging on large files. using
+        # pipe.communicate appears to avoid this issue
+        stdout, stderr = pipe.communicate()
+        if stderr:
+            if PY3:
+                warn(stderr.decode(sys.getfilesystemencoding(), "ignore"))
+            else:
+                warn(stderr)
 
-    # if pipe is busted, raise an error (unlike Fabric)
-    if pipe.returncode != 0:
-        raise ShellError(' '.join(cmd), pipe.returncode, stdout, stderr)
+        # if pipe is busted, raise an error (unlike Fabric)
+        if pipe.returncode != 0:
+            raise ShellError(' '.join(cmd), pipe.returncode, stdout, stderr)
 
-    return stdout
+        return stdout
+    finally:
+        if pipe.stdout:
+            pipe.stdout.close()
+        if pipe.stderr:
+            pipe.stderr.close()
+        try:  # Flushing a BufferedWriter may raise an error
+            if pipe.stdin:
+                pipe.stdin.close()
+        finally:
+            # Wait for the process to terminate, to avoid zombies.
+            pipe.wait()
 
 
 def warn(msg):
@@ -149,3 +161,82 @@ else:
     # On linux things are simpler. Linter disabled for next line since we
     # import here for export.
     import magic  # NOQA
+
+
+def assert_cmd_exists(cmd):
+    if not which(cmd):
+        raise MissingCommandException(cmd)
+
+
+def memoize(fun):
+    """A simple memoize decorator for functions supporting (hashable)
+    positional arguments.
+    It also provides a cache_clear() function for clearing the cache:
+
+    >>> @memoize
+    ... def foo()
+    ...     return 1
+        ...
+    >>> foo()
+    1
+    >>> foo.cache_clear()
+    >>>
+    """
+    @functools.wraps(fun)
+    def wrapper(*args, **kwargs):
+        key = (args, frozenset(sorted(kwargs.items())))
+        try:
+            return cache[key]
+        except KeyError:
+            ret = cache[key] = fun(*args, **kwargs)
+            return ret
+
+    def cache_clear():
+        """Clear cache."""
+        cache.clear()
+
+    cache = {}
+    wrapper.cache_clear = cache_clear
+    return wrapper
+
+
+@memoize
+def term_supports_colors():
+    try:
+        import curses
+        assert sys.stderr.isatty()
+        curses.setupterm()
+        assert curses.tigetnum("colors") > 0
+    except Exception:
+        return False
+    else:
+        return True
+
+
+def hilite(s, ok=True, bold=False):
+    """Return an highlighted version of 'string'."""
+    if not term_supports_colors():
+        return s
+    attr = []
+    if ok is None:  # no color
+        pass
+    elif ok:   # green
+        attr.append('32')
+    else:   # red
+        attr.append('31')
+    if bold:
+        attr.append('1')
+    return '\x1b[%sm%s\x1b[0m' % (';'.join(attr), s)
+
+
+def is_file_path(obj):
+    """Return True if obj is a possible file path or name."""
+    return isinstance(obj, six.string_types) or isinstance(obj, bytes)
+
+
+def exiftool_title(path, encoding, encoding_error):
+    if is_file_path(path):
+        bout = run("exiftool", "-title", path)
+        out = bout.decode(encoding, encoding_error)
+        if out:
+            return out[out.find(':') + 1:].strip() or None

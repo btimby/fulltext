@@ -5,23 +5,39 @@ import re
 from bs4 import BeautifulSoup
 
 from six import StringIO
+from six import PY3
+
+from fulltext import BaseBackend
 
 
-def _visible(elem):
-    if elem.parent.name in ['style', 'script', '[document]', 'head']:
-        return False
+class Backend(BaseBackend):
 
-    elif re.match('<!--.*-->', str(elem.encode('utf8'))):
-        return False
+    def setup(self):
+        self.bs = None
 
-    return True
+    def is_visible(self, elem):
+        if elem.parent.name in ['style', 'script', '[document]', 'head']:
+            return False
 
+        if not PY3:
+            elem = elem.encode(self.encoding, self.encoding_errors)
+        if re.match('<!--.*-->', elem):
+            return False
 
-def _get_file(f, **kwargs):
-    text, bs = StringIO(), BeautifulSoup(f, 'lxml')
+        return True
 
-    for elem in filter(_visible, bs.findAll(text=True)):
-        text.write(elem)
-        text.write(u' ')
+    def handle_fobj(self, f):
+        data = f.read()
+        data = self.decode(data)
+        text, self.bs = StringIO(), BeautifulSoup(data, 'lxml')
 
-    return text.getvalue()
+        for elem in self.bs.findAll(text=True):
+            if self.is_visible(elem):
+                text.write(elem)
+                text.write(u' ')
+
+        return text.getvalue()
+
+    def handle_title(self, f):
+        # Title may be undefined (None), if the <title> tag is not present.
+        return getattr(self.bs.title, 'string', None)

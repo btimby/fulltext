@@ -5,8 +5,12 @@ from lxml import etree
 
 from six import StringIO
 
+from fulltext import BaseBackend
+from fulltext.util import assert_cmd_exists
+from fulltext.util import exiftool_title
 
-def _qn(ns):
+
+def qn(ns):
     nsmap = {
         'text': 'urn:oasis:names:tc:opendocument:xmlns:text:1.0',
     }
@@ -14,36 +18,41 @@ def _qn(ns):
     return '{{{}}}{}'.format(nsmap[one], two)
 
 
-def _to_string(text, elem):
+def to_string(text, elem):
     if elem.text is not None:
-        try:
-            text.write(elem.text.decode('utf8'))
-        except AttributeError:
-            text.write(elem.text)
+        text.write(elem.text)
     for c in elem:
-        if c.tag == _qn('text:tab'):
+        if c.tag == qn('text:tab'):
             text.write(' ')
-        elif c.tag == _qn('text:s'):
+        elif c.tag == qn('text:s'):
             text.write(' ')
             if c.tail is not None:
                 text.write(c.tail)
         else:
-            _to_string(text, c)
+            to_string(text, c)
     text.write(u'\n')
 
 
-def _get_file(f, **kwargs):
-    text = StringIO()
+class Backend(BaseBackend):
 
-    with zipfile.ZipFile(f, 'r') as z:
-        with z.open('content.xml', 'r') as c:
-            xml = etree.parse(c)
+    def check(self, title):
+        if title:
+            assert_cmd_exists('exiftool')
 
-            for c in xml.iter():
-                if c.tag in (_qn('text:p'), _qn('text:h')):
-                    _to_string(text, c)
+    def handle_fobj(self, f):
+        text = StringIO()
 
-    return text.getvalue()
+        with zipfile.ZipFile(f, 'r') as z:
+            with z.open('content.xml', 'r') as c:
+                xml = etree.parse(c)
 
+                for c in xml.iter():
+                    if c.tag in (qn('text:p'), qn('text:h')):
+                        to_string(text, c)
 
-_get_path = _get_file
+        return text.getvalue()
+
+    handle_path = handle_fobj
+
+    def handle_title(self, f):
+        return exiftool_title(f, self.encoding, self.encoding_errors)

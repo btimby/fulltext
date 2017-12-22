@@ -1,11 +1,13 @@
 from __future__ import absolute_import
 
+import errno
 import re
 import logging
 import os
 import shutil
 import tempfile
 import mimetypes
+import sys
 
 from os.path import splitext
 
@@ -13,26 +15,36 @@ from six import string_types
 from six import PY3
 from fulltext.util import warn
 from fulltext.util import magic
+from fulltext.util import is_file_path
 
 
 __all__ = ["get", "register_backend"]
 
 
-LOGGER = logging.getLogger(__file__)
+# --- overridable defaults
+
+ENCODING = sys.getfilesystemencoding()
+ENCODING_ERRORS = "strict"
+TEMPDIR = os.environ.get('FULLTEXT_TEMP', tempfile.gettempdir())
+DEFAULT_MIME = 'application/octet-stream'
+
+# --- others
+
+LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
-
-FULLTEXT_TEMP = os.environ.get('FULLTEXT_TEMP', tempfile.gettempdir())
-
 STRIP_WHITE = re.compile(r'[ \t\v\f\r\n]+')
 SENTINAL = object()
 MIMETYPE_TO_BACKENDS = {}
 EXTS_TO_MIMETYPES = {}
-DEFAULT_MIME = 'application/octet-stream'
 MAGIC_BUFFER_SIZE = 1024
 
 mimetypes.init()
 _MIMETYPES_TO_EXT = dict([(v, k) for k, v in mimetypes.types_map.items()])
 
+
+# =====================================================================
+# --- backends
+# =====================================================================
 
 def register_backend(mimetype, module, extensions=None):
     """Register a backend.
@@ -176,6 +188,11 @@ register_backend(
     extensions=['.mbox'])
 
 register_backend(
+    'application/vnd.ms-outlook',
+    'fulltext.backends.__msg',
+    extensions=['.msg'])
+
+register_backend(
     'application/gzip',
     'fulltext.backends.__gz',
     extensions=['.gz'])
@@ -190,6 +207,11 @@ register_backend(
     'application/octet-stream',
     'fulltext.backends.__bin',
     extensions=['.a', '.bin'])
+
+
+# =====================================================================
+# --- utils
+# =====================================================================
 
 
 def is_binary(f):
@@ -228,66 +250,69 @@ def is_binary(f):
     return hasattr(byte, 'decode')
 
 
-def is_file_path(obj):
-    """Return True if obj is a possible file path or name."""
-    return isinstance(obj, string_types) or isinstance(obj, bytes)
-
-
-def _get_path(backend, path, **kwargs):
+def handle_path(backend_inst, path, **kwargs):
     """
     Handle a path.
 
     Called by `get()` when provided a path. This function will prefer the
-    backend's `_get_path()` if one is provided Otherwise, it will open the
-    given path then use `_get_file()`.
+    backend's `handle_path()` if one is provided Otherwise, it will open the
+    given path then use `handle_fobj()`.
     """
-    if callable(getattr(backend, '_get_path', None)):
-        # Prefer _get_path() if present.
-        return backend._get_path(path, **kwargs)
+    if callable(getattr(backend_inst, 'handle_path', None)):
+        # Prefer handle_path() if present.
+        LOGGER.debug("using handle_path")
+        return backend_inst.handle_path(path)
 
-    elif callable(getattr(backend, '_get_file', None)):
-        # Fallback to _get_file(). No warning here since the performance hit
+    elif callable(getattr(backend_inst, 'handle_fobj', None)):
+        # Fallback to handle_fobj(). No warning here since the performance hit
         # is minimal.
+        LOGGER.debug("using handle_fobj")
         with open(path, 'rb') as f:
-            return backend._get_file(f, **kwargs)
+            return backend_inst.handle_fobj(f)
 
     else:
         raise AssertionError(
-            'Backend %s has no _get functions' % backend.__name__)
+            'Backend %s has no _get functions' % backend_inst.__name__)
 
 
-def _get_file(backend, f, **kwargs):
+def handle_fobj(backend, f, **kwargs):
     """
     Handle a file-like object.
 
     Called by `get()` when provided a file-like. This function will prefer the
-    backend's `_get_file()` if one is provided. Otherwise, it will write the
-    data to a temporary file and call `_get_path()`.
+    backend's `handle_fobj()` if one is provided. Otherwise, it will write the
+    data to a temporary file and call `handle_path()`.
     """
     if not is_binary(f):
         raise AssertionError('File must be opened in binary mode.')
 
-    if callable(getattr(backend, '_get_file', None)):
-        # Prefer _get_file() if present.
-        return backend._get_file(f, **kwargs)
+    if callable(getattr(backend, 'handle_fobj', None)):
+        # Prefer handle_fobj() if present.
+        LOGGER.debug("using handle_fobj")
+        return backend.handle_fobj(f)
 
-    elif callable(getattr(backend, '_get_path', None)):
-        # Fallback to _get_path(). Warn user since this is potentially
+    elif callable(getattr(backend, 'handle_path', None)):
+        # Fallback to handle_path(). Warn user since this is potentially
         # expensive.
-        LOGGER.warning("Using disk, backend does not provide `_get_file()`")
+        LOGGER.debug("using handle_path")
+        LOGGER.warning("Using disk, backend does not provide `handle_fobj()`")
 
         ext = ''
         if 'ext' in kwargs:
             ext = '.' + kwargs['ext']
 
-        with tempfile.NamedTemporaryFile(dir=FULLTEXT_TEMP, suffix=ext) as t:
+        with tempfile.NamedTemporaryFile(dir=TEMPDIR, suffix=ext) as t:
             shutil.copyfileobj(f, t)
             t.flush()
-            return backend._get_path(t.name, **kwargs)
+            return backend.handle_path(t.name, **kwargs)
 
     else:
         raise AssertionError(
             'Backend %s has no _get functions' % backend.__name__)
+
+
+def import_mod(mod_name):
+    return __import__(mod_name, fromlist=[' '])
 
 
 def backend_from_mime(mime):
@@ -298,7 +323,7 @@ def backend_from_mime(mime):
         warn("don't know how to handle %r mime; assume %r" % (
             mime, DEFAULT_MIME))
         mod_name = MIMETYPE_TO_BACKENDS[DEFAULT_MIME]
-    mod = __import__(mod_name, fromlist=[' '])
+    mod = import_mod(mod_name)
     return mod
 
 
@@ -307,13 +332,30 @@ def backend_from_fname(name):
     ext = splitext(name)[1]
     try:
         mime = EXTS_TO_MIMETYPES[ext]
+
     except KeyError:
-        with open(name, 'rb') as f:
-            return backend_from_fobj(f)
+        try:
+            f = open(name, 'rb')
+
+        except IOError as e:
+            # The file may not exist, we are being asked to determine it's type
+            # from it's name. Other errors are unexpected.
+            if e.errno != errno.ENOENT:
+                raise
+
+            # We will have to fall back upon the default backend.
+            warn("don't know how to handle %r; assume %r" % (
+                name, DEFAULT_MIME))
+            mod_name = MIMETYPE_TO_BACKENDS[DEFAULT_MIME]
+        else:
+            with f:
+                return backend_from_fobj(f)
+
     else:
         mod_name = MIMETYPE_TO_BACKENDS[mime]
-        mod = __import__(mod_name, fromlist=[' '])
-        return mod
+
+    mod = import_mod(mod_name)
+    return mod
 
 
 def backend_from_fobj(f):
@@ -333,7 +375,81 @@ def backend_from_fobj(f):
             f.seek(offset)
 
 
-def _get(path_or_file, default, mime, name, backend, kwargs):
+def backend_inst_from_mod(mod, encoding, encoding_errors, kwargs):
+    """Given a mod and a set of opts return an instantiated
+    Backend class.
+    """
+    kw = dict(encoding=encoding, encoding_errors=encoding_errors,
+              kwargs=kwargs)
+    try:
+        klass = getattr(mod, "Backend")
+    except AttributeError:
+        raise AttributeError("%r mod does not define any backend class" % mod)
+    inst = klass(**kw)
+    try:
+        inst.check(title=False)
+    except Exception as err:
+        bin_mod = "fulltext.backends.__bin"
+        warn("can't use %r due to %r; use %r backend instead" % (
+             mod, str(err), bin_mod))
+        inst = import_mod(bin_mod).Backend(**kw)
+        inst.check(title=False)
+    LOGGER.debug("using %r" % inst)
+    return inst
+
+
+# =====================================================================
+# --- public API
+# =====================================================================
+
+
+class BaseBackend(object):
+    """Base class for defining custom backend classes."""
+
+    def __init__(self, encoding, encoding_errors, kwargs):
+        """These are the same args passed to get() function."""
+        self.encoding = encoding
+        self.encoding_errors = encoding_errors
+        self.kwargs = kwargs
+
+    def setup(self):
+        """May be overridden by subclass. This is called before handle_
+        methods.
+        """
+        pass
+
+    def teardown(self):
+        """May be overridden by subclass. This is called after text
+        is extracted, also in case of exception.
+        """
+        pass
+
+    def check(self, title):
+        """May be overridden by subclass. This is called before text
+        extraction. If the overriding method raises an exception
+        a warning is printed and bin backend is used.
+        """
+        pass
+
+    def decode(self, s):
+        """Decode string."""
+        return s.decode(self.encoding, self.encoding_errors)
+
+    def handle_title(self, path_or_file):
+        """May be overridden by sublass in order to retrieve file title."""
+        return None
+
+
+def _get(path_or_file, default, mime, name, backend, encoding,
+         encoding_errors, kwargs, _wtitle):
+    if encoding is None:
+        encoding = ENCODING
+    if encoding_errors is None:
+        encoding_errors = ENCODING_ERRORS
+
+    kwargs = kwargs.copy() if kwargs is not None else {}
+    kwargs.setdefault("mime", mime)
+
     # Find backend module.
     if backend is None:
         if mime:
@@ -358,20 +474,33 @@ def _get(path_or_file, default, mime, name, backend, kwargs):
         else:
             backend_mod = backend
 
-    # Create kwargs, add one by default.
-    kwargs = kwargs or {}
-    kwargs.setdefault("mime", mime)
+    # Get backend class.
+    inst = backend_inst_from_mod(
+        backend_mod, encoding, encoding_errors, kwargs)
+    fun = handle_path if is_file_path(path_or_file) else handle_fobj
 
-    # Call backend.
-    fun = _get_path if is_file_path(path_or_file) else _get_file
-    text = fun(backend_mod, path_or_file, **kwargs)
-    assert text is not None
+    # Run handle_ function, handle callbacks.
+    title = None
+    inst.setup()
+    try:
+        text = fun(inst, path_or_file)
+        if _wtitle:
+            try:
+                title = inst.handle_title(path_or_file)
+            except Exception:
+                LOGGER.exception("error while getting title (setting to None)")
+    finally:
+        inst.teardown()
+
+    assert text is not None, "backend function returned None"
     text = STRIP_WHITE.sub(' ', text)
-    return text.strip()
+    text = text.strip()
+    return (text, title)
 
 
 def get(path_or_file, default=SENTINAL, mime=None, name=None, backend=None,
-        kwargs=None):
+        encoding=None, encoding_errors=None, kwargs=None,
+        _wtitle=False):
     """
     Get document full text.
 
@@ -383,13 +512,31 @@ def get(path_or_file, default=SENTINAL, mime=None, name=None, backend=None,
      * `mime` and `name` should be passed if the information
        is available to caller, otherwise a best guess is made.
        If both are specified `mime` takes precedence.
+     * `encoding` and `encoding_errors` are used to handle text encoding.
+       They are taken into consideration mostly only by pure-python
+       backends which do not rely on CLI tools.
+       Default to "utf8" and "strict" respectively.
      * `kwargs` are passed to the underlying backend.
     """
     try:
-        return _get(path_or_file, default=default, mime=mime, name=name,
-                    backend=backend, kwargs=kwargs)
+        text, title = _get(
+            path_or_file, default=default, mime=mime, name=name,
+            backend=backend, kwargs=kwargs, encoding=encoding,
+            encoding_errors=encoding_errors, _wtitle=_wtitle)
+        if _wtitle:
+            return (text, title)
+        else:
+            return text
     except Exception as e:
         if default is not SENTINAL:
             LOGGER.exception(e)
             return default
         raise
+
+
+def get_with_title(*args, **kwargs):
+    """Like get() but also tries to determine document title.
+    Returns a (text, title) tuple.
+    """
+    kwargs['_wtitle'] = True
+    return get(*args, **kwargs)

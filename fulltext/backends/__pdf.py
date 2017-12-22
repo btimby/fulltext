@@ -1,19 +1,11 @@
 from __future__ import absolute_import
 
-import logging
-
-from fulltext.util import run, which, warn
-
-
-LOGGER = logging.getLogger(__name__)
-LOGGER.addHandler(logging.NullHandler())
+from fulltext.util import run, assert_cmd_exists
+from fulltext import BaseBackend
+from fulltext.util import is_file_path
 
 
-if which('pdftotext') is None:
-    warn('CLI tool "pdftotext" is required for .pdf backend.')
-
-
-def _cmd(path, **kwargs):
+def cmd(path, **kwargs):
     cmd = ['pdftotext']
 
     if kwargs.get('layout', None):
@@ -24,9 +16,26 @@ def _cmd(path, **kwargs):
     return cmd
 
 
-def _get_file(f, **kwargs):
-    return run(*_cmd('-', **kwargs), stdin=f).decode('utf-8')
+class Backend(BaseBackend):
 
+    def check(self, title):
+        assert_cmd_exists('pdftotext')
+        if title:
+            assert_cmd_exists('pdfinfo')
 
-def _get_path(path, **kwargs):
-    return run(*_cmd(path, **kwargs)).decode('utf-8')
+    def handle_fobj(self, f):
+        out = run(*cmd('-', **self.kwargs), stdin=f)
+        return self.decode(out)
+
+    def handle_path(self, path):
+        out = run(*cmd(path, **self.kwargs))
+        return self.decode(out)
+
+    def handle_title(self, f):
+        if is_file_path(f):
+            # Doesn't work with file objs.
+            bout = run("pdfinfo", f)
+            out = self.decode(bout)
+            for line in out.split("\n"):
+                if line.startswith("Title:"):
+                    return line.partition("Title:")[2].strip()

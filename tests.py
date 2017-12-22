@@ -1,6 +1,11 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import os
 import unittest
 import tempfile
+import sys
+import subprocess
 try:
     from unittest import mock  # py3
 except ImportError:
@@ -13,12 +18,13 @@ import warnings
 
 import fulltext
 from fulltext.util import ShellError
-from fulltext.util import which
+from fulltext.compat import which
 
 from six import PY3
 from six import BytesIO
 
 
+TRAVIS = bool(os.environ.get('TRAVIS'))
 TEXT_WITH_NEWLINES = u"Lorem ipsum\ndolor sit amet, consectetur adipiscing e" \
                      u"lit. Nunc ipsum augue, iaculis quis\nauctor eu, adipi" \
                      u"scing non est. Nullam id sem diam, eget varius dui. E" \
@@ -39,6 +45,11 @@ TEXT_WITH_NEWLINES = u"Lorem ipsum\ndolor sit amet, consectetur adipiscing e" \
 TEXT = TEXT_WITH_NEWLINES.replace('\n', ' ')
 
 
+# ===================================================================
+# --- Utils
+# ===================================================================
+
+
 class BaseTestCase(unittest.TestCase):
     """Base TestCase Class."""
 
@@ -57,10 +68,19 @@ class BaseTestCase(unittest.TestCase):
     # --- utils
 
     def touch(self, fname, content=b""):
-        with open(fname, 'wb') as f:
+        if isinstance(content, bytes):
+            f = open(fname, "wb")
+        else:
+            if PY3:
+                f = open(fname, "wt")
+            else:
+                f = codecs.open(fname, "wt", encoding="utf8")
+
+        self.addCleanup(os.remove, fname)
+        with f:
             if content:
                 f.write(content)
-        self.addCleanup(os.remove, fname)
+
         return fname
 
     def touch_fobj(self, content=b""):
@@ -151,6 +171,80 @@ class FullTextStripTestCase(BaseTestCase):
         self.assertMultiLineEqual('Test leading and trailing spaces removal. '
                                   'Test punctuation removal! Test spaces '
                                   'removal!', stripped)
+
+
+class TestCLI(BaseTestCase):
+
+    def test_extract(self):
+        subprocess.check_output(
+            "%s -m fulltext extract %s" % (sys.executable, "files/test.txt"),
+            shell=True)
+
+    def test_test(self):
+        subprocess.check_output(
+            "%s -m fulltext -t check" % sys.executable, shell=True)
+
+
+class TestBackendInterface(BaseTestCase):
+
+    def test_params(self):
+        # Make sure Backend class receives the right params.
+        fname = self.touch('testfn.doc')
+        with mock.patch('fulltext.handle_path', return_value="") as m:
+            fulltext.get(fname, encoding='foo', encoding_errors='bar')
+            klass = m.call_args[0][0]
+            self.assertEqual(klass.encoding, 'foo')
+            self.assertEqual(klass.encoding_errors, 'bar')
+
+    def test_callbacks(self):
+        # Make sure callback methods are called (also in the right order).
+        flags = []
+
+        class Backend:
+
+            def setup(self):
+                flags.append("setup")
+
+            def teardown(self):
+                flags.append("teardown")
+
+            def handle_fobj(self, path):
+                flags.append("handle_fobj")
+                return "text"
+
+        fname = self.touch('testfn.doc')
+        with mock.patch('fulltext.backend_inst_from_mod',
+                        return_value=Backend()):
+            fulltext.get(fname, encoding='foo', encoding_errors='bar')
+        self.assertEqual(flags, ['setup', 'handle_fobj', 'teardown'])
+
+    def test_teardown_on_err(self):
+        # Make sure teardown methods is called also on error.
+        flags = []
+
+        class Backend:
+
+            def setup(self):
+                flags.append("setup")
+
+            def teardown(self):
+                flags.append("teardown")
+
+            def handle_fobj(self, path):
+                1 / 0
+
+        fname = self.touch('testfn.doc')
+        with mock.patch('fulltext.backend_inst_from_mod',
+                        return_value=Backend()):
+            with self.assertRaises(ZeroDivisionError):
+                fulltext.get(fname, encoding='foo', encoding_errors='bar')
+
+        self.assertEqual(flags, ['setup', 'teardown'])
+
+
+# ===================================================================
+# --- Mixin tests
+# ===================================================================
 
 
 class PathAndFileTests(object):
@@ -274,6 +368,10 @@ class MboxTestCase(BaseTestCase, PathAndFileTests):
     ext = "mbox"
 
 
+class MsgTestCase(BaseTestCase, PathAndFileTests):
+    ext = "msg"
+
+
 class JsonTestCase(BaseTestCase, PathAndFileTests):
     ext = "json"
 
@@ -300,6 +398,9 @@ class GzTestCase(BaseTestCase, PathAndFileTests):
         self.assertMultiLineEqual(self.text, text)
 
 
+# ---
+
+
 class FilesTestCase(BaseTestCase):
 
     def test_old_doc_file(self):
@@ -316,6 +417,11 @@ class FilesTestCase(BaseTestCase):
         self.assertIsInstance(text, u"".__class__)
 
 
+# ===================================================================
+# --- Pickups
+# ===================================================================
+
+
 class TestPickups(BaseTestCase):
     """Make sure the right backend is called."""
 
@@ -323,79 +429,84 @@ class TestPickups(BaseTestCase):
 
     def test_by_ext(self):
         fname = self.touch('testfn.doc')
-        with mock.patch('fulltext._get_path', return_value="") as m:
+        with mock.patch('fulltext.handle_path', return_value="") as m:
             fulltext.get(fname)
-            mod = m.call_args[0][0]
-            self.assertEqual(mod.__name__, 'fulltext.backends.__doc')
+            klass = m.call_args[0][0]
+            self.assertEqual(klass.__module__, 'fulltext.backends.__doc')
 
     def test_no_ext(self):
         # File with no extension == use bin backend.
         fname = self.touch('testfn')
-        with mock.patch('fulltext._get_path', return_value="") as m:
+        with mock.patch('fulltext.handle_path', return_value="") as m:
             fulltext.get(fname)
-            mod = m.call_args[0][0]
-            self.assertEqual(mod.__name__, 'fulltext.backends.__bin')
+            klass = m.call_args[0][0]
+            self.assertEqual(klass.__module__, 'fulltext.backends.__bin')
 
     def test_unknown_ext(self):
         # File with unknown extension == use bin backend.
         fname = self.touch('testfn.unknown')
-        with mock.patch('fulltext._get_path', return_value="") as m:
+        with mock.patch('fulltext.handle_path', return_value="") as m:
             fulltext.get(fname)
-            mod = m.call_args[0][0]
-            self.assertEqual(mod.__name__, 'fulltext.backends.__bin')
+            klass = m.call_args[0][0]
+            self.assertEqual(klass.__module__, 'fulltext.backends.__bin')
 
     # --- by mime opt
 
     def test_by_mime(self):
         fname = self.touch('testfn.doc')
-        with mock.patch('fulltext._get_path', return_value="") as m:
+        with mock.patch('fulltext.handle_path', return_value="") as m:
             fulltext.get(fname, mime='application/vnd.ms-excel')
-            mod = m.call_args[0][0]
-            self.assertEqual(mod.__name__, 'fulltext.backends.__xlsx')
+            klass = m.call_args[0][0]
+            self.assertEqual(klass.__module__, 'fulltext.backends.__xlsx')
 
     def test_by_unknown_mime(self):
         fname = self.touch('testfn.doc')
-        with mock.patch('fulltext._get_path', return_value="") as m:
+        with mock.patch('fulltext.handle_path', return_value="") as m:
             with warnings.catch_warnings(record=True) as ws:
                 fulltext.get(fname, mime='application/yo!')
             assert ws
-            mod = m.call_args[0][0]
-            self.assertEqual(mod.__name__, 'fulltext.backends.__bin')
+            klass = m.call_args[0][0]
+            self.assertEqual(klass.__module__, 'fulltext.backends.__bin')
 
     # -- by name opt
 
     def test_by_name(self):
         fname = self.touch('testfn')
-        with mock.patch('fulltext._get_path', return_value="") as m:
+        with mock.patch('fulltext.handle_path', return_value="") as m:
             fulltext.get(fname, name="woodstock.doc")
-            mod = m.call_args[0][0]
-            self.assertEqual(mod.__name__, 'fulltext.backends.__doc')
+            klass = m.call_args[0][0]
+            self.assertEqual(klass.__module__, 'fulltext.backends.__doc')
 
     def test_by_name_with_no_ext(self):
         # Assume bin backend is picked up.
         fname = self.touch("woodstock-no-ext")
-        with mock.patch('fulltext._get_path', return_value="") as m:
+        with mock.patch('fulltext.handle_path', return_value="") as m:
             with warnings.catch_warnings(record=True) as ws:
                 fulltext.get(fname, name=fname)
             assert ws
-            mod = m.call_args[0][0]
-            self.assertEqual(mod.__name__, 'fulltext.backends.__bin')
+            klass = m.call_args[0][0]
+            self.assertEqual(klass.__module__, 'fulltext.backends.__bin')
 
     # --- by backend opt
 
     def test_by_backend(self):
         # Assert file ext is ignored if backend opt is used.
         fname = self.touch('testfn.doc')
-        with mock.patch('fulltext._get_path', return_value="") as m:
+        with mock.patch('fulltext.handle_path', return_value="") as m:
             fulltext.get(fname, backend='pdf')
-            mod = m.call_args[0][0]
-            self.assertEqual(mod.__name__, 'fulltext.backends.__pdf')
+            klass = m.call_args[0][0]
+            self.assertEqual(klass.__module__, 'fulltext.backends.__pdf')
 
     def test_by_invalid_backend(self):
         # Assert file ext is ignored if backend opt is used.
         fname = self.touch('testfn.doc')
         with self.assertRaises(ValueError):
             fulltext.get(fname, backend='yoo')
+
+
+# ===================================================================
+# --- File objects
+# ===================================================================
 
 
 class TestFileObj(BaseTestCase):
@@ -409,10 +520,10 @@ class TestFileObj(BaseTestCase):
         # Make sure that fulltext attempts to determine file name
         # from "name" attr of the file obj.
         f = tempfile.NamedTemporaryFile(suffix='.pdf')
-        with mock.patch('fulltext._get_file', return_value="") as m:
+        with mock.patch('fulltext.handle_fobj', return_value="") as m:
             fulltext.get(f)
-            mod = m.call_args[0][0]
-            self.assertEqual(mod.__name__, 'fulltext.backends.__pdf')
+            klass = m.call_args[0][0]
+            self.assertEqual(klass.__module__, 'fulltext.backends.__pdf')
 
     def test_fobj_offset(self):
         # Make sure offset is unaltered after guessing mime type.
@@ -444,26 +555,271 @@ class TestGuessingFromFileContent(BaseTestCase):
     def test_pdf(self):
         fname = "file-noext"
         self.touch(fname, content=open('files/test.pdf', 'rb').read())
-        with mock.patch('fulltext._get_path', return_value="") as m:
+        with mock.patch('fulltext.handle_path', return_value="") as m:
             fulltext.get(fname)
-            mod = m.call_args[0][0]
-            self.assertEqual(mod.__name__, 'fulltext.backends.__pdf')
+            klass = m.call_args[0][0]
+            self.assertEqual(klass.__module__, 'fulltext.backends.__pdf')
 
     def test_html(self):
         fname = "file-noext"
         self.touch(fname, content=open('files/test.html', 'rb').read())
-        with mock.patch('fulltext._get_path', return_value="") as m:
+        with mock.patch('fulltext.handle_path', return_value="") as m:
             fulltext.get(fname)
-            mod = m.call_args[0][0]
-            self.assertEqual(mod.__name__, 'fulltext.backends.__html')
+            klass = m.call_args[0][0]
+            self.assertEqual(klass.__module__, 'fulltext.backends.__html')
 
 
 class TestUtils(BaseTestCase):
 
     def test_is_file_path(self):
-        assert fulltext.is_file_path('foo')
-        assert fulltext.is_file_path(b'foo')
-        assert not fulltext.is_file_path(open(__file__))
+        from fulltext.util import is_file_path
+        assert is_file_path('foo')
+        assert is_file_path(b'foo')
+        assert not is_file_path(open(__file__))
+
+
+# ===================================================================
+# --- Encodings
+# ===================================================================
+
+
+class TestEncodingGeneric(BaseTestCase):
+
+    def test_global_vars(self):
+        # Make sure the globla vars are taken into consideration and
+        # passed to the underlying backends.
+        encoding, errors = fulltext.ENCODING, fulltext.ENCODING_ERRORS
+        fname = self.touch("file.txt", content=b"hello")
+        try:
+            fulltext.ENCODING = "foo"
+            fulltext.ENCODING_ERRORS = "bar"
+            with mock.patch('fulltext.handle_path', return_value="") as m:
+                fulltext.get(fname)
+                klass = m.call_args[0][0]
+                self.assertEqual(klass.encoding, 'foo')
+                self.assertEqual(klass.encoding_errors, 'bar')
+        finally:
+            fulltext.ENCODING = encoding
+            fulltext.ENCODING_ERRORS = errors
+
+
+class TestUnicodeBase(object):
+    ext = None
+    italian = u"ciao bella àèìòù "
+    japanese = u"かいおうせい海王星"
+    invalid = u"helloworld"
+
+    def compare(self, content_s, fulltext_s):
+        if PY3:
+            self.assertEqual(content_s, fulltext_s)
+        else:
+            # Don't test for equality on Python 2 because unicode
+            # support is basically broken.
+            self.assertEqual(content_s, fulltext_s)
+            pass
+
+    def doit(self, fname, expected_txt):
+        ret = fulltext.get(fname)
+        self.compare(ret, expected_txt)
+
+    def test_italian(self):
+        self.doit("files/unicode/it.%s" % self.ext, self.italian)
+
+    def test_japanese(self):
+        self.doit("files/unicode/jp.%s" % self.ext, self.japanese)
+
+    def test_invalid_char(self):
+        fname = "files/unicode/invalid.%s" % self.ext
+        if os.path.exists(fname):
+            with self.assertRaises(UnicodeDecodeError):
+                fulltext.get(fname)
+            ret = fulltext.get(fname, encoding_errors="ignore")
+            self.assertEqual(ret, self.invalid)
+        #
+        fname = "files/unicode/it.%s" % self.ext
+        with self.assertRaises(UnicodeDecodeError):
+            fulltext.get(fname, encoding='ascii')
+        ret = fulltext.get(
+            fname, encoding='ascii', encoding_errors="ignore")
+        against = self.italian.replace(
+            u"àèìòù", u"").replace(u"  ", u" ").strip()
+        self.assertEqual(ret, against)
+
+
+class TestUnicodeTxt(BaseTestCase, TestUnicodeBase):
+    ext = "txt"
+
+
+class TestUnicodeCsv(BaseTestCase, TestUnicodeBase):
+    ext = "csv"
+
+
+class TestUnicodeOdt(BaseTestCase, TestUnicodeBase):
+    ext = "odt"
+
+    # A binary file is passed and text is not de/encoded.
+    @unittest.skipIf(1, "no conversion happening")
+    def test_invalid_char(self):
+        pass
+
+
+# ps backend uses `pstotext` CLI tool, which does not correctly
+# handle unicode. Just make sure we don't crash if passed the
+# error handler.
+class TestUnicodePs(BaseTestCase):
+
+    def test_italian(self):
+        fname = "files/unicode/it.ps"
+        with self.assertRaises(UnicodeDecodeError):
+            fulltext.get(fname)
+        ret = fulltext.get(fname, encoding_errors="ignore")
+        assert ret.startswith("ciao bella")  # the rest is garbage
+
+
+class TestUnicodeHtml(BaseTestCase, TestUnicodeBase):
+    ext = "html"
+
+
+# backend uses `unrtf` CLI tool, which does not correctly
+# handle unicode. Just make sure we don't crash if passed the
+# error handler.
+class TestUnicodeRtf(BaseTestCase):
+    ext = "rtf"
+
+    def test_italian(self):
+        fname = "files/unicode/it.rtf"
+        with self.assertRaises(UnicodeDecodeError):
+            fulltext.get(fname)
+        ret = fulltext.get(fname, encoding_errors="ignore")
+        assert ret.startswith("ciao bella")  # the rest is garbage
+
+
+class TestUnicodeDoc(BaseTestCase, TestUnicodeBase):
+    ext = "doc"
+    italian = ' '.join([u"ciao bella àèìòù" for x in range(20)])
+    japanese = ' '.join([u"かいおうせい海王星" for x in range(30)])
+
+
+class TestUnicodeXml(BaseTestCase, TestUnicodeBase):
+    ext = "xml"
+
+
+class TestUnicodeXlsx(BaseTestCase, TestUnicodeBase):
+    ext = "xlsx"
+
+    # A binary file is passed and text is not de/encoded.
+    @unittest.skipIf(1, "no conversion happening")
+    def test_invalid_char(self):
+        pass
+
+
+class TestUnicodePptx(BaseTestCase, TestUnicodeBase):
+    ext = "pptx"
+
+    # A binary file is passed and text is not de/encoded.
+    @unittest.skipIf(1, "no conversion happening")
+    def test_invalid_char(self):
+        pass
+
+
+class TestUnicodePdf(BaseTestCase, TestUnicodeBase):
+    ext = "pdf"
+
+
+class TestUnicodePng(BaseTestCase, TestUnicodeBase):
+    ext = "png"
+
+    def compare(self, content_s, fulltext_s):
+        pass
+
+    @unittest.skipIf(1, "not compatible")
+    def test_invalid_char(self):
+        pass
+
+
+class TestUnicodeJson(BaseTestCase, TestUnicodeBase):
+    ext = "json"
+
+
+class TestUnicodeDocx(BaseTestCase, TestUnicodeBase):
+    ext = "docx"
+
+    # Underlying lib doesn't allow to specify an encoding.
+    @unittest.skipIf(1, "not compatible")
+    def test_invalid_char(self):
+        pass
+
+
+class TestUnicodeEml(BaseTestCase, TestUnicodeBase):
+    ext = "eml"
+
+
+class TestUnicodeMbox(BaseTestCase, TestUnicodeBase):
+    ext = "mbox"
+
+
+# ===================================================================
+# --- Test titles
+# ===================================================================
+
+
+class TestTitle(BaseTestCase):
+
+    def test_html(self):
+        fname = "files/others/title.html"
+        self.assertEqual(
+            fulltext.get_with_title(fname)[1], "Lorem ipsum")
+
+    def test_pdf(self):
+        fname = "files/others/test.pdf"
+        self.assertEqual(
+            fulltext.get_with_title(fname)[1], "This is a test PDF file")
+
+    def test_odt(self):
+        fname = "files/others/pretty-ones.odt"
+        self.assertEqual(
+            fulltext.get_with_title(fname)[1], "PRETTY ONES")
+
+    def test_doc(self):
+        fname = "files/others/hello-world.doc"
+        self.assertEqual(
+            fulltext.get_with_title(fname)[1], 'Lab 1: Hello World')
+
+    def test_docx(self):
+        fname = "files/others/hello-world.docx"
+        self.assertEqual(
+            fulltext.get_with_title(fname)[1], 'MPI example')
+
+    @unittest.skipIf(TRAVIS, "fails on travis")
+    def test_epub(self):
+        fname = "files/others/jquery.epub"
+        self.assertEqual(
+            fulltext.get_with_title(fname)[1], 'JQuery Hello World')
+
+    def test_pptx(self):
+        fname = "files/others/test.pptx"
+        self.assertEqual(
+            fulltext.get_with_title(fname)[1], 'lorem ipsum')
+
+    def test_ps(self):
+        fname = "files/others/lecture.ps"
+        self.assertEqual(
+            fulltext.get_with_title(fname)[1], 'Hey there')
+
+    def test_rtf(self):
+        fname = "files/others/test.rtf"
+        self.assertEqual(
+            fulltext.get_with_title(fname)[1], 'hello there')
+
+    def test_xls(self):
+        fname = "files/others/test.xls"
+        self.assertEqual(
+            fulltext.get_with_title(fname)[1], 'hey there')
+
+    def test_xlsx(self):
+        fname = "files/others/test.xlsx"
+        self.assertEqual(
+            fulltext.get_with_title(fname)[1], 'yo man!')
 
 
 if __name__ == '__main__':

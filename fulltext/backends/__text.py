@@ -10,28 +10,27 @@ Any decoding issues are ignored.
 
 from __future__ import absolute_import
 
-import sys
-
 from six import StringIO
+from fulltext import BaseBackend
 
 
 BUFFER_MAX = 1024 * 1024
-ENCODING = sys.getfilesystemencoding()
 
 
-def _get_file(f, **kwargs):
-    encoding = kwargs.pop('encoding', ENCODING)
-    buffer = StringIO()
+class Backend(BaseBackend):
 
-    while True:
-        text = f.read(BUFFER_MAX)
+    def handle_fobj(self, f):
+        buffer = StringIO()
 
-        if not text:
-            break
+        while True:
+            text = f.read(BUFFER_MAX)
 
-        text = text.decode(encoding, 'ignore')
+            if not text:
+                break
 
-        # Emulate the `strings` CLI tool.
-        buffer.write(text)
+            text = self.decode(text)
 
-    return buffer.getvalue()
+            # Emulate the `strings` CLI tool.
+            buffer.write(text)
+
+        return buffer.getvalue()
