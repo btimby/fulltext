@@ -244,6 +244,7 @@ if POSIX:
 
     @atexit.register
     def _close_et():
+        LOGGER.debug("terminating exiftool subprocess")
         _et.terminate()
 
     def exiftool_title(path, encoding, encoding_error):
