@@ -236,17 +236,9 @@ def is_file_path(obj):
     return isinstance(obj, six.string_types) or isinstance(obj, bytes)
 
 
-try:
+if POSIX:
     import exiftool
-except ImportError:
-    if POSIX:
-        # TODO: according to https://www.sno.phy.queensu.ca/~phil/exiftool/
-        # exiftool is also available on Windows
-        raise
 
-    def exiftool_title(*a, **kw):
-        return None
-else:
     _et = exiftool.ExifTool()
     _et.start()
 
@@ -259,3 +251,9 @@ else:
             title = (_et.get_tag("title", path) or "").strip()
             if title:
                 return title.decode(encoding, encoding_error)
+
+else:
+    # TODO: according to https://www.sno.phy.queensu.ca/~phil/exiftool/
+    # exiftool is also available on Windows
+    def exiftool_title(*a, **kw):
+        return None
