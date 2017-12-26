@@ -6,6 +6,7 @@ import unittest
 import tempfile
 import sys
 import subprocess
+import logging
 try:
     from unittest import mock  # py3
 except ImportError:
@@ -45,6 +46,8 @@ TEXT_WITH_NEWLINES = u"Lorem ipsum\ndolor sit amet, consectetur adipiscing e" \
 TEXT = TEXT_WITH_NEWLINES.replace('\n', ' ')
 WINDOWS = is_windows()
 APPVEYOR = bool(os.environ.get('APPVEYOR'))
+
+logging.basicConfig(level=logging.WARNING)
 
 
 # ===================================================================
@@ -798,6 +801,7 @@ class TestTitle(BaseTestCase):
 
     def test_doc(self):
         fname = "files/others/hello-world.doc"
+        fulltext.get_with_title(fname)
         self.assertEqual(
             fulltext.get_with_title(fname)[1], 'Lab 1: Hello World')
 

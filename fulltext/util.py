@@ -251,7 +251,10 @@ if POSIX:
         if is_file_path(path):
             title = (_et.get_tag("title", path) or "").strip()
             if title:
-                return title.decode(encoding, encoding_error)
+                if hasattr(title, "decode"):  # PY2
+                    return title.decode(encoding, encoding_error)
+                else:
+                    return title
 
 else:
     # TODO: according to https://www.sno.phy.queensu.ca/~phil/exiftool/
