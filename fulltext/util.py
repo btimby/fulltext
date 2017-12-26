@@ -1,3 +1,4 @@
+import atexit
 import errno
 import logging
 import os
@@ -10,6 +11,7 @@ from os.path import dirname, abspath
 from os.path import join as pathjoin
 
 import six
+import exiftool
 from six import PY3
 
 from fulltext.compat import which
@@ -234,9 +236,17 @@ def is_file_path(obj):
     return isinstance(obj, six.string_types) or isinstance(obj, bytes)
 
 
+et = exiftool.ExifTool()
+et.start()
+
+
+@atexit.register
+def _close_et():
+    et.terminate()
+
+
 def exiftool_title(path, encoding, encoding_error):
     if is_file_path(path):
-        bout = run("exiftool", "-title", path)
-        out = bout.decode(encoding, encoding_error)
-        if out:
-            return out[out.find(':') + 1:].strip() or None
+        title = (et.get_tag("title", path) or "").strip()
+        if title:
+            return title.decode(encoding, encoding_error)
