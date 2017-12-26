@@ -11,10 +11,10 @@ from os.path import dirname, abspath
 from os.path import join as pathjoin
 
 import six
-import exiftool
 from six import PY3
 
 from fulltext.compat import which
+from fulltext.compat import POSIX
 
 
 LOGGER = logging.getLogger(__file__)
@@ -236,17 +236,26 @@ def is_file_path(obj):
     return isinstance(obj, six.string_types) or isinstance(obj, bytes)
 
 
-et = exiftool.ExifTool()
-et.start()
+try:
+    import exiftool
+except ImportError:
+    if POSIX:
+        # TODO: according to https://www.sno.phy.queensu.ca/~phil/exiftool/
+        # exiftool is also available on Windows
+        raise
 
+    def exiftool_title(*a, **kw):
+        return None
+else:
+    _et = exiftool.ExifTool()
+    _et.start()
 
-@atexit.register
-def _close_et():
-    et.terminate()
+    @atexit.register
+    def _close_et():
+        _et.terminate()
 
-
-def exiftool_title(path, encoding, encoding_error):
-    if is_file_path(path):
-        title = (et.get_tag("title", path) or "").strip()
-        if title:
-            return title.decode(encoding, encoding_error)
+    def exiftool_title(path, encoding, encoding_error):
+        if is_file_path(path):
+            title = (_et.get_tag("title", path) or "").strip()
+            if title:
+                return title.decode(encoding, encoding_error)
