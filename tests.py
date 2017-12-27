@@ -510,6 +510,16 @@ class TestPickups(BaseTestCase):
         with self.assertRaises(ValueError):
             fulltext.get(fname, backend='yoo')
 
+    # --- by src code ext
+
+    def test_src_code_ext(self):
+        fname = "file.js"
+        self.touch(fname, content="foo bar")
+        with mock.patch('fulltext.handle_path', return_value="") as m:
+            fulltext.get(fname)
+            klass = m.call_args[0][0]
+            self.assertEqual(klass.__module__, 'fulltext.backends.__text')
+
 
 # ===================================================================
 # --- File objects
