@@ -45,7 +45,6 @@ TEXT_WITH_NEWLINES = u"Lorem ipsum\ndolor sit amet, consectetur adipiscing e" \
 TEXT = TEXT_WITH_NEWLINES.replace('\n', ' ')
 WINDOWS = is_windows()
 APPVEYOR = bool(os.environ.get('APPVEYOR'))
-TESTFN = "$testfn"
 
 
 # ===================================================================
