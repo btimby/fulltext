@@ -44,20 +44,8 @@ class Backend(BaseBackend):
             else:
                 backend = backend_from_fobj(f)
 
-            try:
-                return get(f, backend=backend)
-            except Exception:
-                # Some backends are not able to deal with gzip.GzipFile
-                # instances so we copy the file on
-                # disk. See: https://github.com/btimby/fulltext/issues/56
-                LOGGER.info(
-                    "%r backend could not handle gzip file object directly; "
-                    "retrying by extracting the gzip on disk" % backend)
-
-                f2, _ = self.get_fobj_and_path(path_or_file)
-                ext = splitext(orig_name)[1]
-                with f2:
-                    with fobj_to_tempfile(f2, suffix=ext) as fname:
-                        return get(fname, backend=backend)
+            ext = splitext(orig_name)[1]
+            with fobj_to_tempfile(f, suffix=ext) as fname:
+                return get(fname, backend=backend)
 
     handle_path = handle_fobj
