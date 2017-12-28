@@ -6,6 +6,7 @@ import unittest
 import tempfile
 import sys
 import subprocess
+import logging
 try:
     from unittest import mock  # py3
 except ImportError:
@@ -46,6 +47,8 @@ TEXT = TEXT_WITH_NEWLINES.replace('\n', ' ')
 WINDOWS = is_windows()
 APPVEYOR = bool(os.environ.get('APPVEYOR'))
 
+logging.basicConfig(level=logging.WARNING)
+
 
 # ===================================================================
 # --- Utils
@@ -69,7 +72,7 @@ class BaseTestCase(unittest.TestCase):
 
     # --- utils
 
-    def touch(self, fname, content=b""):
+    def touch(self, fname, content=None):
         if isinstance(content, bytes):
             f = open(fname, "wb")
         else:
@@ -337,6 +340,11 @@ class CsvTestCase(BaseTestCase, PathAndFileTests):
     ext = "csv"
     mime = 'text/csv'
     text = TEXT.replace(',', '')
+
+    def test_newlines(self):
+        # See: https://github.com/btimby/fulltext/issues/68
+        fname = self.touch('testfn.csv', content="foo\n\rbar")
+        self.assertEqual(fulltext.get(fname), "foo bar")
 
 
 class TsvTestCase(BaseTestCase, PathAndFileTests):
@@ -798,6 +806,7 @@ class TestTitle(BaseTestCase):
 
     def test_doc(self):
         fname = "files/others/hello-world.doc"
+        fulltext.get_with_title(fname)
         self.assertEqual(
             fulltext.get_with_title(fname)[1], 'Lab 1: Hello World')
 
