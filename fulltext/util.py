@@ -245,10 +245,13 @@ def fobj_to_tempfile(f, suffix=''):
     """Context manager which copies a file object to disk and return its
     name. When done the file is deleted.
     """
-    with tempfile.NamedTemporaryFile(dir=TEMPDIR, suffix=suffix) as t:
+    with tempfile.NamedTemporaryFile(
+            dir=TEMPDIR, suffix=suffix, delete=False) as t:
         shutil.copyfileobj(f, t)
-        t.flush()
+    try:
         yield t.name
+    finally:
+        os.remove(t.name)
 
 
 if POSIX:

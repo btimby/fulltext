@@ -75,13 +75,15 @@ def main(args=sys.argv[1:]):
         check   - make sure all deps are installed
 
     Usage:
-        fulltext extract [-v] [-f] <path>...
+        fulltext extract [-v] [-f] [-e] [-E] <path>...
         fulltext check [-t]
 
     Options:
-        -f, --file           Open file first.
-        -t, --title          Check deps for title.
-        -v, --verbose        More verbose output.
+        -f, --file             Open file first.
+        -t, --title            Check deps for title.
+        -e, --encoding         What encoding to use.
+        -E, --errors           The encoding error handler to use.
+        -v, --verbose          More verbose output.
     """
     opt = docopt(main.__doc__.strip(), args, options_first=True)
 
