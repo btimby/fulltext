@@ -72,7 +72,7 @@ class BaseTestCase(unittest.TestCase):
 
     # --- utils
 
-    def touch(self, fname, content=b""):
+    def touch(self, fname, content=None):
         if isinstance(content, bytes):
             f = open(fname, "wb")
         else:
@@ -340,6 +340,11 @@ class CsvTestCase(BaseTestCase, PathAndFileTests):
     ext = "csv"
     mime = 'text/csv'
     text = TEXT.replace(',', '')
+
+    def test_newlines(self):
+        # See: https://github.com/btimby/fulltext/issues/68
+        fname = self.touch('testfn.csv', content="foo\n\rbar")
+        self.assertEqual(fulltext.get(fname), "foo bar")
 
 
 class TsvTestCase(BaseTestCase, PathAndFileTests):
