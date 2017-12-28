@@ -395,6 +395,7 @@ class HwpTestCase(BaseTestCase, PathAndFileTests):
 class GzTestCase(BaseTestCase, PathAndFileTests):
     ext = "gz"
 
+    @unittest.skipIf(WINDOWS, "not supported on Windows")
     def test_pdf(self):
         # See: https://github.com/btimby/fulltext/issues/56
         text = fulltext.get("files/gz/test.pdf.gz")
