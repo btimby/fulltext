@@ -39,4 +39,5 @@ class Backend(BaseBackend):
         return text.getvalue()
 
     def handle_title(self, f):
-        return self.bs.title.string
+        # Title may be undefined (None), if the <title> tag is not present.
+        return getattr(self.bs.title, 'string', None)

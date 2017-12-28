@@ -1,4 +1,5 @@
 import contextlib
+import atexit
 import errno
 import logging
 import os
@@ -16,6 +17,7 @@ import six
 from six import PY3
 
 from fulltext.compat import which
+from fulltext.compat import POSIX
 
 
 LOGGER = logging.getLogger(__file__)
@@ -238,14 +240,6 @@ def is_file_path(obj):
     return isinstance(obj, six.string_types) or isinstance(obj, bytes)
 
 
-def exiftool_title(path, encoding, encoding_error):
-    if is_file_path(path):
-        bout = run("exiftool", "-title", path)
-        out = bout.decode(encoding, encoding_error)
-        if out:
-            return out[out.find(':') + 1:].strip() or None
-
-
 @contextlib.contextmanager
 def fobj_to_tempfile(f, suffix=''):
     """Context manager which copies a file object to disk and return its
@@ -255,3 +249,30 @@ def fobj_to_tempfile(f, suffix=''):
         shutil.copyfileobj(f, t)
         t.flush()
         yield t.name
+
+
+if POSIX:
+    import exiftool
+
+    _et = exiftool.ExifTool()
+    _et.start()
+
+    @atexit.register
+    def _close_et():
+        LOGGER.debug("terminating exiftool subprocess")
+        _et.terminate()
+
+    def exiftool_title(path, encoding, encoding_error):
+        if is_file_path(path):
+            title = (_et.get_tag("title", path) or "").strip()
+            if title:
+                if hasattr(title, "decode"):  # PY2
+                    return title.decode(encoding, encoding_error)
+                else:
+                    return title
+
+else:
+    # TODO: according to https://www.sno.phy.queensu.ca/~phil/exiftool/
+    # exiftool is also available on Windows
+    def exiftool_title(*a, **kw):
+        return None

@@ -6,6 +6,7 @@ import unittest
 import tempfile
 import sys
 import subprocess
+import logging
 try:
     from unittest import mock  # py3
 except ImportError:
@@ -17,7 +18,7 @@ import textwrap
 import warnings
 
 import fulltext
-from fulltext.util import ShellError
+from fulltext.util import is_windows
 from fulltext.compat import which
 
 from six import PY3
@@ -43,6 +44,10 @@ TEXT_WITH_NEWLINES = u"Lorem ipsum\ndolor sit amet, consectetur adipiscing e" \
                      u"m et, aliquam quis metus. Vivamus\neget purus diam."
 
 TEXT = TEXT_WITH_NEWLINES.replace('\n', ' ')
+WINDOWS = is_windows()
+APPVEYOR = bool(os.environ.get('APPVEYOR'))
+
+logging.basicConfig(level=logging.WARNING)
 
 
 # ===================================================================
@@ -67,7 +72,7 @@ class BaseTestCase(unittest.TestCase):
 
     # --- utils
 
-    def touch(self, fname, content=b""):
+    def touch(self, fname, content=None):
         if isinstance(content, bytes):
             f = open(fname, "wb")
         else:
@@ -136,7 +141,7 @@ class FullTextTestCase(BaseTestCase):
         # In this case we hit the pdf backend which runs a command, the
         # command fails because the file does not exist resulting in
         # ShellError.
-        self.assertRaises(ShellError, fulltext.get, 'non-existent-file.pdf')
+        self.assertRaises(IOError, fulltext.get, 'non-existent-file.txt')
 
     def test_unknown_default(self):
         "Ensure unknown file type returns default instead of exception."
@@ -180,7 +185,8 @@ class TestCLI(BaseTestCase):
             "%s -m fulltext extract %s" % (sys.executable, "files/test.txt"),
             shell=True)
 
-    def test_test(self):
+    @unittest.skipIf(WINDOWS, "fails on Windows")
+    def test_check(self):
         subprocess.check_output(
             "%s -m fulltext -t check" % sys.executable, shell=True)
 
@@ -292,6 +298,7 @@ class OdtTestCase(BaseTestCase, PathAndFileTests):
     ext = 'odt'
 
 
+@unittest.skipIf(WINDOWS, "not supported on Windows")
 class DocTestCase(BaseTestCase, PathAndFileTests):
     ext = "doc"
 
@@ -324,6 +331,7 @@ class ZipTestCase(BaseTestCase, PathAndFileTests):
     ext = "zip"
 
 
+@unittest.skipIf(WINDOWS, "not supported on Windows")
 class RtfTestCase(BaseTestCase, PathAndFileTests):
     ext = "rtf"
 
@@ -332,6 +340,11 @@ class CsvTestCase(BaseTestCase, PathAndFileTests):
     ext = "csv"
     mime = 'text/csv'
     text = TEXT.replace(',', '')
+
+    def test_newlines(self):
+        # See: https://github.com/btimby/fulltext/issues/68
+        fname = self.touch('testfn.csv', content="foo\n\rbar")
+        self.assertEqual(fulltext.get(fname), "foo bar")
 
 
 class TsvTestCase(BaseTestCase, PathAndFileTests):
@@ -344,6 +357,7 @@ class PsvTestCase(BaseTestCase, PathAndFileTests):
     mime = 'text/psv'
 
 
+@unittest.skipIf(WINDOWS, "not supported on Windows")
 class PngTestCase(BaseTestCase, PathAndFileTests):
     ext = "png"
 
@@ -352,6 +366,7 @@ class EpubTestCase(BaseTestCase, PathAndFileTests):
     ext = "epub"
 
 
+@unittest.skipIf(WINDOWS, "not supported on Windows")
 class PsTestCase(BaseTestCase, PathAndFileTests):
     ext = "ps"
 
@@ -399,6 +414,7 @@ class GzTestCase(BaseTestCase, PathAndFileTests):
 
 class FilesTestCase(BaseTestCase):
 
+    @unittest.skipIf(WINDOWS, "not supported on Windows")
     def test_old_doc_file(self):
         "Antiword does not support older Word documents."
         with open('files/test.old.doc', 'rb') as f:
@@ -406,6 +422,7 @@ class FilesTestCase(BaseTestCase):
             self.assertStartsWith('eZ-Audit', text)
             self.assertIsInstance(text, u"".__class__)
 
+    @unittest.skipIf(WINDOWS, "not supported on Windows")
     def test_old_doc_path(self):
         "Antiword does not support older Word documents."
         text = fulltext.get('files/test.old.doc', backend='doc')
@@ -423,6 +440,7 @@ class TestPickups(BaseTestCase):
 
     # --- by extension
 
+    @unittest.skipIf(WINDOWS, "not supported on Windows")
     def test_by_ext(self):
         fname = self.touch('testfn.doc')
         with mock.patch('fulltext.handle_path', return_value="") as m:
@@ -466,6 +484,7 @@ class TestPickups(BaseTestCase):
 
     # -- by name opt
 
+    @unittest.skipIf(WINDOWS, "not supported on Windows")
     def test_by_name(self):
         fname = self.touch('testfn')
         with mock.patch('fulltext.handle_path', return_value="") as m:
@@ -489,9 +508,9 @@ class TestPickups(BaseTestCase):
         # Assert file ext is ignored if backend opt is used.
         fname = self.touch('testfn.doc')
         with mock.patch('fulltext.handle_path', return_value="") as m:
-            fulltext.get(fname, backend='pdf')
+            fulltext.get(fname, backend='html')
             klass = m.call_args[0][0]
-            self.assertEqual(klass.__module__, 'fulltext.backends.__pdf')
+            self.assertEqual(klass.__module__, 'fulltext.backends.__html')
 
     def test_by_invalid_backend(self):
         # Assert file ext is ignored if backend opt is used.
@@ -515,12 +534,13 @@ class TestFileObj(BaseTestCase):
     def test_name_attr(self):
         # Make sure that fulltext attempts to determine file name
         # from "name" attr of the file obj.
-        f = tempfile.NamedTemporaryFile(suffix='.pdf')
+        f = tempfile.NamedTemporaryFile(suffix='.html')
         with mock.patch('fulltext.handle_fobj', return_value="") as m:
             fulltext.get(f)
             klass = m.call_args[0][0]
-            self.assertEqual(klass.__module__, 'fulltext.backends.__pdf')
+            self.assertEqual(klass.__module__, 'fulltext.backends.__html')
 
+    @unittest.skipIf(WINDOWS, "not supported on Windows")
     def test_fobj_offset(self):
         # Make sure offset is unaltered after guessing mime type.
         f = self.touch_fobj(content=b"hello world")
@@ -544,10 +564,12 @@ class TestGuessingFromFileContent(BaseTestCase):
     from its content.
     """
 
+    @unittest.skipIf(WINDOWS, "not supported on Windows")
     def test_magic_is_installed(self):
         from fulltext.util import magic
         self.assertIsNotNone(magic)
 
+    @unittest.skipIf(WINDOWS, "not supported on Windows")
     def test_pdf(self):
         fname = "file-noext"
         self.touch(fname, content=open('files/test.pdf', 'rb').read())
@@ -556,6 +578,7 @@ class TestGuessingFromFileContent(BaseTestCase):
             klass = m.call_args[0][0]
             self.assertEqual(klass.__module__, 'fulltext.backends.__pdf')
 
+    @unittest.skipIf(WINDOWS, "not supported on Windows")
     def test_html(self):
         fname = "file-noext"
         self.touch(fname, content=open('files/test.html', 'rb').read())
@@ -571,7 +594,8 @@ class TestUtils(BaseTestCase):
         from fulltext.util import is_file_path
         assert is_file_path('foo')
         assert is_file_path(b'foo')
-        assert not is_file_path(open(__file__))
+        with open(__file__) as f:
+            assert not is_file_path(f)
 
 
 # ===================================================================
@@ -599,6 +623,7 @@ class TestEncodingGeneric(BaseTestCase):
             fulltext.ENCODING_ERRORS = errors
 
 
+@unittest.skipIf(WINDOWS, "not supported on Windows")
 class TestUnicodeBase(object):
     ext = None
     italian = u"ciao bella àèìòù "
@@ -662,6 +687,7 @@ class TestUnicodeOdt(BaseTestCase, TestUnicodeBase):
 # ps backend uses `pstotext` CLI tool, which does not correctly
 # handle unicode. Just make sure we don't crash if passed the
 # error handler.
+@unittest.skipIf(WINDOWS, "not supported on Windows")
 class TestUnicodePs(BaseTestCase):
 
     def test_italian(self):
@@ -679,6 +705,7 @@ class TestUnicodeHtml(BaseTestCase, TestUnicodeBase):
 # backend uses `unrtf` CLI tool, which does not correctly
 # handle unicode. Just make sure we don't crash if passed the
 # error handler.
+@unittest.skipIf(WINDOWS, "not supported on Windows")
 class TestUnicodeRtf(BaseTestCase):
     ext = "rtf"
 
@@ -759,6 +786,7 @@ class TestUnicodeMbox(BaseTestCase, TestUnicodeBase):
 # ===================================================================
 
 
+@unittest.skipIf(WINDOWS, "not supported on Windows")
 class TestTitle(BaseTestCase):
 
     def test_html(self):
@@ -778,6 +806,7 @@ class TestTitle(BaseTestCase):
 
     def test_doc(self):
         fname = "files/others/hello-world.doc"
+        fulltext.get_with_title(fname)
         self.assertEqual(
             fulltext.get_with_title(fname)[1], 'Lab 1: Hello World')
 

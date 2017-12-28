@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+import errno
 import re
 import logging
 import os
@@ -72,7 +73,8 @@ def register_backend(mimetype, module, extensions=None):
 
 register_backend(
     'application/zip',
-    'fulltext.backends.__zip')
+    'fulltext.backends.__zip',
+    extensions=[".zip"])
 
 for mt in ("text/xml", "application/xml", "application/x-xml"):
     register_backend(
@@ -87,7 +89,8 @@ register_backend(
 
 register_backend(
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    'fulltext.backends.__xlsx')
+    'fulltext.backends.__xlsx',
+    extensions=['.xlsx'])
 
 register_backend(
     'text/plain',
@@ -96,23 +99,28 @@ register_backend(
 
 register_backend(
     'application/rtf',
-    'fulltext.backends.__rtf')
+    'fulltext.backends.__rtf',
+    extensions=['.rtf'])
 
 register_backend(
     'application/vnd.openxmlformats-officedocument.presentationml.presentation',  # NOQA
-    'fulltext.backends.__pptx')
+    'fulltext.backends.__pptx',
+    extensions=['.pptx'])
 
 register_backend(
     'application/pdf',
-    'fulltext.backends.__pdf')
+    'fulltext.backends.__pdf',
+    extensions=['.pdf'])
 
 register_backend(
     'application/vnd.oasis.opendocument.text',
-    'fulltext.backends.__odt')
+    'fulltext.backends.__odt',
+    extensions=['.odt'])
 
 register_backend(
     'application/vnd.oasis.opendocument.spreadsheet',
-    'fulltext.backends.__odt')
+    'fulltext.backends.__odt',
+    extensions=['.ods'])
 
 # images
 register_backend(
@@ -127,15 +135,18 @@ register_backend(
 
 register_backend(
     'image/png',
-    'fulltext.backends.__ocr')
+    'fulltext.backends.__ocr',
+    extensions=['.png'])
 
 register_backend(
     'image/gif',
-    'fulltext.backends.__ocr')
+    'fulltext.backends.__ocr',
+    extensions=['.gif'])
 
 register_backend(
     'application/x-hwp',
-    'fulltext.backends.__hwp')
+    'fulltext.backends.__hwp',
+    extensions=['.hwp'])
 
 for mt in ('text/html', 'application/html', 'text/xhtml'):
     register_backend(
@@ -145,7 +156,8 @@ for mt in ('text/html', 'application/html', 'text/xhtml'):
 
 register_backend(
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'fulltext.backends.__docx')
+    'fulltext.backends.__docx',
+    extensions=['.docx'])
 
 register_backend(
     'application/msword',
@@ -295,7 +307,6 @@ def handle_fobj(backend, f, **kwargs):
 
         with fobj_to_tempfile(f, suffix=ext) as fname:
             return backend.handle_path(fname, **kwargs)
-
     else:
         raise AssertionError(
             'Backend %s has no _get functions' % backend.__name__)
@@ -322,13 +333,30 @@ def backend_from_fname(name):
     ext = splitext(name)[1]
     try:
         mime = EXTS_TO_MIMETYPES[ext]
+
     except KeyError:
-        with open(name, 'rb') as f:
-            return backend_from_fobj(f)
+        try:
+            f = open(name, 'rb')
+
+        except IOError as e:
+            # The file may not exist, we are being asked to determine it's type
+            # from it's name. Other errors are unexpected.
+            if e.errno != errno.ENOENT:
+                raise
+
+            # We will have to fall back upon the default backend.
+            warn("don't know how to handle %r; assume %r" % (
+                name, DEFAULT_MIME))
+            mod_name = MIMETYPE_TO_BACKENDS[DEFAULT_MIME]
+        else:
+            with f:
+                return backend_from_fobj(f)
+
     else:
         mod_name = MIMETYPE_TO_BACKENDS[mime]
-        mod = import_mod(mod_name)
-        return mod
+
+    mod = import_mod(mod_name)
+    return mod
 
 
 def backend_from_fobj(f):
