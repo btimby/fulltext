@@ -54,11 +54,10 @@ class Backend(BaseBackend):
                     "%r backend could not handle gzip file object directly; "
                     "retrying by extracting the gzip on disk" % backend)
 
-                f.close()
-                f, _ = self.get_fobj_and_path(path_or_file)
+                f2, _ = self.get_fobj_and_path(path_or_file)
                 ext = splitext(orig_name)[1]
-                with f:
-                    with fobj_to_tempfile(f, suffix=ext) as fname:
+                with f2:
+                    with fobj_to_tempfile(f2, suffix=ext) as fname:
                         return get(fname, backend=backend)
 
     handle_path = handle_fobj
