@@ -11,6 +11,12 @@ else:
     # Backport from Python 3.3.
     from contextlib2 import ExitStack  # NOQA
 
+
+POSIX = os.name == "posix"
+WINDOWS = os.name == "nt"
+LINUX = sys.platform.startswith("linux")
+
+
 try:
     from shutil import which
 except ImportError:
