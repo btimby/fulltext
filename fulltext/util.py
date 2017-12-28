@@ -1,3 +1,4 @@
+import contextlib
 import atexit
 import errno
 import logging
@@ -6,6 +7,8 @@ import subprocess
 import warnings
 import sys
 import functools
+import tempfile
+import shutil
 
 from os.path import dirname, abspath
 from os.path import join as pathjoin
@@ -23,6 +26,7 @@ LOGGER.addHandler(logging.NullHandler())
 # _MEIPASS attribute of sys module, otherwise, we can simply use the parent of
 # the directory containing this source file.
 BASE_PATH = getattr(sys, '_MEIPASS', dirname(dirname(abspath(__file__))))
+TEMPDIR = os.environ.get('FULLTEXT_TEMP', tempfile.gettempdir())
 
 
 class BackendError(AssertionError):
@@ -125,7 +129,7 @@ def run(*cmd, **kwargs):
 
 
 def warn(msg):
-    warnings.warn(msg, UserWarning)
+    warnings.warn(msg, UserWarning, stacklevel=2)
     LOGGER.warning(msg)
 
 
@@ -234,6 +238,20 @@ def hilite(s, ok=True, bold=False):
 def is_file_path(obj):
     """Return True if obj is a possible file path or name."""
     return isinstance(obj, six.string_types) or isinstance(obj, bytes)
+
+
+@contextlib.contextmanager
+def fobj_to_tempfile(f, suffix=''):
+    """Context manager which copies a file object to disk and return its
+    name. When done the file is deleted.
+    """
+    with tempfile.NamedTemporaryFile(
+            dir=TEMPDIR, suffix=suffix, delete=False) as t:
+        shutil.copyfileobj(f, t)
+    try:
+        yield t.name
+    finally:
+        os.remove(t.name)
 
 
 if POSIX:
