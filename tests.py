@@ -174,6 +174,18 @@ class FullTextTestCase(BaseTestCase):
                                   'Test punctuation removal! Test spaces '
                                   'removal!', stripped)
 
+    def test_register_backend_ext(self):
+        fulltext.register_backend(
+            'application/ijustmadethisup',
+            'fulltext.backends.__html',
+            extensions=['.ijustmadethisup'])
+
+        fname = self.touch("document.ijustmadethisup")
+        with mock.patch('fulltext.handle_path', return_value="") as m:
+            fulltext.get(fname)
+            klass = m.call_args[0][0]
+            self.assertEqual(klass.__module__, 'fulltext.backends.__html')
+
 
 class TestCLI(BaseTestCase):
 
