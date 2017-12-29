@@ -331,6 +331,10 @@ class ZipTestCase(BaseTestCase, PathAndFileTests):
     ext = "zip"
 
 
+class PdfTestCase(BaseTestCase, PathAndFileTests):
+    ext = "pdf"
+
+
 @unittest.skipIf(WINDOWS, "not supported on Windows")
 class RtfTestCase(BaseTestCase, PathAndFileTests):
     ext = "rtf"
