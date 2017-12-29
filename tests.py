@@ -331,7 +331,6 @@ class ZipTestCase(BaseTestCase, PathAndFileTests):
     ext = "zip"
 
 
-@unittest.skipIf(WINDOWS, "not supported on Windows")
 class PdfTestCase(BaseTestCase, PathAndFileTests):
     ext = "pdf"
 
@@ -400,7 +399,6 @@ class HwpTestCase(BaseTestCase, PathAndFileTests):
 class GzTestCase(BaseTestCase, PathAndFileTests):
     ext = "gz"
 
-    @unittest.skipIf(WINDOWS, "not supported on Windows")
     def test_pdf(self):
         # See: https://github.com/btimby/fulltext/issues/56
         text = fulltext.get("files/gz/test.pdf.gz")
@@ -580,7 +578,6 @@ class TestGuessingFromFileContent(BaseTestCase):
         from fulltext.util import magic
         self.assertIsNotNone(magic)
 
-    @unittest.skipIf(WINDOWS, "not supported on Windows")
     def test_pdf(self):
         fname = "file-noext"
         self.touch(fname, content=open('files/test.pdf', 'rb').read())
