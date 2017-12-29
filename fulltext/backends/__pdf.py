@@ -5,11 +5,10 @@ import os
 from fulltext.util import run, assert_cmd_exists
 from fulltext import BaseBackend
 from fulltext.util import is_file_path
-from fulltext.compat import which, POSIX
+from fulltext.compat import POSIX
 
 
 def unix_cmd(path, **kwargs):
-    print(which("pdftotext"))
     cmd = ['pdftotext']
 
     if kwargs.get('layout', None):
@@ -28,6 +27,7 @@ class Backend(BaseBackend):
             assert_cmd_exists('pdfinfo')
 
     if POSIX:
+
         def handle_fobj(self, f):
             out = run(*unix_cmd('-', **self.kwargs), stdin=f)
             return self.decode(out)
@@ -35,9 +35,10 @@ class Backend(BaseBackend):
         def handle_path(self, path):
             out = run(*unix_cmd(path, **self.kwargs))
             return self.decode(out)
-    else:
+
+    else:  # Windows
+
         def handle_path(self, path):
-            # Windows implementation.
             fd, outfile = tempfile.mkstemp(suffix='.txt')
             try:
                 run("pdftotext", path, outfile)
