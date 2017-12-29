@@ -42,7 +42,7 @@ _MIMETYPES_TO_EXT = dict([(v, k) for k, v in mimetypes.types_map.items()])
 # A list of extensions which will be treated as pure text.
 # This takes precedence over register_backend().
 # https://www.openoffice.org/dev_docs/source/file_extensions.html
-TEXT_EXTS = frozenset((
+TEXT_EXTS = set((
     ".asm",  # Non-UNIX assembler source file
     ".asp",  # Active Server Page
     ".awk",  # An awk script file
