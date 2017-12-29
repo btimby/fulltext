@@ -42,7 +42,7 @@ _MIMETYPES_TO_EXT = dict([(v, k) for k, v in mimetypes.types_map.items()])
 # A list of extensions which will be treated as pure text.
 # This takes precedence over register_backend().
 # https://www.openoffice.org/dev_docs/source/file_extensions.html
-TEXT_EXTS = set((
+_TEXT_EXTS = set((
     ".asm",  # Non-UNIX assembler source file
     ".asp",  # Active Server Page
     ".awk",  # An awk script file
@@ -277,6 +277,14 @@ register_backend(
     'fulltext.backends.__bin',
     extensions=['.a', '.bin'])
 
+# Extensions which will be treated as pure text.
+# We just come up with a custom mime name.
+for ext in _TEXT_EXTS:
+    register_backend(
+        '[custom-fulltext-mime]/%s' % ext,
+        'fulltext.backends.__text',
+        extensions=[ext])
+
 
 # =====================================================================
 # --- utils
@@ -396,10 +404,6 @@ def backend_from_mime(mime):
 def backend_from_fname(name):
     """Determine backend module object from a file name."""
     ext = splitext(name)[1]
-
-    if ext in TEXT_EXTS:
-        mod_name = MIMETYPE_TO_BACKENDS['text/plain']
-        return import_mod(mod_name)
 
     try:
         mime = EXTS_TO_MIMETYPES[ext]

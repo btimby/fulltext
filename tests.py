@@ -186,6 +186,14 @@ class FullTextTestCase(BaseTestCase):
             klass = m.call_args[0][0]
             self.assertEqual(klass.__module__, 'fulltext.backends.__html')
 
+    def test_text_ext(self):
+        for ext in (".py", ".cpp", ".h", ".pl"):
+            fname = self.touch("document%s" % ext)
+            with mock.patch('fulltext.handle_path', return_value="") as m:
+                fulltext.get(fname)
+                klass = m.call_args[0][0]
+                self.assertEqual(klass.__module__, 'fulltext.backends.__text')
+
 
 class TestCLI(BaseTestCase):
 
