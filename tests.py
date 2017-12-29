@@ -19,6 +19,7 @@ import warnings
 
 import fulltext
 from fulltext.util import is_windows
+from fulltext.util import magic
 from fulltext.compat import which
 
 from six import PY3
@@ -557,7 +558,6 @@ class TestFileObj(BaseTestCase):
 
     def test_magic(self):
         # Make sure magic lib is installed.
-        from fulltext.util import magic  # NOQA
         self.assertIsNotNone(magic)
 
     def test_no_magic(self):
@@ -576,11 +576,11 @@ class TestGuessingFromFileContent(BaseTestCase):
     from its content.
     """
 
-    @unittest.skipIf(WINDOWS, "not supported on Windows")
     def test_magic_is_installed(self):
         from fulltext.util import magic
         self.assertIsNotNone(magic)
 
+    @unittest.skipIf(WINDOWS and magic is None, "magic is not installed")
     def test_pdf(self):
         fname = "file-noext"
         with open('files/test.pdf', 'rb') as f:
