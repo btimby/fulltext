@@ -23,7 +23,7 @@ class Backend(BaseBackend):
 
     def check(self, title):
         assert_cmd_exists('pdftotext')
-        if title:
+        if title and POSIX:
             assert_cmd_exists('pdfinfo')
 
     if POSIX:

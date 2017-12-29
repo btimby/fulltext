@@ -191,7 +191,7 @@ class TestCLI(BaseTestCase):
             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = p.communicate()
         if p.returncode != 0:
-            self.fail(err)
+            self.fail(err.decode())
 
 
 class TestBackendInterface(BaseTestCase):
