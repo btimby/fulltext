@@ -16,6 +16,10 @@ from os.path import join as pathjoin
 
 import six
 from six import PY3
+try:
+    import exiftool
+except ImportError:
+    exiftool = None
 
 from fulltext.compat import which
 from fulltext.compat import POSIX
@@ -271,9 +275,7 @@ def fobj_to_tempfile(f, suffix=''):
         os.remove(t.name)
 
 
-if POSIX:
-    import exiftool
-
+if exiftool is not None:
     _et = exiftool.ExifTool()
     _et.start()
 

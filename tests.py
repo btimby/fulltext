@@ -20,6 +20,7 @@ import warnings
 import fulltext
 from fulltext.util import is_windows
 from fulltext.util import magic
+from fulltext.util import exiftool
 from fulltext.compat import which
 
 from six import PY3
@@ -253,6 +254,28 @@ class TestBackendInterface(BaseTestCase):
                 fulltext.get(fname, encoding='foo', encoding_errors='bar')
 
         self.assertEqual(flags, ['setup', 'teardown'])
+
+
+class TestInstalledDeps(BaseTestCase):
+    """Make sure certain deps are installed."""
+
+    @unittest.skipIf(APPVEYOR, "AppVeyor can't detect magic")
+    def test_magic(self):
+        self.assertIsNotNone(magic)
+
+    @unittest.skipIf(WINDOWS and magic is None, "magic lib not installed")
+    def test_no_magic(self):
+        # Emulate a case where magic lib is not installed.
+        f = self.touch_fobj(content=b"hello world")
+        f.seek(0)
+        with mock.patch("fulltext.magic", None):
+            with warnings.catch_warnings(record=True) as ws:
+                mod = fulltext.backend_from_fobj(f)
+            self.assertIn("magic lib is not installed", str(ws[0].message))
+            self.assertEqual(mod.__name__, 'fulltext.backends.__bin')
+
+    def test_exiftool(self):
+        self.assertIsNotNone(exiftool)
 
 
 # ===================================================================
@@ -558,22 +581,6 @@ class TestFileObj(BaseTestCase):
         mod = fulltext.backend_from_fobj(f)
         self.assertEqual(mod.__name__, 'fulltext.backends.__text')
 
-    @unittest.skipIf(APPVEYOR, "AppVeyor can't detect magic")
-    def test_magic_is_installed(self):
-        # Make sure magic lib is installed.
-        self.assertIsNotNone(magic)
-
-    @unittest.skipIf(WINDOWS and magic is None, "magic lib not installed")
-    def test_no_magic(self):
-        # Emulate a case where magic lib is not installed.
-        f = self.touch_fobj(content=b"hello world")
-        f.seek(0)
-        with mock.patch("fulltext.magic", None):
-            with warnings.catch_warnings(record=True) as ws:
-                mod = fulltext.backend_from_fobj(f)
-            self.assertIn("magic lib is not installed", str(ws[0].message))
-            self.assertEqual(mod.__name__, 'fulltext.backends.__bin')
-
 
 class TestGuessingFromFileContent(BaseTestCase):
     """Make sure that when file has no extension its type is guessed
@@ -799,7 +806,6 @@ class TestUnicodeMbox(BaseTestCase, TestUnicodeBase):
 # ===================================================================
 
 
-@unittest.skipIf(WINDOWS, "not supported on Windows")
 class TestTitle(BaseTestCase):
 
     def test_html(self):
@@ -807,6 +813,7 @@ class TestTitle(BaseTestCase):
         self.assertEqual(
             fulltext.get_with_title(fname)[1], "Lorem ipsum")
 
+    @unittest.skipIf(WINDOWS, "not supported on Windows")
     def test_pdf(self):
         fname = "files/others/test.pdf"
         self.assertEqual(
@@ -817,6 +824,7 @@ class TestTitle(BaseTestCase):
         self.assertEqual(
             fulltext.get_with_title(fname)[1], "PRETTY ONES")
 
+    @unittest.skipIf(WINDOWS, "not supported on Windows")
     def test_doc(self):
         fname = "files/others/hello-world.doc"
         fulltext.get_with_title(fname)
@@ -839,11 +847,13 @@ class TestTitle(BaseTestCase):
         self.assertEqual(
             fulltext.get_with_title(fname)[1], 'lorem ipsum')
 
+    @unittest.skipIf(WINDOWS, "not supported on Windows")
     def test_ps(self):
         fname = "files/others/lecture.ps"
         self.assertEqual(
             fulltext.get_with_title(fname)[1], 'Hey there')
 
+    @unittest.skipIf(WINDOWS, "not supported on Windows")
     def test_rtf(self):
         fname = "files/others/test.rtf"
         self.assertEqual(
