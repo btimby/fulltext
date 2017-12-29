@@ -192,7 +192,10 @@ class TestCLI(BaseTestCase):
             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = p.communicate()
         if p.returncode != 0:
-            self.fail(err.decode())
+            # On Windows we know there are many CLI tools which
+            # are not available.
+            if not WINDOWS:
+                self.fail(err.decode())
 
 
 class TestBackendInterface(BaseTestCase):
@@ -448,13 +451,12 @@ class TestPickups(BaseTestCase):
 
     # --- by extension
 
-    @unittest.skipIf(WINDOWS, "not supported on Windows")
     def test_by_ext(self):
-        fname = self.touch('testfn.doc')
+        fname = self.touch('testfn.html')
         with mock.patch('fulltext.handle_path', return_value="") as m:
             fulltext.get(fname)
             klass = m.call_args[0][0]
-            self.assertEqual(klass.__module__, 'fulltext.backends.__doc')
+            self.assertEqual(klass.__module__, 'fulltext.backends.__html')
 
     def test_no_ext(self):
         # File with no extension == use bin backend.
@@ -556,10 +558,12 @@ class TestFileObj(BaseTestCase):
         mod = fulltext.backend_from_fobj(f)
         self.assertEqual(mod.__name__, 'fulltext.backends.__text')
 
-    def test_magic(self):
+    @unittest.skipIf(APPVEYOR, "AppVeyor can't detect magic")
+    def test_magic_is_installed(self):
         # Make sure magic lib is installed.
         self.assertIsNotNone(magic)
 
+    @unittest.skipIf(WINDOWS and magic is None, "magic lib not installed")
     def test_no_magic(self):
         # Emulate a case where magic lib is not installed.
         f = self.touch_fobj(content=b"hello world")
@@ -575,10 +579,6 @@ class TestGuessingFromFileContent(BaseTestCase):
     """Make sure that when file has no extension its type is guessed
     from its content.
     """
-
-    def test_magic_is_installed(self):
-        from fulltext.util import magic
-        self.assertIsNotNone(magic)
 
     @unittest.skipIf(WINDOWS and magic is None, "magic is not installed")
     def test_pdf(self):

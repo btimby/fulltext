@@ -155,7 +155,6 @@ else:
         # Help the magic wrapper locate magic1.dll, we include it in
         # bin/bin{32,64}.
         bindir = 'bin64' if is_windows64() else 'bin32'
-        print(bindir)
         path = pathjoin(BASE_PATH, 'bin', bindir)
         assert os.path.isdir(path), path
         os.environ['PATH'] += os.pathsep + path

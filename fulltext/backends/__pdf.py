@@ -41,7 +41,6 @@ class Backend(BaseBackend):
         def handle_path(self, path):
             fd, outfile = tempfile.mkstemp(suffix='.txt')
             try:
-                print(which("pdftotext"))
                 run(which("pdftotext"), path, outfile)
                 with open(outfile, "rb") as f:
                     text = f.read()
