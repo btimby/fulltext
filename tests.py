@@ -185,10 +185,13 @@ class TestCLI(BaseTestCase):
             "%s -m fulltext extract %s" % (sys.executable, "files/test.txt"),
             shell=True)
 
-    @unittest.skipIf(WINDOWS, "fails on Windows")
     def test_check(self):
-        subprocess.check_output(
-            "%s -m fulltext -t check" % sys.executable, shell=True)
+        p = subprocess.Popen(
+            "%s -m fulltext -t check" % sys.executable, shell=True,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        out, err = p.communicate()
+        if p.returncode != 0:
+            self.fail(err)
 
 
 class TestBackendInterface(BaseTestCase):
