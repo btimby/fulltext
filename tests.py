@@ -580,7 +580,9 @@ class TestGuessingFromFileContent(BaseTestCase):
 
     def test_pdf(self):
         fname = "file-noext"
-        self.touch(fname, content=open('files/test.pdf', 'rb').read())
+        with open('files/test.pdf', 'rb') as f:
+            data = f.read()
+        self.touch(fname, content=data)
         with mock.patch('fulltext.handle_path', return_value="") as m:
             fulltext.get(fname)
             klass = m.call_args[0][0]
