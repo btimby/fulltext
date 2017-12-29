@@ -38,8 +38,11 @@ MAGIC_BUFFER_SIZE = 1024
 
 mimetypes.init()
 _MIMETYPES_TO_EXT = dict([(v, k) for k, v in mimetypes.types_map.items()])
+
+# A list of extensions which will be treated as pure text.
+# This takes precedence over register_backend().
 # https://www.openoffice.org/dev_docs/source/file_extensions.html
-SRC_CODE_EXTS = frozenset((
+TEXT_EXTS = frozenset((
     ".asm",  # Non-UNIX assembler source file
     ".asp",  # Active Server Page
     ".awk",  # An awk script file
@@ -104,6 +107,7 @@ SRC_CODE_EXTS = frozenset((
 # =====================================================================
 # --- backends
 # =====================================================================
+
 
 def register_backend(mimetype, module, extensions=None):
     """Register a backend.
@@ -393,7 +397,7 @@ def backend_from_fname(name):
     """Determine backend module object from a file name."""
     ext = splitext(name)[1]
 
-    if ext in SRC_CODE_EXTS:
+    if ext in TEXT_EXTS:
         mod_name = MIMETYPE_TO_BACKENDS['text/plain']
         return import_mod(mod_name)
 
