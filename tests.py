@@ -331,6 +331,7 @@ class ZipTestCase(BaseTestCase, PathAndFileTests):
     ext = "zip"
 
 
+@unittest.skipIf(WINDOWS, "not supported on Windows")
 class PdfTestCase(BaseTestCase, PathAndFileTests):
     ext = "pdf"
 
@@ -552,6 +553,11 @@ class TestFileObj(BaseTestCase):
         f.seek(0)
         mod = fulltext.backend_from_fobj(f)
         self.assertEqual(mod.__name__, 'fulltext.backends.__text')
+
+    def test_magic(self):
+        # Make sure magic lib is installed.
+        from fulltext.util import magic  # NOQA
+        self.assertIsNotNone(magic)
 
     def test_no_magic(self):
         # Emulate a case where magic lib is not installed.
