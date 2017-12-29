@@ -14,5 +14,5 @@ ebooklib
 contextlib2
 mock
 
-https://github.com/mattgwwalker/msg-extractor/zipball/master
+https://github.com/mattgwwalker/msg-extractor/zipball/master#egg=ExtractMsg
 git+https://github.com/smarnach/pyexiftool.git#egg=pyexiftool
