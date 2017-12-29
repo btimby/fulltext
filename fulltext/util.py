@@ -22,7 +22,6 @@ except ImportError:
     exiftool = None
 
 from fulltext.compat import which
-from fulltext.compat import POSIX
 
 
 LOGGER = logging.getLogger(__file__)
