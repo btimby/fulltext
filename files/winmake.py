@@ -25,7 +25,7 @@ import tempfile
 
 
 PYTHON = os.getenv('PYTHON', sys.executable)
-TSCRIPT = os.getenv('TSCRIPT', 'tests.py')
+TSCRIPT = 'tests.py'
 GET_PIP_URL = "https://bootstrap.pypa.io/get-pip.py"
 PY3 = sys.version_info[0] == 3
 _cmds = {}

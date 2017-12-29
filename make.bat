@@ -7,9 +7,6 @@ rem ==========================================================================
 if "%PYTHON%" == "" (
     set PYTHON=C:\Python35\python.exe
 )
-if "%TSCRIPT%" == "" (
-    set TSCRIPT=tests.py
-)
 
 rem Needed to locate the .pypirc file and upload exes on PYPI.
 set HOME=%USERPROFILE%
