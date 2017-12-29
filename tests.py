@@ -129,6 +129,9 @@ class BaseTestCase(unittest.TestCase):
             raise AssertionError(msg)
 
 
+unittest.TestCase = BaseTestCase
+
+
 class FullTextTestCase(BaseTestCase):
 
     def test_missing_default(self):
@@ -159,20 +162,14 @@ class FullTextTestCase(BaseTestCase):
         "Ensure None is a valid value to pass as default."
         self.assertEqual(fulltext.get('unknown-file.foobar', None), None)
 
-
-class FullTextStripTestCase(BaseTestCase):
-    """Test binary backend stripping."""
-
-    def setUp(self):
-        self.file = BytesIO()
-        self.file.write(b'  Test leading and trailing spaces removal.  ')
-        self.file.write(b'Test @$%* punctuation removal! ')
-        self.file.write(b'Test    spaces     removal! ')
-        self.file.seek(0)
-
     def test_text_strip(self):
         """Ensure that stripping works as expected."""
-        stripped = fulltext.get(self.file, backend='bin')
+        file = BytesIO()
+        file.write(b'  Test leading and trailing spaces removal.  ')
+        file.write(b'Test @$%* punctuation removal! ')
+        file.write(b'Test    spaces     removal! ')
+        file.seek(0)
+        stripped = fulltext.get(file, backend='bin')
         self.assertMultiLineEqual('Test leading and trailing spaces removal. '
                                   'Test punctuation removal! Test spaces '
                                   'removal!', stripped)
