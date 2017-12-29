@@ -4,7 +4,7 @@ import os
 
 from fulltext.util import run, assert_cmd_exists
 from fulltext import BaseBackend
-from fulltext.util import is_file_path
+from fulltext.util import is_file_path, which
 from fulltext.compat import POSIX
 
 
@@ -41,7 +41,8 @@ class Backend(BaseBackend):
         def handle_path(self, path):
             fd, outfile = tempfile.mkstemp(suffix='.txt')
             try:
-                run("pdftotext", path, outfile)
+                print(which("pdftotext"))
+                run(which("pdftotext"), path, outfile)
                 with open(outfile, "rb") as f:
                     text = f.read()
                 return self.decode(text)
