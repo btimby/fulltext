@@ -299,7 +299,8 @@ def handle_fobj(backend, f, **kwargs):
         # Fallback to handle_path(). Warn user since this is potentially
         # expensive.
         LOGGER.debug("using handle_path")
-        LOGGER.warning("Using disk, backend does not provide `handle_fobj()`")
+        LOGGER.warning(
+            "Using disk, %r backend does not provide `handle_fobj()`", backend)
 
         ext = ''
         if 'ext' in kwargs:
