@@ -129,6 +129,9 @@ class BaseTestCase(unittest.TestCase):
             raise AssertionError(msg)
 
 
+unittest.TestCase = BaseTestCase
+
+
 class FullTextTestCase(BaseTestCase):
 
     def test_missing_default(self):
@@ -159,23 +162,37 @@ class FullTextTestCase(BaseTestCase):
         "Ensure None is a valid value to pass as default."
         self.assertEqual(fulltext.get('unknown-file.foobar', None), None)
 
-
-class FullTextStripTestCase(BaseTestCase):
-    """Test binary backend stripping."""
-
-    def setUp(self):
-        self.file = BytesIO()
-        self.file.write(b'  Test leading and trailing spaces removal.  ')
-        self.file.write(b'Test @$%* punctuation removal! ')
-        self.file.write(b'Test    spaces     removal! ')
-        self.file.seek(0)
-
     def test_text_strip(self):
         """Ensure that stripping works as expected."""
-        stripped = fulltext.get(self.file, backend='bin')
+        file = BytesIO()
+        file.write(b'  Test leading and trailing spaces removal.  ')
+        file.write(b'Test @$%* punctuation removal! ')
+        file.write(b'Test    spaces     removal! ')
+        file.seek(0)
+        stripped = fulltext.get(file, backend='bin')
         self.assertMultiLineEqual('Test leading and trailing spaces removal. '
                                   'Test punctuation removal! Test spaces '
                                   'removal!', stripped)
+
+    def test_register_backend_ext(self):
+        fulltext.register_backend(
+            'application/ijustmadethisup',
+            'fulltext.backends.__html',
+            extensions=['.ijustmadethisup'])
+
+        fname = self.touch("document.ijustmadethisup")
+        with mock.patch('fulltext.handle_path', return_value="") as m:
+            fulltext.get(fname)
+            klass = m.call_args[0][0]
+            self.assertEqual(klass.__module__, 'fulltext.backends.__html')
+
+    def test_text_ext(self):
+        for ext in (".py", ".cpp", ".h", ".pl"):
+            fname = self.touch("document%s" % ext)
+            with mock.patch('fulltext.handle_path', return_value="") as m:
+                fulltext.get(fname)
+                klass = m.call_args[0][0]
+                self.assertEqual(klass.__module__, 'fulltext.backends.__text')
 
 
 class TestCLI(BaseTestCase):
@@ -518,6 +535,16 @@ class TestPickups(BaseTestCase):
         fname = self.touch('testfn.doc')
         with self.assertRaises(ValueError):
             fulltext.get(fname, backend='yoo')
+
+    # --- by src code ext
+
+    def test_src_code_ext(self):
+        fname = "file.js"
+        self.touch(fname, content="foo bar")
+        with mock.patch('fulltext.handle_path', return_value="") as m:
+            fulltext.get(fname)
+            klass = m.call_args[0][0]
+            self.assertEqual(klass.__module__, 'fulltext.backends.__text')
 
 
 # ===================================================================

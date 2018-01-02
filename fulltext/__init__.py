@@ -39,10 +39,75 @@ MAGIC_BUFFER_SIZE = 1024
 mimetypes.init()
 _MIMETYPES_TO_EXT = dict([(v, k) for k, v in mimetypes.types_map.items()])
 
+# A list of extensions which will be treated as pure text.
+# This takes precedence over register_backend().
+# https://www.openoffice.org/dev_docs/source/file_extensions.html
+_TEXT_EXTS = set((
+    ".asm",  # Non-UNIX assembler source file
+    ".asp",  # Active Server Page
+    ".awk",  # An awk script file
+    ".bat",  # MS-DOS batch file
+    ".c",    # C language file
+    ".class",  # Compiled java source code file
+    ".cmd",  # Compiler command file
+    ".cpp",  # C++ language file
+    ".cxx",  # C++ language file
+    ".def",  # Win32 library definition file
+    ".dpc",  # Source dependency file containing list of dependencies
+    ".dpj",  # Java source dependency file containing list of dependencies
+    ".h",    # C header file
+    ".hpp",  # Generated C++ header or header plus plus file
+    ".hrc",  # An ".src",  # include header file
+    ".hxx",  # C++ header file
+    ".in",
+    ".inc",  # Include file
+    ".ini",  # Initialization file
+    ".inl",  # Inline header file
+    ".jar",  # Java classes archive file
+    ".java",  # Java language file
+    ".js",   # JavaScript code file
+    ".jsp",  # Java Server Page file
+    ".kdelnk",  # KDE1 configuration file
+    ".l",    # Lex source code file
+    ".ll",   # Lex source code file
+    ".lnx",  # Linux-specific makefile
+    ".log",  # Log file
+    ".lst",  # ASCII database file used in solenv
+    ".MacOS",
+    ".md",   # Markdown language.
+    ".mk",   # A dmake makefile
+    ".mod",  # BASIC module file
+    ".par",  # Script particles file
+    ".pl",   # Perl script
+    ".plc",  # Former build script file, now obsolete
+    ".pld",  # Former build script file, now obsolete
+    ".pm",   # Perl module file
+    ".pmk",  # Project makefiles
+    ".pre",  # Preprocessor output from scpcomp
+    ".py",   # Python
+    ".pyx",  # Cython
+    ".r",    # Resource file for Macintosh
+    ".rc",   # A dmake recursive makefile or a Win32 resource script file
+    ".rdb",  # Interface and type description database (type library)
+    ".res",  # Resource file
+    ".rst",  # Restructured text
+    ".s",    # Assembler source file (UNIX)
+    ".sbl",  # BASIC file
+    ".scp",  # Script source file
+    ".sh",   # Shell script
+    ".src",  # Source resource string file
+    ".txt",  # Language text file
+    ".y",    # Yacc source code file
+    ".yaml",  # Yaml
+    ".yml",  # Yaml
+    ".yxx",  # Bison source code file
+))
+
 
 # =====================================================================
 # --- backends
 # =====================================================================
+
 
 def register_backend(mimetype, module, extensions=None):
     """Register a backend.
@@ -212,6 +277,14 @@ register_backend(
     'fulltext.backends.__bin',
     extensions=['.a', '.bin'])
 
+# Extensions which will be treated as pure text.
+# We just come up with a custom mime name.
+for ext in _TEXT_EXTS:
+    register_backend(
+        '[custom-fulltext-mime]/%s' % ext,
+        'fulltext.backends.__text',
+        extensions=[ext])
+
 
 # =====================================================================
 # --- utils
@@ -331,9 +404,9 @@ def backend_from_mime(mime):
 def backend_from_fname(name):
     """Determine backend module object from a file name."""
     ext = splitext(name)[1]
+
     try:
         mime = EXTS_TO_MIMETYPES[ext]
-
     except KeyError:
         try:
             f = open(name, 'rb')
