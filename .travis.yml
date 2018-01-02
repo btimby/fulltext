@@ -8,7 +8,7 @@ before_install:
 install:
   - pip install --timeout=60 -q -e .
 before_script:
-  - make check
+  - make lint
   - python -m fulltext -t check
 script:
-  - make test
+  - make ci

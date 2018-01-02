@@ -13,6 +13,7 @@ python-magic
 ebooklib
 contextlib2
 mock
+rarfile
 
 https://github.com/mattgwwalker/msg-extractor/zipball/master#egg=ExtractMsg
 git+https://github.com/smarnach/pyexiftool.git#egg=pyexiftool
