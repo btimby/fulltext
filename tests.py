@@ -19,6 +19,8 @@ import warnings
 
 import fulltext
 from fulltext.util import is_windows
+from fulltext.util import magic
+from fulltext.util import exiftool
 from fulltext.compat import which
 
 from six import PY3
@@ -202,10 +204,16 @@ class TestCLI(BaseTestCase):
             "%s -m fulltext extract %s" % (sys.executable, "files/test.txt"),
             shell=True)
 
-    @unittest.skipIf(WINDOWS, "fails on Windows")
     def test_check(self):
-        subprocess.check_output(
-            "%s -m fulltext -t check" % sys.executable, shell=True)
+        p = subprocess.Popen(
+            "%s -m fulltext -t check" % sys.executable, shell=True,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        out, err = p.communicate()
+        if p.returncode != 0:
+            # On Windows we know there are many CLI tools which
+            # are not available.
+            if not WINDOWS:
+                self.fail(err.decode())
 
 
 class TestBackendInterface(BaseTestCase):
@@ -263,6 +271,28 @@ class TestBackendInterface(BaseTestCase):
                 fulltext.get(fname, encoding='foo', encoding_errors='bar')
 
         self.assertEqual(flags, ['setup', 'teardown'])
+
+
+class TestInstalledDeps(BaseTestCase):
+    """Make sure certain deps are installed."""
+
+    @unittest.skipIf(APPVEYOR, "AppVeyor can't detect magic")
+    def test_magic(self):
+        self.assertIsNotNone(magic)
+
+    @unittest.skipIf(WINDOWS and magic is None, "magic lib not installed")
+    def test_no_magic(self):
+        # Emulate a case where magic lib is not installed.
+        f = self.touch_fobj(content=b"hello world")
+        f.seek(0)
+        with mock.patch("fulltext.magic", None):
+            with warnings.catch_warnings(record=True) as ws:
+                mod = fulltext.backend_from_fobj(f)
+            self.assertIn("magic lib is not installed", str(ws[0].message))
+            self.assertEqual(mod.__name__, 'fulltext.backends.__bin')
+
+    def test_exiftool(self):
+        self.assertIsNotNone(exiftool)
 
 
 # ===================================================================
@@ -348,6 +378,10 @@ class ZipTestCase(BaseTestCase, PathAndFileTests):
     ext = "zip"
 
 
+class PdfTestCase(BaseTestCase, PathAndFileTests):
+    ext = "pdf"
+
+
 class RarTestCase(BaseTestCase, PathAndFileTests):
     ext = "rar"
 
@@ -416,7 +450,6 @@ class HwpTestCase(BaseTestCase, PathAndFileTests):
 class GzTestCase(BaseTestCase, PathAndFileTests):
     ext = "gz"
 
-    @unittest.skipIf(WINDOWS, "not supported on Windows")
     def test_pdf(self):
         # See: https://github.com/btimby/fulltext/issues/56
         text = fulltext.get("files/gz/test.pdf.gz")
@@ -462,13 +495,12 @@ class TestPickups(BaseTestCase):
 
     # --- by extension
 
-    @unittest.skipIf(WINDOWS, "not supported on Windows")
     def test_by_ext(self):
-        fname = self.touch('testfn.doc')
+        fname = self.touch('testfn.html')
         with mock.patch('fulltext.handle_path', return_value="") as m:
             fulltext.get(fname)
             klass = m.call_args[0][0]
-            self.assertEqual(klass.__module__, 'fulltext.backends.__doc')
+            self.assertEqual(klass.__module__, 'fulltext.backends.__html')
 
     def test_no_ext(self):
         # File with no extension == use bin backend.
@@ -580,31 +612,18 @@ class TestFileObj(BaseTestCase):
         mod = fulltext.backend_from_fobj(f)
         self.assertEqual(mod.__name__, 'fulltext.backends.__text')
 
-    def test_no_magic(self):
-        # Emulate a case where magic lib is not installed.
-        f = self.touch_fobj(content=b"hello world")
-        f.seek(0)
-        with mock.patch("fulltext.magic", None):
-            with warnings.catch_warnings(record=True) as ws:
-                mod = fulltext.backend_from_fobj(f)
-            self.assertIn("magic lib is not installed", str(ws[0].message))
-            self.assertEqual(mod.__name__, 'fulltext.backends.__bin')
-
 
 class TestGuessingFromFileContent(BaseTestCase):
     """Make sure that when file has no extension its type is guessed
     from its content.
     """
 
-    @unittest.skipIf(WINDOWS, "not supported on Windows")
-    def test_magic_is_installed(self):
-        from fulltext.util import magic
-        self.assertIsNotNone(magic)
-
-    @unittest.skipIf(WINDOWS, "not supported on Windows")
+    @unittest.skipIf(WINDOWS and magic is None, "magic is not installed")
     def test_pdf(self):
         fname = "file-noext"
-        self.touch(fname, content=open('files/test.pdf', 'rb').read())
+        with open('files/test.pdf', 'rb') as f:
+            data = f.read()
+        self.touch(fname, content=data)
         with mock.patch('fulltext.handle_path', return_value="") as m:
             fulltext.get(fname)
             klass = m.call_args[0][0]
@@ -818,7 +837,6 @@ class TestUnicodeMbox(BaseTestCase, TestUnicodeBase):
 # ===================================================================
 
 
-@unittest.skipIf(WINDOWS, "not supported on Windows")
 class TestTitle(BaseTestCase):
 
     def test_html(self):
@@ -826,6 +844,7 @@ class TestTitle(BaseTestCase):
         self.assertEqual(
             fulltext.get_with_title(fname)[1], "Lorem ipsum")
 
+    @unittest.skipIf(WINDOWS, "not supported on Windows")
     def test_pdf(self):
         fname = "files/others/test.pdf"
         self.assertEqual(
@@ -836,6 +855,7 @@ class TestTitle(BaseTestCase):
         self.assertEqual(
             fulltext.get_with_title(fname)[1], "PRETTY ONES")
 
+    @unittest.skipIf(WINDOWS, "not supported on Windows")
     def test_doc(self):
         fname = "files/others/hello-world.doc"
         fulltext.get_with_title(fname)
@@ -858,11 +878,13 @@ class TestTitle(BaseTestCase):
         self.assertEqual(
             fulltext.get_with_title(fname)[1], 'lorem ipsum')
 
+    @unittest.skipIf(WINDOWS, "not supported on Windows")
     def test_ps(self):
         fname = "files/others/lecture.ps"
         self.assertEqual(
             fulltext.get_with_title(fname)[1], 'Hey there')
 
+    @unittest.skipIf(WINDOWS, "not supported on Windows")
     def test_rtf(self):
         fname = "files/others/test.rtf"
         self.assertEqual(

@@ -9,15 +9,19 @@ import sys
 import functools
 import tempfile
 import shutil
+import traceback
 
 from os.path import dirname, abspath
 from os.path import join as pathjoin
 
 import six
 from six import PY3
+try:
+    import exiftool
+except ImportError:
+    exiftool = None
 
 from fulltext.compat import which
-from fulltext.compat import POSIX
 
 
 LOGGER = logging.getLogger(__file__)
@@ -145,28 +149,44 @@ def is_windows64():
     return is_windows() and 'PROGRAMFILES(X86)' in os.environ
 
 
-if is_windows():
-    # Help the magic wrapper locate magic1.dll, we include it in bin/bin{32,64}
-    bindir = 'bin64' if is_windows64() else 'bin32'
-
-    os.environ['PATH'] += str(os.pathsep + pathjoin(BASE_PATH, 'bin', bindir))
-
-    # Then instantiate our own Magic instance so we can tell it where the
-    # magic file lives.
-    try:
-        from magic import Magic
-
-        magic = Magic(mime=True,
-                      magic_file=pathjoin(BASE_PATH, 'bin', 'magic'))
-    except Exception:
-        warn('Magic is unavailable, type detection degraded')
-        # If all else fails...
-        magic = None
-
-else:
+if not is_windows():
     # On linux things are simpler. Linter disabled for next line since we
     # import here for export.
     import magic  # NOQA
+else:
+    def _set_binpath():
+        # Help the magic wrapper locate magic1.dll, we include it in
+        # bin/bin{32,64}.
+        bindir = 'bin64' if is_windows64() else 'bin32'
+        path = pathjoin(BASE_PATH, 'bin', bindir)
+        assert os.path.isdir(path), path
+        os.environ['PATH'] += os.pathsep + path
+
+    _set_binpath()
+
+    def _import_magic():
+        # Instantiate our own Magic instance so we can tell it where the
+        # magic file lives.
+        try:
+            from magic import Magic as _Magic
+
+            class Magic(_Magic):
+                # Overridden because differently from the UNIX version
+                # the Windows version does not provide mime kwarg.
+                def from_file(self, filename, mime=True):
+                    return _Magic.from_file(self, filename)
+
+                def from_buffer(self, buf, mime=True):
+                    return _Magic.from_buffer(self, buf)
+
+            return Magic(mime=True,
+                         magic_file=pathjoin(BASE_PATH, 'bin', 'magic'))
+        except Exception:
+            traceback.print_exc()
+            warnings.warn('Magic is unavailable, type detection degraded')
+            return None
+
+    magic = _import_magic()
 
 
 def assert_cmd_exists(cmd):
@@ -286,9 +306,7 @@ def fobj_to_tempfile(f, suffix=''):
         os.remove(t.name)
 
 
-if POSIX:
-    import exiftool
-
+if exiftool is not None:
     _et = exiftool.ExifTool()
     _et.start()
 
