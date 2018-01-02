@@ -15,5 +15,5 @@ contextlib2
 mock
 rarfile
 
-git+https://github.com/btimby/mobi-python.git#egg=mobi
 https://github.com/mattgwwalker/msg-extractor/zipball/master
+git+https://github.com/smarnach/pyexiftool.git#egg=pyexiftool

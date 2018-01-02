@@ -13,16 +13,21 @@ class Backend(BaseBackend):
     if PY3:
         def unicode_reader(self, f, **opts):
             def readlines(f):
-                for line in f.readlines():
+                for line in f.read().splitlines():
                     yield line.decode(self.encoding, self.encoding_errors)
 
             return csv.reader(readlines(f), **opts)
     else:
         def unicode_reader(self, f, **opts):
-            reader = csv.reader(f, **opts)
+            def readlines(f):
+                for line in f.read().splitlines():
+                    yield line
+
+            reader = csv.reader(readlines(f), **opts)
             for row in reader:
-                yield [unicode(cell, self.encoding, self.encoding_errors)  # NOQA
-                       for cell in row]
+                yield [
+                    unicode(cell, self.encoding, self.encoding_errors)  # NOQA
+                    for cell in row]
 
     def handle_fobj(self, f):
         options = {

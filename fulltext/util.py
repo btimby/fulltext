@@ -1,3 +1,5 @@
+import contextlib
+import atexit
 import errno
 import logging
 import os
@@ -5,6 +7,8 @@ import subprocess
 import warnings
 import sys
 import functools
+import tempfile
+import shutil
 
 from os.path import dirname, abspath
 from os.path import join as pathjoin
@@ -13,6 +17,7 @@ import six
 from six import PY3
 
 from fulltext.compat import which
+from fulltext.compat import POSIX
 
 
 LOGGER = logging.getLogger(__file__)
@@ -21,6 +26,7 @@ LOGGER.addHandler(logging.NullHandler())
 # _MEIPASS attribute of sys module, otherwise, we can simply use the parent of
 # the directory containing this source file.
 BASE_PATH = getattr(sys, '_MEIPASS', dirname(dirname(abspath(__file__))))
+TEMPDIR = os.environ.get('FULLTEXT_TEMP', tempfile.gettempdir())
 
 
 class BackendError(AssertionError):
@@ -123,7 +129,7 @@ def run(*cmd, **kwargs):
 
 
 def warn(msg):
-    warnings.warn(msg, UserWarning)
+    warnings.warn(msg, UserWarning, stacklevel=2)
     LOGGER.warning(msg)
 
 
@@ -234,14 +240,6 @@ def is_file_path(obj):
     return isinstance(obj, six.string_types) or isinstance(obj, bytes)
 
 
-def exiftool_title(path, encoding, encoding_error):
-    if is_file_path(path):
-        bout = run("exiftool", "-title", path)
-        out = bout.decode(encoding, encoding_error)
-        if out:
-            return out[out.find(':') + 1:].strip() or None
-
-
 def memoize(fun):
     """A simple memoize decorator for functions supporting (hashable)
     positional arguments.
@@ -272,3 +270,44 @@ def memoize(fun):
     cache = {}
     wrapper.cache_clear = cache_clear
     return wrapper
+
+
+@contextlib.contextmanager
+def fobj_to_tempfile(f, suffix=''):
+    """Context manager which copies a file object to disk and return its
+    name. When done the file is deleted.
+    """
+    with tempfile.NamedTemporaryFile(
+            dir=TEMPDIR, suffix=suffix, delete=False) as t:
+        shutil.copyfileobj(f, t)
+    try:
+        yield t.name
+    finally:
+        os.remove(t.name)
+
+
+if POSIX:
+    import exiftool
+
+    _et = exiftool.ExifTool()
+    _et.start()
+
+    @atexit.register
+    def _close_et():
+        LOGGER.debug("terminating exiftool subprocess")
+        _et.terminate()
+
+    def exiftool_title(path, encoding, encoding_error):
+        if is_file_path(path):
+            title = (_et.get_tag("title", path) or "").strip()
+            if title:
+                if hasattr(title, "decode"):  # PY2
+                    return title.decode(encoding, encoding_error)
+                else:
+                    return title
+
+else:
+    # TODO: according to https://www.sno.phy.queensu.ca/~phil/exiftool/
+    # exiftool is also available on Windows
+    def exiftool_title(*a, **kw):
+        return None

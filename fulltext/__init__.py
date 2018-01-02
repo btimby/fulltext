@@ -4,8 +4,6 @@ import errno
 import re
 import logging
 import os
-import shutil
-import tempfile
 import mimetypes
 import sys
 
@@ -16,6 +14,7 @@ from six import PY3
 from fulltext.util import warn
 from fulltext.util import magic
 from fulltext.util import is_file_path
+from fulltext.util import fobj_to_tempfile
 
 
 __all__ = ["get", "register_backend"]
@@ -25,7 +24,6 @@ __all__ = ["get", "register_backend"]
 
 ENCODING = sys.getfilesystemencoding()
 ENCODING_ERRORS = "strict"
-TEMPDIR = os.environ.get('FULLTEXT_TEMP', tempfile.gettempdir())
 DEFAULT_MIME = 'application/octet-stream'
 
 # --- others
@@ -41,10 +39,75 @@ MAGIC_BUFFER_SIZE = 1024
 mimetypes.init()
 _MIMETYPES_TO_EXT = dict([(v, k) for k, v in mimetypes.types_map.items()])
 
+# A list of extensions which will be treated as pure text.
+# This takes precedence over register_backend().
+# https://www.openoffice.org/dev_docs/source/file_extensions.html
+_TEXT_EXTS = set((
+    ".asm",  # Non-UNIX assembler source file
+    ".asp",  # Active Server Page
+    ".awk",  # An awk script file
+    ".bat",  # MS-DOS batch file
+    ".c",    # C language file
+    ".class",  # Compiled java source code file
+    ".cmd",  # Compiler command file
+    ".cpp",  # C++ language file
+    ".cxx",  # C++ language file
+    ".def",  # Win32 library definition file
+    ".dpc",  # Source dependency file containing list of dependencies
+    ".dpj",  # Java source dependency file containing list of dependencies
+    ".h",    # C header file
+    ".hpp",  # Generated C++ header or header plus plus file
+    ".hrc",  # An ".src",  # include header file
+    ".hxx",  # C++ header file
+    ".in",
+    ".inc",  # Include file
+    ".ini",  # Initialization file
+    ".inl",  # Inline header file
+    ".jar",  # Java classes archive file
+    ".java",  # Java language file
+    ".js",   # JavaScript code file
+    ".jsp",  # Java Server Page file
+    ".kdelnk",  # KDE1 configuration file
+    ".l",    # Lex source code file
+    ".ll",   # Lex source code file
+    ".lnx",  # Linux-specific makefile
+    ".log",  # Log file
+    ".lst",  # ASCII database file used in solenv
+    ".MacOS",
+    ".md",   # Markdown language.
+    ".mk",   # A dmake makefile
+    ".mod",  # BASIC module file
+    ".par",  # Script particles file
+    ".pl",   # Perl script
+    ".plc",  # Former build script file, now obsolete
+    ".pld",  # Former build script file, now obsolete
+    ".pm",   # Perl module file
+    ".pmk",  # Project makefiles
+    ".pre",  # Preprocessor output from scpcomp
+    ".py",   # Python
+    ".pyx",  # Cython
+    ".r",    # Resource file for Macintosh
+    ".rc",   # A dmake recursive makefile or a Win32 resource script file
+    ".rdb",  # Interface and type description database (type library)
+    ".res",  # Resource file
+    ".rst",  # Restructured text
+    ".s",    # Assembler source file (UNIX)
+    ".sbl",  # BASIC file
+    ".scp",  # Script source file
+    ".sh",   # Shell script
+    ".src",  # Source resource string file
+    ".txt",  # Language text file
+    ".y",    # Yacc source code file
+    ".yaml",  # Yaml
+    ".yml",  # Yaml
+    ".yxx",  # Bison source code file
+))
+
 
 # =====================================================================
 # --- backends
 # =====================================================================
+
 
 def register_backend(mimetype, module, extensions=None):
     """Register a backend.
@@ -75,7 +138,8 @@ def register_backend(mimetype, module, extensions=None):
 
 register_backend(
     'application/zip',
-    'fulltext.backends.__zip')
+    'fulltext.backends.__zip',
+    extensions=[".zip"])
 
 register_backend(
     'application/x-rar-compressed',
@@ -95,7 +159,8 @@ register_backend(
 
 register_backend(
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    'fulltext.backends.__xlsx')
+    'fulltext.backends.__xlsx',
+    extensions=['.xlsx'])
 
 register_backend(
     'text/plain',
@@ -104,23 +169,28 @@ register_backend(
 
 register_backend(
     'application/rtf',
-    'fulltext.backends.__rtf')
+    'fulltext.backends.__rtf',
+    extensions=['.rtf'])
 
 register_backend(
     'application/vnd.openxmlformats-officedocument.presentationml.presentation',  # NOQA
-    'fulltext.backends.__pptx')
+    'fulltext.backends.__pptx',
+    extensions=['.pptx'])
 
 register_backend(
     'application/pdf',
-    'fulltext.backends.__pdf')
+    'fulltext.backends.__pdf',
+    extensions=['.pdf'])
 
 register_backend(
     'application/vnd.oasis.opendocument.text',
-    'fulltext.backends.__odt')
+    'fulltext.backends.__odt',
+    extensions=['.odt'])
 
 register_backend(
     'application/vnd.oasis.opendocument.spreadsheet',
-    'fulltext.backends.__odt')
+    'fulltext.backends.__odt',
+    extensions=['.ods'])
 
 # images
 register_backend(
@@ -135,15 +205,18 @@ register_backend(
 
 register_backend(
     'image/png',
-    'fulltext.backends.__ocr')
+    'fulltext.backends.__ocr',
+    extensions=['.png'])
 
 register_backend(
     'image/gif',
-    'fulltext.backends.__ocr')
+    'fulltext.backends.__ocr',
+    extensions=['.gif'])
 
 register_backend(
     'application/x-hwp',
-    'fulltext.backends.__hwp')
+    'fulltext.backends.__hwp',
+    extensions=['.hwp'])
 
 for mt in ('text/html', 'application/html', 'text/xhtml'):
     register_backend(
@@ -153,7 +226,8 @@ for mt in ('text/html', 'application/html', 'text/xhtml'):
 
 register_backend(
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'fulltext.backends.__docx')
+    'fulltext.backends.__docx',
+    extensions=['.docx'])
 
 register_backend(
     'application/msword',
@@ -207,6 +281,14 @@ register_backend(
     'application/octet-stream',
     'fulltext.backends.__bin',
     extensions=['.a', '.bin'])
+
+# Extensions which will be treated as pure text.
+# We just come up with a custom mime name.
+for ext in _TEXT_EXTS:
+    register_backend(
+        '[custom-fulltext-mime]/%s' % ext,
+        'fulltext.backends.__text',
+        extensions=[ext])
 
 
 # =====================================================================
@@ -301,11 +383,8 @@ def handle_fobj(backend, f, **kwargs):
         if 'ext' in kwargs:
             ext = '.' + kwargs['ext']
 
-        with tempfile.NamedTemporaryFile(dir=TEMPDIR, suffix=ext) as t:
-            shutil.copyfileobj(f, t)
-            t.flush()
-            return backend.handle_path(t.name, **kwargs)
-
+        with fobj_to_tempfile(f, suffix=ext) as fname:
+            return backend.handle_path(fname, **kwargs)
     else:
         raise AssertionError(
             'Backend %s has no _get functions' % backend.__name__)
@@ -330,9 +409,9 @@ def backend_from_mime(mime):
 def backend_from_fname(name):
     """Determine backend module object from a file name."""
     ext = splitext(name)[1]
+
     try:
         mime = EXTS_TO_MIMETYPES[ext]
-
     except KeyError:
         try:
             f = open(name, 'rb')
