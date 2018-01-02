@@ -2,6 +2,10 @@
    :alt: Linux tests (Travis)
    :target: https://travis-ci.org/btimby/fulltext
 
+.. image:: https://img.shields.io/appveyor/ci/btimby/fulltext/master.svg?maxAge=3600&label=Windows
+    :alt: Windows tests (Appveyor)
+    :target: https://ci.appveyor.com/project/btimby/fulltext
+
 .. figure:: https://www.smartfile.com/assets/img/smartfile-logo-new.png
    :alt: SmartFile
 
