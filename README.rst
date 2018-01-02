@@ -58,6 +58,7 @@ Supported formats
 * ``.mbox`` - Uses ``mailbox`` Python module.
 * ``.msg`` - Uses ``msg-extractor`` Python module (from github).
 * ``.bin`` - Uses Python stdlib modules to emulate ``strings`` CLI tool.
+* ``.rar`` - Uses ``rarfile`` module.
 
 Supported title formats
 -----------------------

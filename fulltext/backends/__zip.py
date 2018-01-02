@@ -1,11 +1,16 @@
 from __future__ import absolute_import
 
+import logging
 import zipfile
 
 from six import StringIO
 from contextlib2 import ExitStack
 
 from fulltext import BaseBackend, get
+
+
+LOGGER = logging.getLogger(__name__)
+LOGGER.addHandler(logging.NullHandler())
 
 
 class Backend(BaseBackend):
@@ -15,6 +20,7 @@ class Backend(BaseBackend):
             text = StringIO()
             z = stack.enter_context(zipfile.ZipFile(f, 'r'))
             for name in sorted(z.namelist()):
+                LOGGER.debug("extracting %s" % name)
                 zf = stack.enter_context(z.open(name, 'r'))
                 # Kinda hacky, but zipfile's open() does not handle "b" in
                 # the mode.

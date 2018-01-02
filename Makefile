@@ -9,7 +9,14 @@ SYSDEPS = \
 	tesseract-ocr abiword \
 	unrtf \
 	pstotext \
-	libimage-exiftool-perl
+	libimage-exiftool-perl \
+	unrar \
+	python-setuptools \
+	python3-setuptools \
+	python-dev \
+	python3-dev \
+	python-pip \
+	python3-pip
 
 TEST_PREFIX = PYTHONWARNINGS=all FULLTEXT_TESTING=1
 
@@ -17,11 +24,14 @@ test:  ## Run tests.
 	${MAKE} install-git-hooks
 	$(TEST_PREFIX) $(PYTHON) tests.py
 
-check:  ## Run linters.
+ci:  ## Run CI tests.
+	${MAKE} sysdeps
+	${MAKE} pydeps
+	${MAKE} test
+
+lint:  ## Run linters.
 	${MAKE} install-git-hooks
 	@git ls-files | grep \\.py$ | xargs $(PYTHON) -m flake8
-
-lint: check
 
 install:  ## Install this package as current user in "edit" mode.
 	${MAKE} install-git-hooks
