@@ -221,6 +221,7 @@ def install_pip():
 def install():
     """Install in develop / edit mode"""
     build()
+    sh('%s generate_manifest.py' % PYTHON)
     sh("%s setup.py develop" % PYTHON)
 
 

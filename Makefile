@@ -35,6 +35,7 @@ lint:  ## Run linters.
 
 install:  ## Install this package as current user in "edit" mode.
 	${MAKE} install-git-hooks
+	${MAKE} generate-manifest
 	PYTHONWARNINGS=all $(PYTHON) setup.py develop $(INSTALL_OPTS)
 
 pydeps:  ## Install third party python libs.
