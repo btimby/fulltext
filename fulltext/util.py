@@ -185,7 +185,10 @@ else:
             return Magic(mime=True, magic_file=path)
         except Exception:
             traceback.print_exc()
-            warnings.warn('Magic is unavailable, type detection degraded')
+            msg = 'Magic is unavailable, type detection degraded'
+            if not is_windows64():
+                msg += ". python-magic is known to NOT work on 32bit python"
+            warnings.warn(msg)
             return None
 
     magic = _import_magic()
