@@ -37,6 +37,7 @@ setup(
     packages=find_packages(),
     install_requires=REQUIRED,
     dependency_links=REQUIRED_URL,
+    include_package_data=True,
     classifiers=(
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',

@@ -77,5 +77,8 @@ install-git-hooks:  ## Install GIT pre-commit hook.
 	@ln -sf ../../.git-pre-commit .git/hooks/pre-commit
 	@chmod +x .git/hooks/pre-commit
 
+generate-manifest:  ## Generates MANIFEST.in file.
+	$(PYTHON) fulltext/data/generate_manifest.py > MANIFEST.in
+
 help: ## Display callable targets.
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
