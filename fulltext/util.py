@@ -178,29 +178,20 @@ else:
     def _import_magic():
         # Instantiate our own Magic instance so we can tell it where the
         # magic file lives.
-        try:
-            from magic import Magic as _Magic
+        from magic import Magic as _Magic
 
-            class Magic(_Magic):
-                # Overridden because differently from the UNIX version
-                # the Windows version does not provide mime kwarg.
-                def from_file(self, filename, mime=True):
-                    return _Magic.from_file(self, filename)
+        class Magic(_Magic):
+            # Overridden because differently from the UNIX version
+            # the Windows version does not provide mime kwarg.
+            def from_file(self, filename, mime=True):
+                return _Magic.from_file(self, filename)
 
-                def from_buffer(self, buf, mime=True):
-                    return _Magic.from_buffer(self, buf)
+            def from_buffer(self, buf, mime=True):
+                return _Magic.from_buffer(self, buf)
 
-            path = pathjoin(get_data_dir(), 'magic')
-            assert os.path.isfile(path), path
-            return Magic(mime=True, magic_file=path)
-
-        except Exception:
-            traceback.print_exc()
-            msg = 'Magic is unavailable, type detection degraded'
-            if not is_windows64():
-                msg += ". python-magic is known to NOT work on 32bit python"
-            warnings.warn(msg)
-            return None
+        path = pathjoin(get_data_dir(), 'magic')
+        assert os.path.isfile(path), path
+        return Magic(mime=True, magic_file=path)
 
     magic = _import_magic()
 
