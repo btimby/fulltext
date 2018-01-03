@@ -31,7 +31,6 @@ LOGGER.addHandler(logging.NullHandler())
 # the directory containing this source file.
 BASE_PATH = getattr(sys, '_MEIPASS', dirname(dirname(abspath(__file__))))
 TEMPDIR = os.environ.get('FULLTEXT_TEMP', tempfile.gettempdir())
-HERE = os.path.abspath(os.path.dirname(__file__))
 
 
 class BackendError(AssertionError):
@@ -150,6 +149,17 @@ def is_windows64():
     return is_windows() and 'PROGRAMFILES(X86)' in os.environ
 
 
+def get_data_dir():
+    if hasattr(sys, '_MEIPASS'):
+        path = pathjoin(sys._MEIPASS, 'duster', 'data')
+    else:
+        root = dirname(abspath(__file__))
+        path = pathjoin(root, 'data')
+
+    assert os.path.isdir(path), path
+    return path
+
+
 if not is_windows():
     # On linux things are simpler. Linter disabled for next line since we
     # import here for export.
@@ -159,7 +169,7 @@ else:
         # Help the magic wrapper locate magic1.dll, we include it in
         # bin/bin{32,64}.
         bindir = 'bin64' if is_windows64() else 'bin32'
-        path = pathjoin(HERE, 'data', bindir)
+        path = pathjoin(get_data_dir(), bindir)
         assert os.path.isdir(path), path
         os.environ['PATH'] += os.pathsep + path
 
@@ -180,9 +190,10 @@ else:
                 def from_buffer(self, buf, mime=True):
                     return _Magic.from_buffer(self, buf)
 
-            path = pathjoin(HERE, 'data', 'magic')
+            path = pathjoin(get_data_dir(), 'magic')
             assert os.path.isfile(path), path
             return Magic(mime=True, magic_file=path)
+
         except Exception:
             traceback.print_exc()
             msg = 'Magic is unavailable, type detection degraded'

@@ -4,8 +4,10 @@ rem ==========================================================================
 rem Shortcuts for various tasks, emulating UNIX "make" on Windows.
 rem ==========================================================================
 
-if "%PYTHON%" == "" (
-    set PYTHON=C:\Python35\python.exe
+
+IF "%PYTHON%"=="" (
+    IF EXIST C:\Python35-64 SET PYTHON=C:\Python35-64\python.exe
+    IF EXIST C:\Python35 SET PYTHON=C:\Python35\python.exe
 )
 
 rem Needed to locate the .pypirc file and upload exes on PYPI.

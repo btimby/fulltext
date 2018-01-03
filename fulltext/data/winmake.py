@@ -27,6 +27,8 @@ import tempfile
 PYTHON = os.getenv('PYTHON', sys.executable)
 TSCRIPT = 'tests.py'
 GET_PIP_URL = "https://bootstrap.pypa.io/get-pip.py"
+HERE = os.path.abspath(os.path.dirname(__file__))
+ROOT_DIR = os.path.realpath(os.path.join(HERE, "..", ".."))
 PY3 = sys.version_info[0] == 3
 HERE = os.path.abspath(os.path.dirname(__file__))
 _cmds = {}
@@ -351,6 +353,39 @@ def set_python(s):
                     return
         return sys.exit(
             "can't find any python installation matching %r" % orig)
+
+
+def is_windows64():
+    return 'PROGRAMFILES(X86)' in os.environ
+
+
+@cmd
+def venv():
+    """Install venv + deps."""
+    sh("%s -m pip install virtualenv" % PYTHON)
+    sh("%s -m virtualenv venv" % PYTHON)
+    sh("venv\\Scripts\\pip install -r requirements.txt")
+
+
+@cmd
+def pyinstaller():
+    """Run pyinstaller; generates dist/duster.exe."""
+    rm(os.path.join(ROOT_DIR, "dist"), directory=True)
+    venv()
+
+    bindir = os.path.join(
+        ROOT_DIR, "fulltext\\data\\bin64\\" if is_windows64()
+        else "fulltext\\data\\bin\\bin32\\")
+
+    assert os.path.exists(bindir), bindir
+    # sh("venv\\Scripts\\python -m pip install pyinstaller pypiwin32")
+    sh("venv\\Scripts\\pyinstaller --upx-dir=%s fulltext.spec" % bindir)
+
+    # Check it works.
+    path = os.path.join(ROOT_DIR, "dist", "fulltext.exe")
+    assert os.path.exists(path), path
+    out = sh("%s extract setup.py" % path)
+    safe_print(out)
 
 
 def parse_cmdline():
