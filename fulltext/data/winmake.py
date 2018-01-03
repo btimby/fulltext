@@ -28,6 +28,7 @@ PYTHON = os.getenv('PYTHON', sys.executable)
 TSCRIPT = 'tests.py'
 GET_PIP_URL = "https://bootstrap.pypa.io/get-pip.py"
 PY3 = sys.version_info[0] == 3
+HERE = os.path.abspath(os.path.dirname(__file__))
 _cmds = {}
 if PY3:
     basestring = str
@@ -221,7 +222,9 @@ def install_pip():
 def install():
     """Install in develop / edit mode"""
     build()
-    sh('%s generate_manifest.py' % PYTHON)
+    genman_py = os.path.join(HERE, "generate_manifest.py")
+    assert os.path.exists(genman_py), genman_py
+    sh('%s "%s"' % (PYTHON, genman_py))
     sh("%s setup.py develop" % PYTHON)
 
 

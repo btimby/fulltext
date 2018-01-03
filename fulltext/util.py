@@ -180,8 +180,9 @@ else:
                 def from_buffer(self, buf, mime=True):
                     return _Magic.from_buffer(self, buf)
 
-            return Magic(mime=True,
-                         magic_file=pathjoin(BASE_PATH, 'bin', 'magic'))
+            path = pathjoin(HERE, 'data', 'magic')
+            assert os.path.isfile(path), path
+            return Magic(mime=True, magic_file=path)
         except Exception:
             traceback.print_exc()
             warnings.warn('Magic is unavailable, type detection degraded')
