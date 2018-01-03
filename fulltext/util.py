@@ -31,6 +31,7 @@ LOGGER.addHandler(logging.NullHandler())
 # the directory containing this source file.
 BASE_PATH = getattr(sys, '_MEIPASS', dirname(dirname(abspath(__file__))))
 TEMPDIR = os.environ.get('FULLTEXT_TEMP', tempfile.gettempdir())
+HERE = os.path.abspath(os.path.dirname(__file__))
 
 
 class BackendError(AssertionError):
@@ -158,7 +159,7 @@ else:
         # Help the magic wrapper locate magic1.dll, we include it in
         # bin/bin{32,64}.
         bindir = 'bin64' if is_windows64() else 'bin32'
-        path = pathjoin(BASE_PATH, 'bin', bindir)
+        path = pathjoin(HERE, 'data', bindir)
         assert os.path.isdir(path), path
         os.environ['PATH'] += os.pathsep + path
 

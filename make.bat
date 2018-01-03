@@ -11,4 +11,4 @@ if "%PYTHON%" == "" (
 rem Needed to locate the .pypirc file and upload exes on PYPI.
 set HOME=%USERPROFILE%
 
-%PYTHON% bin\winmake.py %1 %2 %3 %4 %5 %6
+%PYTHON% fulltext\data\winmake.py %1 %2 %3 %4 %5 %6
