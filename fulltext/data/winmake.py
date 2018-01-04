@@ -160,6 +160,14 @@ def test_setup():
     os.environ['PYTHONWARNINGS'] = 'all'
 
 
+def install_pip():
+    try:
+        import pip  # NOQA
+    except ImportError:
+        sh("%s %s" % (PYTHON,
+                      os.path.join(ROOT_DIR, "duster\\data\\get-pip.py")))
+
+
 # ===================================================================
 # commands
 # ===================================================================
@@ -272,7 +280,7 @@ def pydeps():
 
 
 @cmd
-def flake8():
+def lint():
     """Run flake8 against all py files"""
     py_files = subprocess.check_output("git ls-files")
     if PY3:

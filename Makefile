@@ -28,6 +28,7 @@ ci:  ## Run CI tests.
 	${MAKE} sysdeps
 	${MAKE} pydeps
 	${MAKE} test
+	${MAKE} lint
 
 lint:  ## Run linters.
 	${MAKE} install-git-hooks
