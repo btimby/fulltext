@@ -30,7 +30,6 @@ GET_PIP_URL = "https://bootstrap.pypa.io/get-pip.py"
 HERE = os.path.abspath(os.path.dirname(__file__))
 ROOT_DIR = os.path.realpath(os.path.join(HERE, "..", ".."))
 PY3 = sys.version_info[0] == 3
-HERE = os.path.abspath(os.path.dirname(__file__))
 _cmds = {}
 if PY3:
     basestring = str

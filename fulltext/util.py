@@ -25,10 +25,6 @@ from fulltext.compat import which
 
 LOGGER = logging.getLogger(__file__)
 LOGGER.addHandler(logging.NullHandler())
-# Get base path of this package. When running under PyInstaller, we use the
-# _MEIPASS attribute of sys module, otherwise, we can simply use the parent of
-# the directory containing this source file.
-BASE_PATH = getattr(sys, '_MEIPASS', dirname(dirname(abspath(__file__))))
 TEMPDIR = os.environ.get('FULLTEXT_TEMP', tempfile.gettempdir())
 
 
@@ -149,11 +145,14 @@ def is_windows64():
 
 
 def get_data_dir():
+    # Get base path of this package. When running under PyInstaller,
+    # we use the _MEIPASS attribute of sys module, otherwise, we can
+    # simply use the parent of the directory containing this source
+    # file.
     if hasattr(sys, '_MEIPASS'):
         path = pathjoin(sys._MEIPASS, 'fulltext', 'data')
     else:
-        root = dirname(abspath(__file__))
-        path = pathjoin(root, 'data')
+        path = pathjoin(HERE, 'data')
 
     assert os.path.isdir(path), path
     return path
