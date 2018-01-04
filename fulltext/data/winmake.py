@@ -188,7 +188,6 @@ def build():
     """Build / compile"""
     # Make sure setuptools is installed (needed for 'develop' /
     # edit mode).
-    generate_manifest()
     sh('%s -c "import setuptools"' % PYTHON)
     sh("%s setup.py build" % PYTHON)
     sh("%s setup.py build_ext -i" % PYTHON)
@@ -357,7 +356,6 @@ def is_windows64():
     return 'PROGRAMFILES(X86)' in os.environ
 
 
-@cmd
 def venv():
     """Install venv + deps."""
     sh("%s -m pip install virtualenv" % PYTHON)
@@ -406,6 +404,7 @@ def parse_cmdline():
 
 def main():
     parse_cmdline()
+    generate_manifest()
     try:
         cmd = sys.argv[1].replace('-', '_')
     except IndexError:
