@@ -374,7 +374,7 @@ def pyinstaller():
         rm(os.path.join(ROOT_DIR, "dist"), directory=True)
         bindir = os.path.join(
             ROOT_DIR, "fulltext\\data\\bin64\\" if is_windows64()
-            else "fulltext\\data\\bin\\bin32\\")
+            else "fulltext\\data\\bin32\\")
         assert os.path.exists(bindir), bindir
         sh("venv\\Scripts\\pyinstaller --upx-dir=%s pyinstaller.spec" % bindir)
 
