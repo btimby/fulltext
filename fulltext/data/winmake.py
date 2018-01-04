@@ -273,12 +273,15 @@ def clean():
         ".coverage",
         ".tox",
     )
-    safe_rmtree("build")
     safe_rmtree(".coverage")
+    safe_rmtree("build")
     safe_rmtree("dist")
     safe_rmtree("docs/_build")
     safe_rmtree("htmlcov")
     safe_rmtree("tmp")
+    safe_rmtree("venv")
+    safe_rmtree("venv2")
+    safe_rmtree("venv3")
 
 
 @cmd
