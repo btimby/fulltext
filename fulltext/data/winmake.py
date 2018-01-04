@@ -24,7 +24,7 @@ import sys
 import tempfile
 
 
-PYTHON = os.getenv('PYTHON', sys.executable)
+PYTHON = sys.executable
 TSCRIPT = 'tests.py'
 GET_PIP_URL = "https://bootstrap.pypa.io/get-pip.py"
 HERE = os.path.abspath(os.path.dirname(__file__))
