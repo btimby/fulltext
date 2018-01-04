@@ -18,15 +18,12 @@ import functools
 import os
 import shutil
 import site
-import ssl
 import subprocess
 import sys
-import tempfile
 
 
 PYTHON = sys.executable
 TSCRIPT = 'tests.py'
-GET_PIP_URL = "https://bootstrap.pypa.io/get-pip.py"
 HERE = os.path.abspath(os.path.dirname(__file__))
 ROOT_DIR = os.path.realpath(os.path.join(HERE, "..", ".."))
 PY3 = sys.version_info[0] == 3
@@ -188,36 +185,6 @@ def build():
     sh("%s setup.py build" % PYTHON)
     sh("%s setup.py build_ext -i" % PYTHON)
     sh('%s -c "import fulltext"' % PYTHON)
-
-
-@cmd
-def install_pip():
-    """Install pip"""
-    try:
-        import pip  # NOQA
-    except ImportError:
-        if PY3:
-            from urllib.request import urlopen
-        else:
-            from urllib2 import urlopen
-
-        if hasattr(ssl, '_create_unverified_context'):
-            ctx = ssl._create_unverified_context()
-        else:
-            ctx = None
-        kw = dict(context=ctx) if ctx else {}
-        safe_print("downloading %s" % GET_PIP_URL)
-        req = urlopen(GET_PIP_URL, **kw)
-        data = req.read()
-
-        tfile = os.path.join(tempfile.gettempdir(), 'get-pip.py')
-        with open(tfile, 'wb') as f:
-            f.write(data)
-
-        try:
-            sh('%s %s --user' % (PYTHON, tfile))
-        finally:
-            os.remove(tfile)
 
 
 @cmd
