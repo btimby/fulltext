@@ -10,7 +10,10 @@ init:
   - "ECHO %PYTHON% %PYTHON_VERSION% %PYTHON_ARCH%"
 
 install:
-  - "%WITH_COMPILER% %PYTHON%/python fulltext/data/winmake.py ci"
+  - "%PYTHON%/python.exe -m pip install -U -r requirements.txt"
+  - "%PYTHON%/python.exe setup.py install"
+  - "%PYTHON%/python.exe tests.py"
+  - "%PYTHON%/python fulltext/data/winmake.py ci"
 
 skip_commits:
   message: skip-ci
