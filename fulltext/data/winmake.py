@@ -310,6 +310,13 @@ def test():
     test_setup()
     sh("%s %s" % (PYTHON, TSCRIPT))
 
+@cmd
+def ci():
+    """Run CI tests."""
+    pydeps()
+    test()
+    pyinstaller()
+
 
 @cmd
 def coverage():
@@ -372,12 +379,10 @@ def venv():
 
 @cmd
 def pyinstaller():
-    """Run pyinstaller; generates dist/duster.exe."""
-    def create_venv():
-        venv()
-
+    """Creates a stand alone Windows exe (dist/duster.exe)."""
     def install_deps():
         sh("venv\\Scripts\\python -m pip install pyinstaller pypiwin32")
+        sh("venv\\Scripts\\python setup.py install")
 
     def run_pyinstaller():
         rm(os.path.join(ROOT_DIR, "dist"), directory=True)
@@ -385,7 +390,7 @@ def pyinstaller():
             ROOT_DIR, "fulltext\\data\\bin64\\" if is_windows64()
             else "fulltext\\data\\bin\\bin32\\")
         assert os.path.exists(bindir), bindir
-        sh("venv\\Scripts\\pyinstaller --upx-dir=%s fulltext.spec" % bindir)
+        sh("venv\\Scripts\\pyinstaller --upx-dir=%s pyinstaller.spec" % bindir)
 
     def check_exe():
         # Make sure the resulting .exe works.
@@ -394,8 +399,8 @@ def pyinstaller():
         out = sh("%s extract setup.py" % path)
         safe_print(out)
 
-    # create_venv()  # XXX
-    # install_deps()  # XXX
+    venv()
+    install_deps()
     run_pyinstaller()
     check_exe()
 
