@@ -25,6 +25,7 @@ from fulltext.compat import which
 LOGGER = logging.getLogger(__file__)
 LOGGER.addHandler(logging.NullHandler())
 TEMPDIR = os.environ.get('FULLTEXT_TEMP', tempfile.gettempdir())
+HERE = os.path.abspath(os.path.dirname(__file__))
 
 
 class BackendError(AssertionError):
