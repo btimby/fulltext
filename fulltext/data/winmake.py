@@ -22,14 +22,21 @@ import subprocess
 import sys
 
 
-PYTHON = sys.executable
-TSCRIPT = 'tests.py'
+# --- configurable
+PRJNAME = "fulltext"
 HERE = os.path.abspath(os.path.dirname(__file__))
+TEST_SCRIPT = 'tests.py'
 ROOT_DIR = os.path.realpath(os.path.join(HERE, "..", ".."))
+DATA_DIR = os.path.join(ROOT_DIR, PRJNAME, "data")
+REQUIREMENTS_TXT = "requirements.txt"
+
+# --- others
+PYTHON = sys.executable
 PY3 = sys.version_info[0] == 3
 _cmds = {}
 if PY3:
     basestring = str
+
 
 # ===================================================================
 # utils
@@ -165,7 +172,7 @@ def install_pip():
         import pip  # NOQA
     except ImportError:
         sh("%s %s" % (PYTHON,
-                      os.path.join(ROOT_DIR, "duster\\data\\get-pip.py")))
+                      os.path.join(DATA_DIR, "get-pip.py")))
 
 
 # ===================================================================
@@ -191,7 +198,7 @@ def build():
     sh('%s -c "import setuptools"' % PYTHON)
     sh("%s setup.py build" % PYTHON)
     sh("%s setup.py build_ext -i" % PYTHON)
-    sh('%s -c "import fulltext"' % PYTHON)
+    sh('%s -c "import %s"' % (PYTHON, PRJNAME))
 
 
 @cmd
@@ -218,7 +225,7 @@ def install():
 
 @cmd
 def uninstall():
-    """Uninstall fulltext"""
+    """Uninstall %s""" % PRJNAME
     clean()
     install_pip()
     here = os.getcwd()
@@ -226,17 +233,17 @@ def uninstall():
         os.chdir('C:\\')
         while True:
             try:
-                import fulltext  # NOQA
+                __import__(PRJNAME, fromlist=[' '])
             except ImportError:
                 break
             else:
-                sh("%s -m pip uninstall -y fulltext" % PYTHON)
+                sh("%s -m pip uninstall -y %s" % (PYTHON, PRJNAME))
     finally:
         os.chdir(here)
 
     for dir in site.getsitepackages():
         for name in os.listdir(dir):
-            if name.startswith('fulltext'):
+            if name.startswith(PRJNAME):
                 rm(os.path.join(dir, name))
 
 
@@ -266,8 +273,6 @@ def clean():
     safe_rmtree("htmlcov")
     safe_rmtree("tmp")
     safe_rmtree("venv")
-    safe_rmtree("venv2")
-    safe_rmtree("venv3")
 
 
 @cmd
@@ -275,7 +280,7 @@ def pydeps():
     """Install useful deps"""
     install_pip()
     sh("%s -m pip install -U setuptools" % (PYTHON))
-    sh("%s -m pip install -U -r requirements.txt" % (PYTHON))
+    sh("%s -m pip install -U -r %s" % (PYTHON, REQUIREMENTS_TXT))
 
 
 @cmd
@@ -294,7 +299,7 @@ def test():
     """Run tests"""
     install()
     test_setup()
-    sh("%s %s" % (PYTHON, TSCRIPT))
+    sh("%s %s" % (PYTHON, TEST_SCRIPT))
 
 
 @cmd
@@ -311,7 +316,7 @@ def coverage():
     # Note: coverage options are controlled by .coveragerc file
     install()
     test_setup()
-    sh("%s -m coverage run %s" % (PYTHON, TSCRIPT))
+    sh("%s -m coverage run %s" % (PYTHON, TEST_SCRIPT))
     sh("%s -m coverage report" % PYTHON)
     sh("%s -m coverage html" % PYTHON)
     sh("%s -m webbrowser -t htmlcov/index.html" % PYTHON)
@@ -360,12 +365,12 @@ def venv():
     """Install venv + deps."""
     sh("%s -m pip install virtualenv" % PYTHON)
     sh("%s -m virtualenv venv" % PYTHON)
-    sh("venv\\Scripts\\pip install -r requirements.txt")
+    sh("venv\\Scripts\\pip install -r %s" % (REQUIREMENTS_TXT))
 
 
 @cmd
 def pyinstaller():
-    """Creates a stand alone Windows exe (dist/duster.exe)."""
+    """Creates a stand alone Windows as dist/%s.exe.""" % PRJNAME
     def install_deps():
         sh("venv\\Scripts\\python -m pip install pyinstaller pypiwin32")
         sh("venv\\Scripts\\python setup.py install")
@@ -373,14 +378,13 @@ def pyinstaller():
     def run_pyinstaller():
         rm(os.path.join(ROOT_DIR, "dist"), directory=True)
         bindir = os.path.join(
-            ROOT_DIR, "fulltext\\data\\bin64\\" if is_windows64()
-            else "fulltext\\data\\bin32\\")
+            DATA_DIR, "bin64" if is_windows64() else "bin32")
         assert os.path.exists(bindir), bindir
         sh("venv\\Scripts\\pyinstaller --upx-dir=%s pyinstaller.spec" % bindir)
 
     def check_exe():
         # Make sure the resulting .exe works.
-        path = os.path.join(ROOT_DIR, "dist", "fulltext.exe")
+        path = os.path.join(ROOT_DIR, "dist", "%s.exe" % PRJNAME)
         assert os.path.exists(path), path
         out = sh("%s extract setup.py" % path)
         safe_print(out)
