@@ -40,7 +40,7 @@ setup(
     maintainer_email='btimby@gmail.com',
     url='http://github.com/btimby/' + NAME + '/',
     license='GPLv3',
-    packages=find_packages(),
+    packages=find_packages() + ['fulltext.data'],
     install_requires=REQUIRED,
     dependency_links=REQUIRED_URL,
     include_package_data=True,
