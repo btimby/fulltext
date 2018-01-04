@@ -373,22 +373,31 @@ def venv():
 @cmd
 def pyinstaller():
     """Run pyinstaller; generates dist/duster.exe."""
-    rm(os.path.join(ROOT_DIR, "dist"), directory=True)
-    venv()
+    def create_venv():
+        venv()
 
-    bindir = os.path.join(
-        ROOT_DIR, "fulltext\\data\\bin64\\" if is_windows64()
-        else "fulltext\\data\\bin\\bin32\\")
+    def install_deps():
+        sh("venv\\Scripts\\python -m pip install pyinstaller pypiwin32")
 
-    assert os.path.exists(bindir), bindir
-    # sh("venv\\Scripts\\python -m pip install pyinstaller pypiwin32")
-    sh("venv\\Scripts\\pyinstaller --upx-dir=%s fulltext.spec" % bindir)
+    def run_pyinstaller():
+        rm(os.path.join(ROOT_DIR, "dist"), directory=True)
+        bindir = os.path.join(
+            ROOT_DIR, "fulltext\\data\\bin64\\" if is_windows64()
+            else "fulltext\\data\\bin\\bin32\\")
+        assert os.path.exists(bindir), bindir
+        sh("venv\\Scripts\\pyinstaller --upx-dir=%s fulltext.spec" % bindir)
 
-    # Check it works.
-    path = os.path.join(ROOT_DIR, "dist", "fulltext.exe")
-    assert os.path.exists(path), path
-    out = sh("%s extract setup.py" % path)
-    safe_print(out)
+    def check_exe():
+        # Make sure the resulting .exe works.
+        path = os.path.join(ROOT_DIR, "dist", "fulltext.exe")
+        assert os.path.exists(path), path
+        out = sh("%s extract setup.py" % path)
+        safe_print(out)
+
+    # create_venv()  # XXX
+    # install_deps()  # XXX
+    run_pyinstaller()
+    check_exe()
 
 
 def parse_cmdline():

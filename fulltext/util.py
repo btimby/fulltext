@@ -9,7 +9,6 @@ import sys
 import functools
 import tempfile
 import shutil
-import traceback
 
 from os.path import dirname, abspath
 from os.path import join as pathjoin
@@ -151,7 +150,7 @@ def is_windows64():
 
 def get_data_dir():
     if hasattr(sys, '_MEIPASS'):
-        path = pathjoin(sys._MEIPASS, 'duster', 'data')
+        path = pathjoin(sys._MEIPASS, 'fulltext', 'data')
     else:
         root = dirname(abspath(__file__))
         path = pathjoin(root, 'data')
