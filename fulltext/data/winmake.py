@@ -184,6 +184,7 @@ def build():
     """Build / compile"""
     # Make sure setuptools is installed (needed for 'develop' /
     # edit mode).
+    generate_manifest()
     sh('%s -c "import setuptools"' % PYTHON)
     sh("%s setup.py build" % PYTHON)
     sh("%s setup.py build_ext -i" % PYTHON)
@@ -221,12 +222,24 @@ def install_pip():
 
 
 @cmd
+def generate_manifest():
+    """Update MANIFEST.in file."""
+    genman_py = os.path.join(HERE, "generate_manifest.py")
+    manifest = os.path.join(ROOT_DIR, 'MANIFEST.in')
+    assert os.path.exists(genman_py), genman_py
+    assert os.path.exists(manifest), manifest
+    out = subprocess.check_output([PYTHON, genman_py])
+    if PY3:
+        out = out.decode(sys.getfilesystemencoding())
+    with open(manifest, "wt") as f:
+        for line in out.splitlines():
+            f.write(line + '\n')
+
+
+@cmd
 def install():
     """Install in develop / edit mode"""
     build()
-    genman_py = os.path.join(HERE, "generate_manifest.py")
-    assert os.path.exists(genman_py), genman_py
-    sh('%s "%s"' % (PYTHON, genman_py))
     sh("%s setup.py develop" % PYTHON)
 
 

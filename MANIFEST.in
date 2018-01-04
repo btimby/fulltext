@@ -37,11 +37,14 @@ include fulltext/data/bin64/exiftool.exe
 include fulltext/data/bin64/libgnurx-0.dll
 include fulltext/data/bin64/magic1.dll
 include fulltext/data/bin64/pdftotext.exe
+include fulltext/data/bin64/unrar.exe
+include fulltext/data/generate_manifest.py
 include fulltext/data/magic
 include fulltext/data/magic.mgc
 include fulltext/data/winmake.py
 include fulltext/util.py
 include make.bat
+include pyinstaller.spec
 include requirements.txt
 include setup.py
 include tests.py
