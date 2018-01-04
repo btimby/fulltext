@@ -10,7 +10,6 @@ import functools
 import tempfile
 import shutil
 
-from os.path import dirname, abspath
 from os.path import join as pathjoin
 
 import six
