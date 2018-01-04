@@ -145,10 +145,7 @@ def is_windows64():
 
 
 def get_data_dir():
-    # Get base path of this package. When running under PyInstaller,
-    # we use the _MEIPASS attribute of sys module, otherwise, we can
-    # simply use the parent of the directory containing this source
-    # file.
+    # When running under PyInstaller things are a bit different.
     if hasattr(sys, '_MEIPASS'):
         path = pathjoin(sys._MEIPASS, 'fulltext', 'data')
     else:
