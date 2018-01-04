@@ -310,6 +310,7 @@ def test():
     test_setup()
     sh("%s %s" % (PYTHON, TSCRIPT))
 
+
 @cmd
 def ci():
     """Run CI tests."""
