@@ -14,6 +14,7 @@ ebooklib
 contextlib2
 mock
 rarfile
+flake8
 
 https://github.com/mattgwwalker/msg-extractor/zipball/master#egg=ExtractMsg
 git+https://github.com/smarnach/pyexiftool.git#egg=pyexiftool
