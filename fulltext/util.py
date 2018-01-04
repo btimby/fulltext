@@ -141,7 +141,7 @@ def is_windows64():
     """
     Determine if platform is 64 bit Windows.
     """
-    return is_windows() and sys.maxsize > 2 ** 32
+    return is_windows() and 'PROGRAMFILES(X86)' in os.environ
 
 
 def get_data_dir():
