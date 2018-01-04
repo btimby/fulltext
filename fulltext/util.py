@@ -148,6 +148,9 @@ def get_data_dir():
     # When running under PyInstaller things are a bit different.
     if hasattr(sys, '_MEIPASS'):
         path = pathjoin(sys._MEIPASS, 'fulltext', 'data')
+        # XXX: ugly and temporary
+        if not os.path.isdir(path):
+            path = pathjoin(sys._MEIPASS, 'duster', 'data')
     else:
         path = pathjoin(HERE, 'data')
 
