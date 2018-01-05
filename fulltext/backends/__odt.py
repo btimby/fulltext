@@ -5,7 +5,7 @@ from lxml import etree
 
 from six import StringIO
 
-from fulltext import BaseBackend
+from fulltext.util import BaseBackend
 from fulltext.util import assert_cmd_exists
 from fulltext.util import exiftool_title
 

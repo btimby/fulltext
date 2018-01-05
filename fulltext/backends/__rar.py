@@ -6,7 +6,7 @@ import rarfile
 from six import StringIO
 from contextlib2 import ExitStack
 
-from fulltext import BaseBackend, get
+from fulltext.util import BaseBackend, get
 from fulltext.util import memoize
 
 

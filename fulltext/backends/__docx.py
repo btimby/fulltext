@@ -1,5 +1,5 @@
 import docx2txt
-from fulltext import BaseBackend
+from fulltext.util import BaseBackend
 from fulltext.util import exiftool_title
 from fulltext.util import assert_cmd_exists
 

@@ -9,7 +9,7 @@ from PIL import Image
 import pytesseract
 
 from fulltext.util import assert_cmd_exists, MissingCommandException
-from fulltext import BaseBackend
+from fulltext.util import BaseBackend
 
 
 EXIF_ORIENTATION = 274  # cf ExifTags

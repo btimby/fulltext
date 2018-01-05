@@ -11,7 +11,7 @@ Any decoding issues are ignored.
 from __future__ import absolute_import
 
 from six import StringIO
-from fulltext import BaseBackend
+from fulltext.util import BaseBackend
 
 
 BUFFER_MAX = 1024 * 1024

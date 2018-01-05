@@ -486,43 +486,6 @@ def backend_inst_from_mod(mod, encoding, encoding_errors, kwargs):
 # =====================================================================
 
 
-class BaseBackend(object):
-    """Base class for defining custom backend classes."""
-
-    def __init__(self, encoding, encoding_errors, kwargs):
-        """These are the same args passed to get() function."""
-        self.encoding = encoding
-        self.encoding_errors = encoding_errors
-        self.kwargs = kwargs
-
-    def setup(self):
-        """May be overridden by subclass. This is called before handle_
-        methods.
-        """
-        pass
-
-    def teardown(self):
-        """May be overridden by subclass. This is called after text
-        is extracted, also in case of exception.
-        """
-        pass
-
-    def check(self, title):
-        """May be overridden by subclass. This is called before text
-        extraction. If the overriding method raises an exception
-        a warning is printed and bin backend is used.
-        """
-        pass
-
-    def decode(self, s):
-        """Decode string."""
-        return s.decode(self.encoding, self.encoding_errors)
-
-    def handle_title(self, path_or_file):
-        """May be overridden by sublass in order to retrieve file title."""
-        return None
-
-
 def _get(path_or_file, default, mime, name, backend, encoding,
          encoding_errors, kwargs, _wtitle):
     if encoding is None:
