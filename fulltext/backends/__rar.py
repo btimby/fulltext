@@ -6,7 +6,7 @@ import rarfile
 from six import StringIO
 from contextlib2 import ExitStack
 
-from fulltext.util import BaseBackend, get
+from fulltext.util import BaseBackend
 from fulltext.util import memoize
 
 
@@ -38,6 +38,7 @@ class Backend(BaseBackend):
                 rf.read()
 
     def handle_fobj(self, f):
+        from fulltext import get  # avoid circular import
         with ExitStack() as stack:
             text = StringIO()
             archive = stack.enter_context(rarfile.RarFile(f))

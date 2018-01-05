@@ -107,7 +107,6 @@ _TEXT_EXTS = set((
 # XXX: dirty hack for pyinstaller so that it includes these modules.
 # TODO: find a way to do this in pyinstaller.spec instead.
 if is_windows() and hasattr(sys, '_MEIPASS'):
-    import fulltext.util
     from fulltext.backends import __bin  # NOQA
     from fulltext.backends import __csv  # NOQA
     from fulltext.backends import __doc  # NOQA
