@@ -1,5 +1,7 @@
 #!/bin/env python
 
+import os
+import sys
 from os.path import dirname
 from os.path import join as pathjoin
 from setuptools import find_packages
@@ -8,6 +10,10 @@ from setuptools import setup
 
 NAME = 'fulltext'
 VERSION = '0.7'
+if os.name == 'nt' and not sys.maxsize > 2 ** 32:
+    # https://github.com/btimby/fulltext/issues/79
+    raise RuntimeError("Python 32 bit is not supported")
+
 
 with open(pathjoin(dirname(__file__), 'README.rst')) as f:
     DESCRIPTION = f.read()
@@ -34,9 +40,10 @@ setup(
     maintainer_email='btimby@gmail.com',
     url='http://github.com/btimby/' + NAME + '/',
     license='GPLv3',
-    packages=find_packages(),
+    packages=find_packages() + ['fulltext.data'],
     install_requires=REQUIRED,
     dependency_links=REQUIRED_URL,
+    include_package_data=True,
     classifiers=(
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',

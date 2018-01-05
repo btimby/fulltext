@@ -1,2 +1,13 @@
+recursive-include fulltext *.py
+recursive-include fulltext/backends *.py
+recursive-include fulltext/data *
+
+include LICENSE
+include make.bat
+include Makefile
+include MANIFEST.in
+include pyinstaller.spec
 include README.rst
 include requirements.txt
+include setup.py
+include tests.py

@@ -18,19 +18,25 @@ import functools
 import os
 import shutil
 import site
-import ssl
 import subprocess
 import sys
-import tempfile
 
 
-PYTHON = os.getenv('PYTHON', sys.executable)
-TSCRIPT = 'tests.py'
-GET_PIP_URL = "https://bootstrap.pypa.io/get-pip.py"
+# --- configurable
+PRJNAME = "fulltext"
+HERE = os.path.abspath(os.path.dirname(__file__))
+TEST_SCRIPT = 'tests.py'
+ROOT_DIR = os.path.realpath(os.path.join(HERE, "..", ".."))
+DATA_DIR = os.path.join(ROOT_DIR, PRJNAME, "data")
+REQUIREMENTS_TXT = "requirements.txt"
+
+# --- others
+PYTHON = sys.executable
 PY3 = sys.version_info[0] == 3
 _cmds = {}
 if PY3:
     basestring = str
+
 
 # ===================================================================
 # utils
@@ -161,6 +167,14 @@ def test_setup():
     os.environ['PYTHONWARNINGS'] = 'all'
 
 
+def install_pip():
+    try:
+        import pip  # NOQA
+    except ImportError:
+        sh("%s %s" % (PYTHON,
+                      os.path.join(DATA_DIR, "get-pip.py")))
+
+
 # ===================================================================
 # commands
 # ===================================================================
@@ -184,37 +198,7 @@ def build():
     sh('%s -c "import setuptools"' % PYTHON)
     sh("%s setup.py build" % PYTHON)
     sh("%s setup.py build_ext -i" % PYTHON)
-    sh('%s -c "import fulltext"' % PYTHON)
-
-
-@cmd
-def install_pip():
-    """Install pip"""
-    try:
-        import pip  # NOQA
-    except ImportError:
-        if PY3:
-            from urllib.request import urlopen
-        else:
-            from urllib2 import urlopen
-
-        if hasattr(ssl, '_create_unverified_context'):
-            ctx = ssl._create_unverified_context()
-        else:
-            ctx = None
-        kw = dict(context=ctx) if ctx else {}
-        safe_print("downloading %s" % GET_PIP_URL)
-        req = urlopen(GET_PIP_URL, **kw)
-        data = req.read()
-
-        tfile = os.path.join(tempfile.gettempdir(), 'get-pip.py')
-        with open(tfile, 'wb') as f:
-            f.write(data)
-
-        try:
-            sh('%s %s --user' % (PYTHON, tfile))
-        finally:
-            os.remove(tfile)
+    sh('%s -c "import %s"' % (PYTHON, PRJNAME))
 
 
 @cmd
@@ -226,7 +210,7 @@ def install():
 
 @cmd
 def uninstall():
-    """Uninstall fulltext"""
+    """Uninstall %s""" % PRJNAME
     clean()
     install_pip()
     here = os.getcwd()
@@ -234,17 +218,17 @@ def uninstall():
         os.chdir('C:\\')
         while True:
             try:
-                import fulltext  # NOQA
+                __import__(PRJNAME, fromlist=[' '])
             except ImportError:
                 break
             else:
-                sh("%s -m pip uninstall -y fulltext" % PYTHON)
+                sh("%s -m pip uninstall -y %s" % (PYTHON, PRJNAME))
     finally:
         os.chdir(here)
 
     for dir in site.getsitepackages():
         for name in os.listdir(dir):
-            if name.startswith('fulltext'):
+            if name.startswith(PRJNAME):
                 rm(os.path.join(dir, name))
 
 
@@ -267,12 +251,13 @@ def clean():
         ".coverage",
         ".tox",
     )
-    safe_rmtree("build")
     safe_rmtree(".coverage")
+    safe_rmtree("build")
     safe_rmtree("dist")
     safe_rmtree("docs/_build")
     safe_rmtree("htmlcov")
     safe_rmtree("tmp")
+    safe_rmtree("venv")
 
 
 @cmd
@@ -280,11 +265,11 @@ def pydeps():
     """Install useful deps"""
     install_pip()
     sh("%s -m pip install -U setuptools" % (PYTHON))
-    sh("%s -m pip install -U -r requirements.txt" % (PYTHON))
+    sh("%s -m pip install -U -r %s" % (PYTHON, REQUIREMENTS_TXT))
 
 
 @cmd
-def flake8():
+def lint():
     """Run flake8 against all py files"""
     py_files = subprocess.check_output("git ls-files")
     if PY3:
@@ -299,7 +284,15 @@ def test():
     """Run tests"""
     install()
     test_setup()
-    sh("%s %s" % (PYTHON, TSCRIPT))
+    sh("%s %s" % (PYTHON, TEST_SCRIPT))
+
+
+@cmd
+def ci():
+    """Run CI tests."""
+    pydeps()
+    test()
+    pyinstaller()
 
 
 @cmd
@@ -308,7 +301,7 @@ def coverage():
     # Note: coverage options are controlled by .coveragerc file
     install()
     test_setup()
-    sh("%s -m coverage run %s" % (PYTHON, TSCRIPT))
+    sh("%s -m coverage run %s" % (PYTHON, TEST_SCRIPT))
     sh("%s -m coverage report" % PYTHON)
     sh("%s -m coverage html" % PYTHON)
     sh("%s -m webbrowser -t htmlcov/index.html" % PYTHON)
@@ -347,6 +340,44 @@ def set_python(s):
                     return
         return sys.exit(
             "can't find any python installation matching %r" % orig)
+
+
+def is_windows64():
+    return 'PROGRAMFILES(X86)' in os.environ
+
+
+def venv():
+    """Install venv + deps."""
+    sh("%s -m pip install virtualenv" % PYTHON)
+    sh("%s -m virtualenv venv" % PYTHON)
+    sh("venv\\Scripts\\pip install -r %s" % (REQUIREMENTS_TXT))
+
+
+@cmd
+def pyinstaller():
+    """Creates a stand alone Windows as dist/%s.exe.""" % PRJNAME
+    def install_deps():
+        sh("venv\\Scripts\\python -m pip install pyinstaller pypiwin32")
+        sh("venv\\Scripts\\python setup.py install")
+
+    def run_pyinstaller():
+        rm(os.path.join(ROOT_DIR, "dist"), directory=True)
+        bindir = os.path.join(
+            DATA_DIR, "bin64" if is_windows64() else "bin32")
+        assert os.path.exists(bindir), bindir
+        sh("venv\\Scripts\\pyinstaller --upx-dir=%s pyinstaller.spec" % bindir)
+
+    def check_exe():
+        # Make sure the resulting .exe works.
+        path = os.path.join(ROOT_DIR, "dist", "%s.exe" % PRJNAME)
+        assert os.path.exists(path), path
+        out = sh("%s extract setup.py" % path)
+        safe_print(out)
+
+    venv()
+    install_deps()
+    run_pyinstaller()
+    check_exe()
 
 
 def parse_cmdline():

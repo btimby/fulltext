@@ -28,6 +28,7 @@ ci:  ## Run CI tests.
 	${MAKE} sysdeps
 	${MAKE} pydeps
 	${MAKE} test
+	${MAKE} lint
 
 lint:  ## Run linters.
 	${MAKE} install-git-hooks
@@ -35,6 +36,7 @@ lint:  ## Run linters.
 
 install:  ## Install this package as current user in "edit" mode.
 	${MAKE} install-git-hooks
+	${MAKE} generate-manifest
 	PYTHONWARNINGS=all $(PYTHON) setup.py develop $(INSTALL_OPTS)
 
 pydeps:  ## Install third party python libs.
@@ -71,6 +73,7 @@ clean:  ## Remove all build files.
 		dist/ \
 		docs/_build/ \
 		htmlcov/ \
+		venv \
 		tmp/
 
 install-git-hooks:  ## Install GIT pre-commit hook.

@@ -1,3 +1,4 @@
+from __future__ import print_function
 import contextlib
 import atexit
 import errno
@@ -9,9 +10,7 @@ import sys
 import functools
 import tempfile
 import shutil
-import traceback
 
-from os.path import dirname, abspath
 from os.path import join as pathjoin
 
 import six
@@ -26,11 +25,8 @@ from fulltext.compat import which
 
 LOGGER = logging.getLogger(__file__)
 LOGGER.addHandler(logging.NullHandler())
-# Get base path of this package. When running under PyInstaller, we use the
-# _MEIPASS attribute of sys module, otherwise, we can simply use the parent of
-# the directory containing this source file.
-BASE_PATH = getattr(sys, '_MEIPASS', dirname(dirname(abspath(__file__))))
 TEMPDIR = os.environ.get('FULLTEXT_TEMP', tempfile.gettempdir())
+HERE = os.path.abspath(os.path.dirname(__file__))
 
 
 class BackendError(AssertionError):
@@ -149,6 +145,23 @@ def is_windows64():
     return is_windows() and 'PROGRAMFILES(X86)' in os.environ
 
 
+def get_data_dir():
+    # When running under PyInstaller things are a bit different.
+    if hasattr(sys, '_MEIPASS'):
+        path = pathjoin(sys._MEIPASS, 'fulltext', 'data')
+        # XXX: this absolutely ugly hack is needed in order to build
+        # duster with pyinstaller.
+        if not os.path.isdir(path):
+            print(">>> WARN: assuming you're using pyinstaller from duster",
+                  file=sys.stderr)
+            path = pathjoin(sys._MEIPASS, 'duster', 'data')
+    else:
+        path = pathjoin(HERE, 'data')
+
+    assert os.path.isdir(path), path
+    return path
+
+
 if not is_windows():
     # On linux things are simpler. Linter disabled for next line since we
     # import here for export.
@@ -158,7 +171,7 @@ else:
         # Help the magic wrapper locate magic1.dll, we include it in
         # bin/bin{32,64}.
         bindir = 'bin64' if is_windows64() else 'bin32'
-        path = pathjoin(BASE_PATH, 'bin', bindir)
+        path = pathjoin(get_data_dir(), bindir)
         assert os.path.isdir(path), path
         os.environ['PATH'] += os.pathsep + path
 
@@ -167,24 +180,20 @@ else:
     def _import_magic():
         # Instantiate our own Magic instance so we can tell it where the
         # magic file lives.
-        try:
-            from magic import Magic as _Magic
+        from magic import Magic as _Magic
 
-            class Magic(_Magic):
-                # Overridden because differently from the UNIX version
-                # the Windows version does not provide mime kwarg.
-                def from_file(self, filename, mime=True):
-                    return _Magic.from_file(self, filename)
+        class Magic(_Magic):
+            # Overridden because differently from the UNIX version
+            # the Windows version does not provide mime kwarg.
+            def from_file(self, filename, mime=True):
+                return _Magic.from_file(self, filename)
 
-                def from_buffer(self, buf, mime=True):
-                    return _Magic.from_buffer(self, buf)
+            def from_buffer(self, buf, mime=True):
+                return _Magic.from_buffer(self, buf)
 
-            return Magic(mime=True,
-                         magic_file=pathjoin(BASE_PATH, 'bin', 'magic'))
-        except Exception:
-            traceback.print_exc()
-            warnings.warn('Magic is unavailable, type detection degraded')
-            return None
+        path = pathjoin(get_data_dir(), 'magic')
+        assert os.path.isfile(path), path
+        return Magic(mime=True, magic_file=path)
 
     magic = _import_magic()
 
