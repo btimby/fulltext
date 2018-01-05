@@ -15,6 +15,8 @@ from fulltext.util import warn
 from fulltext.util import magic
 from fulltext.util import is_file_path
 from fulltext.util import fobj_to_tempfile
+# Needed for external packages using pyinstaller
+import fulltext.backends  # NOQA
 
 
 __all__ = ["get", "register_backend"]
