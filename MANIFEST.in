@@ -1,50 +1,13 @@
-include .git-pre-commit
+recursive-include fulltext *.py
+recursive-include fulltext/backends *.py
+recursive-include fulltext/data *
+
 include LICENSE
-include MANIFEST.in
-include Makefile
-include README.rst
-include fulltext/__init__.py
-include fulltext/__main__.py
-include fulltext/backends/__bin.py
-include fulltext/backends/__csv.py
-include fulltext/backends/__doc.py
-include fulltext/backends/__docx.py
-include fulltext/backends/__eml.py
-include fulltext/backends/__epub.py
-include fulltext/backends/__gz.py
-include fulltext/backends/__html.py
-include fulltext/backends/__hwp.py
-include fulltext/backends/__init__.py
-include fulltext/backends/__json.py
-include fulltext/backends/__mbox.py
-include fulltext/backends/__msg.py
-include fulltext/backends/__ocr.py
-include fulltext/backends/__odt.py
-include fulltext/backends/__pdf.py
-include fulltext/backends/__pptx.py
-include fulltext/backends/__ps.py
-include fulltext/backends/__rar.py
-include fulltext/backends/__rtf.py
-include fulltext/backends/__text.py
-include fulltext/backends/__xlsx.py
-include fulltext/backends/__xml.py
-include fulltext/backends/__zip.py
-include fulltext/compat.py
-include fulltext/data/bin32/magic1.dll
-include fulltext/data/bin32/pdftotext.exe
-include fulltext/data/bin32/upx.exe
-include fulltext/data/bin64/exiftool.exe
-include fulltext/data/bin64/libgnurx-0.dll
-include fulltext/data/bin64/magic1.dll
-include fulltext/data/bin64/pdftotext.exe
-include fulltext/data/bin64/unrar.exe
-include fulltext/data/generate_manifest.py
-include fulltext/data/magic
-include fulltext/data/magic.mgc
-include fulltext/data/winmake.py
-include fulltext/util.py
 include make.bat
+include Makefile
+include MANIFEST.in
 include pyinstaller.spec
+include README.rst
 include requirements.txt
 include setup.py
 include tests.py

@@ -202,21 +202,6 @@ def build():
 
 
 @cmd
-def generate_manifest():
-    """Update MANIFEST.in file."""
-    genman_py = os.path.join(HERE, "generate_manifest.py")
-    manifest = os.path.join(ROOT_DIR, 'MANIFEST.in')
-    assert os.path.exists(genman_py), genman_py
-    assert os.path.exists(manifest), manifest
-    out = subprocess.check_output([PYTHON, genman_py])
-    if PY3:
-        out = out.decode(sys.getfilesystemencoding())
-    with open(manifest, "wt") as f:
-        for line in out.splitlines():
-            f.write(line + '\n')
-
-
-@cmd
 def install():
     """Install in develop / edit mode"""
     build()
@@ -408,7 +393,6 @@ def parse_cmdline():
 
 def main():
     parse_cmdline()
-    generate_manifest()
     try:
         cmd = sys.argv[1].replace('-', '_')
     except IndexError:

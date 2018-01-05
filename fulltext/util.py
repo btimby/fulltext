@@ -1,3 +1,4 @@
+from __future__ import print_function
 import contextlib
 import atexit
 import errno
@@ -151,7 +152,8 @@ def get_data_dir():
         # XXX: this absolutely ugly hack is needed in order to build
         # duster with pyinstaller.
         if not os.path.isdir(path):
-            print(">>> WARN: %s ")
+            print(">>> WARN: assuming you're using pyinstaller from duster",
+                  file=sys.stderr)
             path = pathjoin(sys._MEIPASS, 'duster', 'data')
     else:
         path = pathjoin(HERE, 'data')
