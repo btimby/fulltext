@@ -104,48 +104,33 @@ _TEXT_EXTS = set((
 ))
 
 
-# Dirty hack for pyinstaller so that it includes these modules.
+# XXX: dirty hack for pyinstaller so that it includes these modules.
+# TODO: find a way to do this in pyinstaller.spec instead.
 if is_windows() and hasattr(sys, '_MEIPASS'):
-    from fulltext.backends import __msg  # NOQA
-    from fulltext.backends import __odt  # NOQA
-    from fulltext.backends import __pptx  # NOQA
+    import fulltext.util
+    from fulltext.backends import __bin  # NOQA
+    from fulltext.backends import __csv  # NOQA
+    from fulltext.backends import __doc  # NOQA
+    from fulltext.backends import __docx  # NOQA
+    from fulltext.backends import __eml  # NOQA
     from fulltext.backends import __epub  # NOQA
-    from fulltext.backends import __csv  # NOQA
-    from fulltext.backends import __ps  # NOQA
     from fulltext.backends import __gz  # NOQA
-    from fulltext.backends import __eml  # NOQA
-    from fulltext.backends import __doc  # NOQA
     from fulltext.backends import __html  # NOQA
-    from fulltext.backends import __rtf  # NOQA
-    from fulltext.backends import __mbox  # NOQA
-    from fulltext.backends import __docx  # NOQA
-    from fulltext.backends import __docx  # NOQA
-    from fulltext.backends import __doc  # NOQA
-    from fulltext.backends import __text  # NOQA
-    from fulltext.backends import __init__  # NOQA
-    from fulltext.backends import __eml  # NOQA
-    from fulltext.backends import __zip  # NOQA
-    from fulltext.backends import __html  # NOQA
-    from fulltext.backends import __gz  # NOQA
-    from fulltext.backends import __csv  # NOQA
     from fulltext.backends import __hwp  # NOQA
-    from fulltext.backends import __msg  # NOQA
-    from fulltext.backends import __bin  # NOQA
-    from fulltext.backends import __ocr  # NOQA
-    from fulltext.backends import __xml  # NOQA
-    from fulltext.backends import __xlsx  # NOQA
+    from fulltext.backends import __json  # NOQA
     from fulltext.backends import __mbox  # NOQA
-    from fulltext.backends import __json  # NOQA
-    from fulltext.backends import __pdf  # NOQA
-    from fulltext.backends import __init__  # NOQA
-    from fulltext.backends import __rar  # NOQA
-    from fulltext.backends import __json  # NOQA
-    from fulltext.backends import __epub  # NOQA
-    from fulltext.backends import __odt  # NOQA
-    from fulltext.backends import __bin  # NOQA
-    from fulltext.backends import __pdf  # NOQA
-    from fulltext.backends import __text  # NOQA
+    from fulltext.backends import __msg  # NOQA
     from fulltext.backends import __ocr  # NOQA
+    from fulltext.backends import __odt  # NOQA
+    from fulltext.backends import __pdf  # NOQA
+    from fulltext.backends import __pptx  # NOQA
+    from fulltext.backends import __ps  # NOQA
+    from fulltext.backends import __rar  # NOQA
+    from fulltext.backends import __rtf  # NOQA
+    from fulltext.backends import __text  # NOQA
+    from fulltext.backends import __xlsx  # NOQA
+    from fulltext.backends import __xml  # NOQA
+    from fulltext.backends import __zip  # NOQA
 
 
 # =====================================================================
