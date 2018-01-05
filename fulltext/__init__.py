@@ -15,10 +15,7 @@ from fulltext.util import warn
 from fulltext.util import magic
 from fulltext.util import is_file_path
 from fulltext.util import fobj_to_tempfile
-# Needed for external packages using pyinstaller
-import fulltext.backends  # NOQA
-import fulltext.backends.__text  # NOQA
-
+from fulltext.util import is_windows
 
 __all__ = ["get", "register_backend"]
 
@@ -105,6 +102,50 @@ _TEXT_EXTS = set((
     ".yml",  # Yaml
     ".yxx",  # Bison source code file
 ))
+
+
+# Dirty hack for pyinstaller so that it includes these modules.
+if is_windows() and hasattr(sys, '_MEIPASS'):
+    from fulltext.backends import __msg  # NOQA
+    from fulltext.backends import __odt  # NOQA
+    from fulltext.backends import __pptx  # NOQA
+    from fulltext.backends import __epub  # NOQA
+    from fulltext.backends import __csv  # NOQA
+    from fulltext.backends import __ps  # NOQA
+    from fulltext.backends import __gz  # NOQA
+    from fulltext.backends import __eml  # NOQA
+    from fulltext.backends import __doc  # NOQA
+    from fulltext.backends import __html  # NOQA
+    from fulltext.backends import __rtf  # NOQA
+    from fulltext.backends import __mbox  # NOQA
+    from fulltext.backends import __docx  # NOQA
+    from fulltext.backends import __docx  # NOQA
+    from fulltext.backends import __doc  # NOQA
+    from fulltext.backends import __text  # NOQA
+    from fulltext.backends import __init__  # NOQA
+    from fulltext.backends import __eml  # NOQA
+    from fulltext.backends import __zip  # NOQA
+    from fulltext.backends import __html  # NOQA
+    from fulltext.backends import __gz  # NOQA
+    from fulltext.backends import __csv  # NOQA
+    from fulltext.backends import __hwp  # NOQA
+    from fulltext.backends import __msg  # NOQA
+    from fulltext.backends import __bin  # NOQA
+    from fulltext.backends import __ocr  # NOQA
+    from fulltext.backends import __xml  # NOQA
+    from fulltext.backends import __xlsx  # NOQA
+    from fulltext.backends import __mbox  # NOQA
+    from fulltext.backends import __json  # NOQA
+    from fulltext.backends import __pdf  # NOQA
+    from fulltext.backends import __init__  # NOQA
+    from fulltext.backends import __rar  # NOQA
+    from fulltext.backends import __json  # NOQA
+    from fulltext.backends import __epub  # NOQA
+    from fulltext.backends import __odt  # NOQA
+    from fulltext.backends import __bin  # NOQA
+    from fulltext.backends import __pdf  # NOQA
+    from fulltext.backends import __text  # NOQA
+    from fulltext.backends import __ocr  # NOQA
 
 
 # =====================================================================
