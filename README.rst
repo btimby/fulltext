@@ -36,33 +36,69 @@ when necessary, for example, the following CLI tools are utilized.
 Supported formats
 -----------------
 
-* ``.csv`` - Uses Python ``csv`` module.
-* ``.tsv`` (tab delimited) - Uses Python ``csv`` module.
-* ``.psv`` (pipe delimited) - Uses Python ``csv`` module.
-* ``.doc`` - Uses ``/bin/antiword`` CLI tool.
-* ``.docx`` - Uses Python ``docx2txt`` module.
-* ``.html`` - Uses Python ``BeautifulSoup`` module.
-* ``.ods`` - Uses Python ``lxml``, ``zipfile`` modules.
-* ``.odt`` - Uses Python ``lxml``, ``zipfile`` modules.
-* ``.pdf`` - Uses ``/bin/pdf2text`` CLI tool.
-* ``.rtf`` - Uses ``/bin/unrtf`` CLI tool.
-* ``.text`` - Uses Python stdlib modules to extract text.
-* ``.xls`` - Uses Python ``xlrd`` module.
-* ``.xlsx`` - Uses Python ``xlrd`` module.
-* ``.xml`` - Uses Python ``lxml`` module.
-* ``.pptx`` - Uses Python ``pptx`` module
-* ``.zip`` - Uses Python ``zipfile`` module.
-* ``.gz`` - Uses Python ``gzip`` module.
-* ``.jpg``, ``.jpeg``, ``.png``, ``.bmp``, ``.gif`` - Uses ``/usr/bin/tesseract`` CLI tool and ``pytesseract`` module.
-* ``.hwp`` - Uses Python ``pyhwp`` module as CLI tool.
-* ``.epub`` - Uses Python ``ebooklib`` module.
-* ``.ps`` - Uses ``/bin/pstotext`` CLI tool.
-* ``.json`` - Uses ``json`` Python module.
-* ``.eml`` - Uses ``email`` Python module.
-* ``.mbox`` - Uses ``mailbox`` Python module.
-* ``.msg`` - Uses ``msg-extractor`` Python module (from github).
-* ``.bin`` - Uses Python stdlib modules to emulate ``strings`` CLI tool.
-* ``.rar`` - Uses ``rarfile`` module.
++-----------+-------------------------------------+----------------------------------------------+
+| Extension | Linux                               | Windows                                      |
++===========+=====================================+==============================================+
+| ``bin``   | python stdlib                       | python stdlib                                |
++-----------+-------------------------------------+----------------------------------------------+
+| ``bmp``   | tesseract CLI and pytesserac module |                                              |
++-----------+-------------------------------------+----------------------------------------------+
+| ``csv``   | python ``csv`` module               | python ``csv`` module                        |
++-----------+-------------------------------------+----------------------------------------------+
+| ``doc``   | ``antiword`` CLI tool               |                                              |
++-----------+-------------------------------------+----------------------------------------------+
+| ``docx``  | ``docx2txt`` module                 | ``docx2txt`` module                          |
++-----------+-------------------------------------+----------------------------------------------+
+| ``eml``   | ``email`` module                    | ``email`` module                             |
++-----------+-------------------------------------+----------------------------------------------+
+| ``epub``  | ``ebooklib`` module                 | ``ebooklib`` module                          |
++-----------+-------------------------------------+----------------------------------------------+
+| ``gif``   | tesseract CLI and pytesserac module |                                              |
++-----------+-------------------------------------+----------------------------------------------+
+| ``gz``    | python ``gzip`` module              | python ``gzip`` module                       |
++-----------+-------------------------------------+----------------------------------------------+
+| ``html``  | ``BeautifulSoup`` module            | ``BeautifulSoup`` module                     |
++-----------+-------------------------------------+----------------------------------------------+
+| ``hwp``   | ``pyhwp`` module as CLI tool        |                                              |
++-----------+-------------------------------------+----------------------------------------------+
+| ``jpg``   | tesseract CLI and pytesserac module |                                              |
++-----------+-------------------------------------+----------------------------------------------+
+| ``json``  | ``json`` module                     | ``json`` module                              |
++-----------+-------------------------------------+----------------------------------------------+
+| ``mbox``  | ``mailbox`` module                  | ``mailbox`` modul                            |
++-----------+-------------------------------------+----------------------------------------------+
+| ``msg``   | ``msg-extractor`` module            |                                              |
++-----------+-------------------------------------+----------------------------------------------+
+| ``ods``   | ``lxml``, ``zipfile`` modules       | ``lxml``, ``zipfile`` modules                |
++-----------+-------------------------------------+----------------------------------------------+
+| ``odt``   | ``lxml``, ``zipfile`` modules       | ``lxml``, ``zipfile`` modules                |
++-----------+-------------------------------------+----------------------------------------------+
+| ``pdf``   | ``pdf2text`` CLI tool               | ``pdf2text`` CLI tool                        |
++-----------+-------------------------------------+----------------------------------------------+
+| ``png``   | tesseract CLI and pytesserac module |                                              |
++-----------+-------------------------------------+----------------------------------------------+
+| ``pptx``  | ``pptx`` module                     |                                              |
++-----------+-------------------------------------+----------------------------------------------+
+| ``ps``    | ``pstotext`` CLI tool               |                                              |
++-----------+-------------------------------------+----------------------------------------------+
+| ``psv``   | python ``csv`` module               | python ``csv`` module                        |
++-----------+-------------------------------------+----------------------------------------------+
+| ``rar``   | ``rarfile`` module                  | ``rarfile`` module                           |
++-----------+-------------------------------------+----------------------------------------------+
+| ``rtf``   | ``unrtf`` CLI tool                  | ``unrtf`` CLI tool                           |
++-----------+-------------------------------------+----------------------------------------------+
+| ``text``  | python stdlib                       | python stdlib                                |
++-----------+-------------------------------------+----------------------------------------------+
+| ``tsv``   | python ``csv`` module               | python ``csv`` module                        |
++-----------+-------------------------------------+----------------------------------------------+
+| ``xls``   | ``xlrd`` module                     | ``xlrd`` module                              |
++-----------+-------------------------------------+----------------------------------------------+
+| ``xlsx``  | ``xlrd`` module                     | ``xlrd`` module                              |
++-----------+-------------------------------------+----------------------------------------------+
+| ``xml``   | ``lxml`` module                     | ``lxml`` module                              |
++-----------+-------------------------------------+----------------------------------------------+
+| ``zip``   | ``zipfile`` module                  | ``zipfile`` module                           |
++-----------+-------------------------------------+----------------------------------------------+
 
 Supported title formats
 -----------------------
