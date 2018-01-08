@@ -23,8 +23,9 @@ Fulltext differs from other libraries in that it tries to use file data in the
 form it is given. For most backends, a file-like object or path can be handled
 directly, removing the need to write temporary files.
 
-Fulltext uses native python libraries when possible and utilizes CLI tools
-when necessary, for example, the following CLI tools are utilized.
+Fulltext uses native python libraries when possible and utilizes third party
+Python libraries and CLI tools when necessary, for example, the following (but
+not only) CLI tools are utilized.
 
 * ``antiword`` - Legacy ``.doc`` (Word) format.
 * ``unrtf`` - ``.rtf`` format.
