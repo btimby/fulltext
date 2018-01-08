@@ -118,7 +118,9 @@ if is_windows() and hasattr(sys, '_MEIPASS'):
     from fulltext.backends import __hwp  # NOQA
     from fulltext.backends import __json  # NOQA
     from fulltext.backends import __mbox  # NOQA
-    from fulltext.backends import __msg  # NOQA
+    # XXX couldn't find a way to install ExtractMessage lib with
+    # pyinstaller.
+    # from fulltext.backends import __msg  # NOQA
     from fulltext.backends import __ocr  # NOQA
     from fulltext.backends import __odt  # NOQA
     from fulltext.backends import __pdf  # NOQA
