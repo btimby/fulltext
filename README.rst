@@ -106,17 +106,31 @@ Supported title formats
 Other than extracting text fulltext lib is able to determine title for certain
 file extensions:
 
-* ``.doc`` - Uses ``/bin/exiftool`` CLI tool.
-* ``.docx`` - Uses ``/bin/exiftool`` CLI tool.
-* ``.epub`` - Uses ``/bin/exiftool`` CLI tool.
-* ``.html`` - Uses Python ``BeautifulSoup`` module.
-* ``.odt`` - Uses ``/bin/exiftool`` CLI tool.
-* ``.pdf`` - Uses ``/bin/pdfinfo`` CLI tool.
-* ``.pptx`` - Uses ``/bin/pdfinfo`` CLI tool.
-* ``.ps`` - Uses ``/bin/exiftool`` CLI tool.
-* ``.rtf`` - Uses ``/bin/exiftool`` CLI tool.
-* ``.xls`` - Uses ``/bin/exiftool`` CLI tool.
-* ``.xlsx`` - Uses ``/bin/exiftool`` CLI tool.
++-----------+-------------------------------------+----------------------------------------------+
+| Extension | Linux                               | Windows                                      |
++===========+=====================================+==============================================+
+| ``doc``   | ``/bin/exiftool`` CLI tool          |                                              |
++-----------+-------------------------------------+----------------------------------------------+
+| ``docx``  | ``/bin/exiftool`` CLI tool          | ``/bin/exiftool`` CLI tool                   |
++-----------+-------------------------------------+----------------------------------------------+
+| ``epub``  | ``/bin/exiftool`` CLI tool          |                                              |
++-----------+-------------------------------------+----------------------------------------------+
+| ``html``  | ``BeautifulSoup`` module            |  ``BeautifulSoup`` module                    |
++-----------+-------------------------------------+----------------------------------------------+
+| ``odt``   | ``/bin/exiftool`` CLI tool          | ``/bin/exiftool`` CLI tool                   |
++-----------+-------------------------------------+----------------------------------------------+
+| ``pdf``   | ``/bin/pdfinfo`` CLI tool           |                                              |
++-----------+-------------------------------------+----------------------------------------------+
+| ``pptx``  | ``/bin/pdfinfo`` CLI tool           | ``/bin/pdfinfo`` CLI tool                    |
++-----------+-------------------------------------+----------------------------------------------+
+| ``ps``    | ``/bin/exiftool`` CLI tool          |                                              |
++-----------+-------------------------------------+----------------------------------------------+
+| ``rtf``   | ``/bin/exiftool`` CLI tool          |                                              |
++-----------+-------------------------------------+----------------------------------------------+
+| ``xls``   | ``/bin/exiftool`` CLI tool          | ``/bin/exiftool`` CLI tool                   |
++-----------+-------------------------------------+----------------------------------------------+
+| ``xlsx``  | ``/bin/exiftool`` CLI tool          | ``/bin/exiftool`` CLI tool                   |
++-----------+-------------------------------------+----------------------------------------------+
 
 Installing tools
 ----------------
