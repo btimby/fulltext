@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+from fulltext.compat import POSIX
 from fulltext.util import run, assert_cmd_exists, exiftool_title
 from fulltext import BaseBackend
 
@@ -14,9 +15,10 @@ class Backend(BaseBackend):
     def strip(self, text):
         return self.decode(text.partition(b'-----------------')[2])
 
-    def handle_fobj(self, f):
-        return self.strip(
-            run('unrtf', '--text', '--nopict', stdin=f))
+    if POSIX:
+        def handle_fobj(self, f):
+            return self.strip(
+                run('unrtf', '--text', '--nopict', stdin=f))
 
     def handle_path(self, path):
         return self.strip(
