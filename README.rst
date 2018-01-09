@@ -23,8 +23,9 @@ Fulltext differs from other libraries in that it tries to use file data in the
 form it is given. For most backends, a file-like object or path can be handled
 directly, removing the need to write temporary files.
 
-Fulltext uses native python libraries when possible and utilizes CLI tools
-when necessary, for example, the following CLI tools are utilized.
+Fulltext uses native python libraries when possible and utilizes third party
+Python libraries and CLI tools when necessary, for example, the following (but
+not only) CLI tools are utilized.
 
 * ``antiword`` - Legacy ``.doc`` (Word) format.
 * ``unrtf`` - ``.rtf`` format.
@@ -36,33 +37,69 @@ when necessary, for example, the following CLI tools are utilized.
 Supported formats
 -----------------
 
-* ``.csv`` - Uses Python ``csv`` module.
-* ``.tsv`` (tab delimited) - Uses Python ``csv`` module.
-* ``.psv`` (pipe delimited) - Uses Python ``csv`` module.
-* ``.doc`` - Uses ``/bin/antiword`` CLI tool.
-* ``.docx`` - Uses Python ``docx2txt`` module.
-* ``.html`` - Uses Python ``BeautifulSoup`` module.
-* ``.ods`` - Uses Python ``lxml``, ``zipfile`` modules.
-* ``.odt`` - Uses Python ``lxml``, ``zipfile`` modules.
-* ``.pdf`` - Uses ``/bin/pdf2text`` CLI tool.
-* ``.rtf`` - Uses ``/bin/unrtf`` CLI tool.
-* ``.text`` - Uses Python stdlib modules to extract text.
-* ``.xls`` - Uses Python ``xlrd`` module.
-* ``.xlsx`` - Uses Python ``xlrd`` module.
-* ``.xml`` - Uses Python ``lxml`` module.
-* ``.pptx`` - Uses Python ``pptx`` module
-* ``.zip`` - Uses Python ``zipfile`` module.
-* ``.gz`` - Uses Python ``gzip`` module.
-* ``.jpg``, ``.jpeg``, ``.png``, ``.bmp``, ``.gif`` - Uses ``/usr/bin/tesseract`` CLI tool and ``pytesseract`` module.
-* ``.hwp`` - Uses Python ``pyhwp`` module as CLI tool.
-* ``.epub`` - Uses Python ``ebooklib`` module.
-* ``.ps`` - Uses ``/bin/pstotext`` CLI tool.
-* ``.json`` - Uses ``json`` Python module.
-* ``.eml`` - Uses ``email`` Python module.
-* ``.mbox`` - Uses ``mailbox`` Python module.
-* ``.msg`` - Uses ``msg-extractor`` Python module (from github).
-* ``.bin`` - Uses Python stdlib modules to emulate ``strings`` CLI tool.
-* ``.rar`` - Uses ``rarfile`` module.
++-----------+-------------------------------------+----------------------------------------------+
+| Extension | Linux                               | Windows                                      |
++===========+=====================================+==============================================+
+| ``bin``   | python stdlib                       | python stdlib                                |
++-----------+-------------------------------------+----------------------------------------------+
+| ``bmp``   | tesseract CLI and pytesserac module |                                              |
++-----------+-------------------------------------+----------------------------------------------+
+| ``csv``   | python ``csv`` module               | python ``csv`` module                        |
++-----------+-------------------------------------+----------------------------------------------+
+| ``doc``   | ``antiword`` CLI tool               |                                              |
++-----------+-------------------------------------+----------------------------------------------+
+| ``docx``  | ``docx2txt`` module                 | ``docx2txt`` module                          |
++-----------+-------------------------------------+----------------------------------------------+
+| ``eml``   | ``email`` module                    | ``email`` module                             |
++-----------+-------------------------------------+----------------------------------------------+
+| ``epub``  | ``ebooklib`` module                 | ``ebooklib`` module                          |
++-----------+-------------------------------------+----------------------------------------------+
+| ``gif``   | tesseract CLI and pytesserac module |                                              |
++-----------+-------------------------------------+----------------------------------------------+
+| ``gz``    | python ``gzip`` module              | python ``gzip`` module                       |
++-----------+-------------------------------------+----------------------------------------------+
+| ``html``  | ``BeautifulSoup`` module            | ``BeautifulSoup`` module                     |
++-----------+-------------------------------------+----------------------------------------------+
+| ``hwp``   | ``pyhwp`` module as CLI tool        |                                              |
++-----------+-------------------------------------+----------------------------------------------+
+| ``jpg``   | tesseract CLI and pytesserac module |                                              |
++-----------+-------------------------------------+----------------------------------------------+
+| ``json``  | ``json`` module                     | ``json`` module                              |
++-----------+-------------------------------------+----------------------------------------------+
+| ``mbox``  | ``mailbox`` module                  | ``mailbox`` modul                            |
++-----------+-------------------------------------+----------------------------------------------+
+| ``msg``   | ``msg-extractor`` module            |                                              |
++-----------+-------------------------------------+----------------------------------------------+
+| ``ods``   | ``lxml``, ``zipfile`` modules       | ``lxml``, ``zipfile`` modules                |
++-----------+-------------------------------------+----------------------------------------------+
+| ``odt``   | ``lxml``, ``zipfile`` modules       | ``lxml``, ``zipfile`` modules                |
++-----------+-------------------------------------+----------------------------------------------+
+| ``pdf``   | ``pdf2text`` CLI tool               | ``pdf2text`` CLI tool                        |
++-----------+-------------------------------------+----------------------------------------------+
+| ``png``   | tesseract CLI and pytesserac module |                                              |
++-----------+-------------------------------------+----------------------------------------------+
+| ``pptx``  | ``pptx`` module                     |                                              |
++-----------+-------------------------------------+----------------------------------------------+
+| ``ps``    | ``pstotext`` CLI tool               |                                              |
++-----------+-------------------------------------+----------------------------------------------+
+| ``psv``   | python ``csv`` module               | python ``csv`` module                        |
++-----------+-------------------------------------+----------------------------------------------+
+| ``rar``   | ``rarfile`` module                  | ``rarfile`` module                           |
++-----------+-------------------------------------+----------------------------------------------+
+| ``rtf``   | ``unrtf`` CLI tool                  | ``unrtf`` CLI tool                           |
++-----------+-------------------------------------+----------------------------------------------+
+| ``text``  | python stdlib                       | python stdlib                                |
++-----------+-------------------------------------+----------------------------------------------+
+| ``tsv``   | python ``csv`` module               | python ``csv`` module                        |
++-----------+-------------------------------------+----------------------------------------------+
+| ``xls``   | ``xlrd`` module                     | ``xlrd`` module                              |
++-----------+-------------------------------------+----------------------------------------------+
+| ``xlsx``  | ``xlrd`` module                     | ``xlrd`` module                              |
++-----------+-------------------------------------+----------------------------------------------+
+| ``xml``   | ``lxml`` module                     | ``lxml`` module                              |
++-----------+-------------------------------------+----------------------------------------------+
+| ``zip``   | ``zipfile`` module                  | ``zipfile`` module                           |
++-----------+-------------------------------------+----------------------------------------------+
 
 Supported title formats
 -----------------------
@@ -70,17 +107,31 @@ Supported title formats
 Other than extracting text fulltext lib is able to determine title for certain
 file extensions:
 
-* ``.doc`` - Uses ``/bin/exiftool`` CLI tool.
-* ``.docx`` - Uses ``/bin/exiftool`` CLI tool.
-* ``.epub`` - Uses ``/bin/exiftool`` CLI tool.
-* ``.html`` - Uses Python ``BeautifulSoup`` module.
-* ``.odt`` - Uses ``/bin/exiftool`` CLI tool.
-* ``.pdf`` - Uses ``/bin/pdfinfo`` CLI tool.
-* ``.pptx`` - Uses ``/bin/pdfinfo`` CLI tool.
-* ``.ps`` - Uses ``/bin/exiftool`` CLI tool.
-* ``.rtf`` - Uses ``/bin/exiftool`` CLI tool.
-* ``.xls`` - Uses ``/bin/exiftool`` CLI tool.
-* ``.xlsx`` - Uses ``/bin/exiftool`` CLI tool.
++-----------+-------------------------------------+----------------------------------------------+
+| Extension | Linux                               | Windows                                      |
++===========+=====================================+==============================================+
+| ``doc``   | ``/bin/exiftool`` CLI tool          |                                              |
++-----------+-------------------------------------+----------------------------------------------+
+| ``docx``  | ``/bin/exiftool`` CLI tool          | ``/bin/exiftool`` CLI tool                   |
++-----------+-------------------------------------+----------------------------------------------+
+| ``epub``  | ``/bin/exiftool`` CLI tool          |                                              |
++-----------+-------------------------------------+----------------------------------------------+
+| ``html``  | ``BeautifulSoup`` module            |  ``BeautifulSoup`` module                    |
++-----------+-------------------------------------+----------------------------------------------+
+| ``odt``   | ``/bin/exiftool`` CLI tool          | ``/bin/exiftool`` CLI tool                   |
++-----------+-------------------------------------+----------------------------------------------+
+| ``pdf``   | ``/bin/pdfinfo`` CLI tool           |                                              |
++-----------+-------------------------------------+----------------------------------------------+
+| ``pptx``  | ``/bin/pdfinfo`` CLI tool           | ``/bin/pdfinfo`` CLI tool                    |
++-----------+-------------------------------------+----------------------------------------------+
+| ``ps``    | ``/bin/exiftool`` CLI tool          |                                              |
++-----------+-------------------------------------+----------------------------------------------+
+| ``rtf``   | ``/bin/exiftool`` CLI tool          |                                              |
++-----------+-------------------------------------+----------------------------------------------+
+| ``xls``   | ``/bin/exiftool`` CLI tool          | ``/bin/exiftool`` CLI tool                   |
++-----------+-------------------------------------+----------------------------------------------+
+| ``xlsx``  | ``/bin/exiftool`` CLI tool          | ``/bin/exiftool`` CLI tool                   |
++-----------+-------------------------------------+----------------------------------------------+
 
 Installing tools
 ----------------
