@@ -165,7 +165,7 @@ Second, register the new backend against fulltext.
 .. code:: python
 
     import fulltext
-    from fulltext import BaseBackend
+    from fulltext.util import BaseBackend
 
 
     fulltext.register_backend(

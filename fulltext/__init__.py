@@ -15,7 +15,7 @@ from fulltext.util import warn
 from fulltext.util import magic
 from fulltext.util import is_file_path
 from fulltext.util import fobj_to_tempfile
-
+from fulltext.util import is_windows
 
 __all__ = ["get", "register_backend"]
 
@@ -102,6 +102,36 @@ _TEXT_EXTS = set((
     ".yml",  # Yaml
     ".yxx",  # Bison source code file
 ))
+
+
+# XXX: dirty hack for pyinstaller so that it includes these modules.
+# TODO: find a way to do this in pyinstaller.spec instead.
+if is_windows() and hasattr(sys, '_MEIPASS'):
+    from fulltext.backends import __bin  # NOQA
+    from fulltext.backends import __csv  # NOQA
+    from fulltext.backends import __doc  # NOQA
+    from fulltext.backends import __docx  # NOQA
+    from fulltext.backends import __eml  # NOQA
+    from fulltext.backends import __epub  # NOQA
+    from fulltext.backends import __gz  # NOQA
+    from fulltext.backends import __html  # NOQA
+    from fulltext.backends import __hwp  # NOQA
+    from fulltext.backends import __json  # NOQA
+    from fulltext.backends import __mbox  # NOQA
+    # XXX couldn't find a way to install ExtractMessage lib with
+    # pyinstaller.
+    # from fulltext.backends import __msg  # NOQA
+    from fulltext.backends import __ocr  # NOQA
+    from fulltext.backends import __odt  # NOQA
+    from fulltext.backends import __pdf  # NOQA
+    from fulltext.backends import __pptx  # NOQA
+    from fulltext.backends import __ps  # NOQA
+    from fulltext.backends import __rar  # NOQA
+    from fulltext.backends import __rtf  # NOQA
+    from fulltext.backends import __text  # NOQA
+    from fulltext.backends import __xlsx  # NOQA
+    from fulltext.backends import __xml  # NOQA
+    from fulltext.backends import __zip  # NOQA
 
 
 # =====================================================================
@@ -481,43 +511,6 @@ def backend_inst_from_mod(mod, encoding, encoding_errors, kwargs):
 # =====================================================================
 # --- public API
 # =====================================================================
-
-
-class BaseBackend(object):
-    """Base class for defining custom backend classes."""
-
-    def __init__(self, encoding, encoding_errors, kwargs):
-        """These are the same args passed to get() function."""
-        self.encoding = encoding
-        self.encoding_errors = encoding_errors
-        self.kwargs = kwargs
-
-    def setup(self):
-        """May be overridden by subclass. This is called before handle_
-        methods.
-        """
-        pass
-
-    def teardown(self):
-        """May be overridden by subclass. This is called after text
-        is extracted, also in case of exception.
-        """
-        pass
-
-    def check(self, title):
-        """May be overridden by subclass. This is called before text
-        extraction. If the overriding method raises an exception
-        a warning is printed and bin backend is used.
-        """
-        pass
-
-    def decode(self, s):
-        """Decode string."""
-        return s.decode(self.encoding, self.encoding_errors)
-
-    def handle_title(self, path_or_file):
-        """May be overridden by sublass in order to retrieve file title."""
-        return None
 
 
 def _get(path_or_file, default, mime, name, backend, encoding,

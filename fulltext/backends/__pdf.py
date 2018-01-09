@@ -3,7 +3,7 @@ import tempfile
 import os
 
 from fulltext.util import run, assert_cmd_exists
-from fulltext import BaseBackend
+from fulltext.util import BaseBackend
 from fulltext.util import is_file_path, which
 from fulltext.compat import POSIX
 

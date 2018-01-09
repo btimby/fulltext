@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 from fulltext.backends import __html
 from fulltext.util import run, assert_cmd_exists
-from fulltext import BaseBackend
+from fulltext.util import BaseBackend
 
 
 def cmd(path, **kwargs):

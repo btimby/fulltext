@@ -3,7 +3,7 @@ from __future__ import absolute_import
 import xlrd
 from six import StringIO
 
-from fulltext import BaseBackend
+from fulltext.util import BaseBackend
 from fulltext.util import assert_cmd_exists, exiftool_title
 
 
