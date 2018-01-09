@@ -4,7 +4,7 @@ import logging
 
 from fulltext.util import run, ShellError, MissingCommandException
 from fulltext.util import assert_cmd_exists
-from fulltext import BaseBackend
+from fulltext.util import BaseBackend
 from fulltext.util import exiftool_title
 
 

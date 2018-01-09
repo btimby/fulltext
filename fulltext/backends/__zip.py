@@ -6,7 +6,7 @@ import zipfile
 from six import StringIO
 from contextlib2 import ExitStack
 
-from fulltext import BaseBackend, get
+from fulltext.util import BaseBackend
 
 
 LOGGER = logging.getLogger(__name__)
@@ -16,6 +16,7 @@ LOGGER.addHandler(logging.NullHandler())
 class Backend(BaseBackend):
 
     def handle_fobj(self, f):
+        from fulltext import get  # avoid circular import
         with ExitStack() as stack:
             text = StringIO()
             z = stack.enter_context(zipfile.ZipFile(f, 'r'))

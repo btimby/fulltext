@@ -2,8 +2,7 @@ import gzip
 import logging
 from os.path import splitext, basename
 
-from fulltext import get, backend_from_fname, backend_from_fobj
-from fulltext import BaseBackend
+from fulltext.util import BaseBackend
 from fulltext.util import is_file_path
 from fulltext.util import fobj_to_tempfile
 
@@ -36,6 +35,9 @@ class Backend(BaseBackend):
         return f, path
 
     def handle_fobj(self, path_or_file):
+        # Avoid circlar imports.
+        from fulltext import get, backend_from_fname, backend_from_fobj
+
         f, path = self.get_fobj_and_path(path_or_file)
         with f:
             orig_name = orig_fname(path)

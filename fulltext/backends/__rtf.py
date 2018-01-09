@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 from fulltext.compat import POSIX
 from fulltext.util import run, assert_cmd_exists, exiftool_title
-from fulltext import BaseBackend
+from fulltext.util import BaseBackend
 
 
 class Backend(BaseBackend):

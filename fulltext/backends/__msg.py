@@ -2,7 +2,7 @@ import contextlib
 from six import StringIO
 
 from ExtractMsg import Message
-from fulltext import BaseBackend
+from fulltext.util import BaseBackend
 
 
 class Backend(BaseBackend):

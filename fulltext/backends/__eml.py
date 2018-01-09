@@ -3,7 +3,7 @@ from email import message_from_file
 import codecs
 
 from six import StringIO
-from fulltext import BaseBackend
+from fulltext.util import BaseBackend
 
 
 # This is used by other modules, hence it's here.

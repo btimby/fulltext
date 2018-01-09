@@ -358,6 +358,9 @@ def pyinstaller():
     """Creates a stand alone Windows as dist/%s.exe.""" % PRJNAME
     def install_deps():
         sh("venv\\Scripts\\python -m pip install pyinstaller pypiwin32")
+        sh("venv\\Scripts\\python -m pip install "
+           "https://github.com/mattgwwalker/msg-extractor/zipball/"
+           "master#egg=ExtractMsg")
         sh("venv\\Scripts\\python setup.py install")
 
     def run_pyinstaller():
