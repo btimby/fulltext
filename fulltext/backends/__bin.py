@@ -14,7 +14,7 @@ try:
 except ImportError:
     maketrans = bytes.maketrans
 
-from fulltext import BaseBackend
+from fulltext.util import BaseBackend
 
 
 BUFFER_MAX = 1024 * 1024

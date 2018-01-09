@@ -4,7 +4,7 @@ import mailbox
 from six import StringIO
 
 from fulltext.backends.__eml import handle_fobj
-from fulltext import BaseBackend
+from fulltext.util import BaseBackend
 
 
 class Backend(BaseBackend):

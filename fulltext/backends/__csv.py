@@ -5,7 +5,7 @@ import csv
 from six import StringIO
 from six import PY3
 
-from fulltext import BaseBackend
+from fulltext.util import BaseBackend
 
 
 class Backend(BaseBackend):

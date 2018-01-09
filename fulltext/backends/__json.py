@@ -5,7 +5,7 @@ import re
 from six import StringIO
 from six import string_types
 from six import integer_types
-from fulltext import BaseBackend
+from fulltext.util import BaseBackend
 
 
 STRIP_JSON = re.compile(r'[{}\'":\[\] ]+')
