@@ -430,7 +430,11 @@ def backend_from_mime(mime):
     try:
         mod_name = MIMETYPE_TO_BACKENDS[mime]
     except KeyError:
-        LOGGER.debug("No handler for %r, defaulting to %r", mime, DEFAULT_MIME)
+        msg = "No handler for %r, defaulting to %r" % (mime, DEFAULT_MIME)
+        if 'FULLTEXT_TESTING' in os.environ:
+            warn(msg)
+        else:
+            LOGGER.debug(msg)
         mod_name = MIMETYPE_TO_BACKENDS[DEFAULT_MIME]
     mod = import_mod(mod_name)
     return mod
