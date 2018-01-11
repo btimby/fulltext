@@ -429,12 +429,14 @@ def backend_from_mime(mime):
     """Determine backend module object from a mime string."""
     try:
         mod_name = MIMETYPE_TO_BACKENDS[mime]
+
     except KeyError:
         msg = "No handler for %r, defaulting to %r" % (mime, DEFAULT_MIME)
         if 'FULLTEXT_TESTING' in os.environ:
             warn(msg)
         else:
             LOGGER.debug(msg)
+
         mod_name = MIMETYPE_TO_BACKENDS[DEFAULT_MIME]
     mod = import_mod(mod_name)
     return mod
@@ -446,6 +448,7 @@ def backend_from_fname(name):
 
     try:
         mime = EXTS_TO_MIMETYPES[ext]
+
     except KeyError:
         try:
             f = open(name, 'rb')
@@ -457,9 +460,14 @@ def backend_from_fname(name):
                 raise
 
             # We will have to fall back upon the default backend.
-            warn("don't know how to handle %r; assume %r" % (
-                name, DEFAULT_MIME))
+            msg = "No handler for %r, defaulting to %r" % (ext, DEFAULT_MIME)
+            if 'FULLTEXT_TESTING' in os.environ:
+                warn(msg)
+            else:
+                LOGGER.debug(msg)
+
             mod_name = MIMETYPE_TO_BACKENDS[DEFAULT_MIME]
+
         else:
             with f:
                 return backend_from_fobj(f)
