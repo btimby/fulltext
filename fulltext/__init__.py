@@ -430,8 +430,7 @@ def backend_from_mime(mime):
     try:
         mod_name = MIMETYPE_TO_BACKENDS[mime]
     except KeyError:
-        warn("don't know how to handle %r mime; assume %r" % (
-            mime, DEFAULT_MIME))
+        LOGGER.debug("No handler for %r, defaulting to %r", mime, DEFAULT_MIME)
         mod_name = MIMETYPE_TO_BACKENDS[DEFAULT_MIME]
     mod = import_mod(mod_name)
     return mod
