@@ -210,10 +210,27 @@ class TestCLI(BaseTestCase):
             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = p.communicate()
         if p.returncode != 0:
-            # On Windows we know there are many CLI tools which
-            # are not available.
             if not WINDOWS:
+                # Everything is supposed to work on Linux.
                 self.fail(err.decode())
+            else:
+                # On Windows we expect a bunch of backends not to work.
+                # XXX maybe this is too strict.
+                lines = [x.split(':')[0] for x in
+                         sorted(err.decode().splitlines())]
+                self.assertEqual(
+                    lines,
+                    ['fulltext.backends.__doc',
+                     'fulltext.backends.__hwp',
+                     'fulltext.backends.__ocr',
+                     'fulltext.backends.__ps'])
+
+    @unittest.skipIf(not WINDOWS, "windows only")
+    def test_which(self):
+        self.assertIsNotNone(which("pdftotext"))
+        self.assertIsNotNone(which("unrtf"))
+        self.assertIsNotNone(which("unrar"))
+        self.assertIsNotNone(which("exiftool"))
 
 
 class TestBackendInterface(BaseTestCase):
