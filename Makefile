@@ -1,4 +1,4 @@
-PYTHON = python
+PYTHON = python3
 
 # In not in a virtualenv, add --user options for install commands.
 INSTALL_OPTS = `$(PYTHON) -c "import sys; print('' if hasattr(sys, 'real_prefix') else '--user')"`
@@ -22,7 +22,7 @@ TEST_PREFIX = PYTHONWARNINGS=all FULLTEXT_TESTING=1
 
 test:  ## Run tests.
 	${MAKE} install-git-hooks
-	$(TEST_PREFIX) $(PYTHON) tests.py
+	$(TEST_PREFIX) $(PYTHON) fulltext/test/__init__.py
 
 ci:  ## Run CI tests.
 	${MAKE} sysdeps
@@ -36,7 +36,6 @@ lint:  ## Run linters.
 
 install:  ## Install this package as current user in "edit" mode.
 	${MAKE} install-git-hooks
-	${MAKE} generate-manifest
 	PYTHONWARNINGS=all $(PYTHON) setup.py develop $(INSTALL_OPTS)
 
 pydeps:  ## Install third party python libs.

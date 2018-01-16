@@ -25,7 +25,7 @@ import sys
 # --- configurable
 PRJNAME = "fulltext"
 HERE = os.path.abspath(os.path.dirname(__file__))
-TEST_SCRIPT = 'tests.py'
+TEST_SCRIPT = 'fulltext\\test\\__init__.py'
 ROOT_DIR = os.path.realpath(os.path.join(HERE, "..", ".."))
 DATA_DIR = os.path.join(ROOT_DIR, PRJNAME, "data")
 REQUIREMENTS_TXT = "requirements.txt"
