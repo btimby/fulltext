@@ -1,6 +1,8 @@
 recursive-include fulltext *.py
 recursive-include fulltext/backends *.py
 recursive-include fulltext/data *
+recursive-include fulltext/data/bin32 *
+recursive-include fulltext/data/bin64 *
 
 include LICENSE
 include make.bat

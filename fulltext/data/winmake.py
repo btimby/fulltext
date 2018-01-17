@@ -13,7 +13,7 @@ that they should be deemed illegal!
 
 from __future__ import print_function
 import errno
-import fnmatch
+import glob
 import functools
 import os
 import shutil
@@ -81,86 +81,23 @@ def cmd(fun):
     return wrapper
 
 
-def rm(pattern, directory=False):
+def rm(pattern):
     """Recursively remove a file or dir by pattern."""
-    def safe_remove(path):
-        try:
-            os.remove(path)
-        except OSError as err:
-            if err.errno != errno.ENOENT:
-                raise
+    paths = glob.glob(pattern)
+    for path in paths:
+        if path.startswith('.git/'):
+            continue
+        if os.path.isdir(path):
+            def onerror(fun, path, excinfo):
+                exc = excinfo[1]
+                if exc.errno != errno.ENOENT:
+                    raise
+
+            safe_print("rmdir -f %s" % path)
+            shutil.rmtree(path, onerror=onerror)
         else:
             safe_print("rm %s" % path)
-
-    def safe_rmtree(path):
-        def onerror(fun, path, excinfo):
-            exc = excinfo[1]
-            if exc.errno != errno.ENOENT:
-                raise
-
-        existed = os.path.isdir(path)
-        shutil.rmtree(path, onerror=onerror)
-        if existed:
-            safe_print("rmdir -f %s" % path)
-
-    if "*" not in pattern:
-        if directory:
-            safe_rmtree(pattern)
-        else:
-            safe_remove(pattern)
-        return
-
-    for root, subdirs, subfiles in os.walk('.'):
-        root = os.path.normpath(root)
-        if root.startswith('.git/'):
-            continue
-        found = fnmatch.filter(subdirs if directory else subfiles, pattern)
-        for name in found:
-            path = os.path.join(root, name)
-            if directory:
-                safe_print("rmdir -f %s" % path)
-                safe_rmtree(path)
-            else:
-                safe_print("rm %s" % path)
-                safe_remove(path)
-
-
-def safe_remove(path):
-    try:
-        os.remove(path)
-    except OSError as err:
-        if err.errno != errno.ENOENT:
-            raise
-    else:
-        safe_print("rm %s" % path)
-
-
-def safe_rmtree(path):
-    def onerror(fun, path, excinfo):
-        exc = excinfo[1]
-        if exc.errno != errno.ENOENT:
-            raise
-
-    existed = os.path.isdir(path)
-    shutil.rmtree(path, onerror=onerror)
-    if existed:
-        safe_print("rmdir -f %s" % path)
-
-
-def recursive_rm(*patterns):
-    """Recursively remove a file or matching a list of patterns."""
-    for root, subdirs, subfiles in os.walk(u'.'):
-        root = os.path.normpath(root)
-        if root.startswith('.git/'):
-            continue
-        for file in subfiles:
-            for pattern in patterns:
-                if fnmatch.fnmatch(file, pattern):
-                    safe_remove(os.path.join(root, file))
-        for dir in subdirs:
-            for pattern in patterns:
-                if fnmatch.fnmatch(dir, pattern):
-                    safe_rmtree(os.path.join(root, dir))
+            os.remove(path)
 
 
 def test_setup():
@@ -225,39 +162,36 @@ def uninstall():
                 sh("%s -m pip uninstall -y %s" % (PYTHON, PRJNAME))
     finally:
         os.chdir(here)
-
-    for dir in site.getsitepackages():
-        for name in os.listdir(dir):
-            if name.startswith(PRJNAME):
-                rm(os.path.join(dir, name))
+        for dir in site.getsitepackages():
+            for name in os.listdir(dir):
+                if name.startswith(PRJNAME):
+                    rm(os.path.join(dir, name))
 
 
 @cmd
 def clean():
     """Deletes dev files"""
-    recursive_rm(
-        "$testfn*",
-        "*.bak",
-        "*.core",
-        "*.egg-info",
-        "*.orig",
-        "*.pyc",
-        "*.pyd",
-        "*.pyo",
-        "*.rej",
-        "*.so",
-        "*.~",
-        "*__pycache__",
-        ".coverage",
-        ".tox",
-    )
-    safe_rmtree(".coverage")
-    safe_rmtree("build")
-    safe_rmtree("dist")
-    safe_rmtree("docs/_build")
-    safe_rmtree("htmlcov")
-    safe_rmtree("tmp")
-    safe_rmtree("venv")
+    rm("$testfn*")
+    rm("*.bak")
+    rm("*.core")
+    rm("*.egg-info")
+    rm("*.orig")
+    rm("*.pyc")
+    rm("*.pyd")
+    rm("*.pyo")
+    rm("*.rej")
+    rm("*.so")
+    rm("*.~")
+    rm("*__pycache__")
+    rm(".coverage")
+    rm(".tox")
+    rm(".coverage")
+    rm("build")
+    rm("dist")
+    rm("docs/_build")
+    rm("htmlcov")
+    rm("tmp")
+    rm("venv")
 
 
 @cmd
