@@ -134,6 +134,12 @@ def install_pip():
                       os.path.join(DATA_DIR, "get-pip.py")))
 
 
+def install_setuptools():
+    try:
+        import setuptools  # NOQA
+    except ImportError:
+        sh('%s -c "import setuptools"' % PYTHON)
+
 # ===================================================================
 # commands
 # ===================================================================
@@ -154,7 +160,7 @@ def build():
     """Build / compile"""
     # Make sure setuptools is installed (needed for 'develop' /
     # edit mode).
-    sh('%s -c "import setuptools"' % PYTHON)
+    install_setuptools()
     sh("%s setup.py build" % PYTHON)
     sh("%s setup.py build_ext -i" % PYTHON)
     sh('%s -c "import %s"' % (PYTHON, PRJNAME))
@@ -220,10 +226,7 @@ def clean():
 def pydeps():
     """Install useful deps"""
     install_pip()
-    try:
-        import setuptools  # NOQA
-    except ImportError:
-        sh("%s -m pip install -U setuptools" % (PYTHON))
+    install_setuptools()
     sh("%s -m pip install -U -r %s" % (PYTHON, REQUIREMENTS_TXT))
 
 
@@ -338,7 +341,7 @@ def pyinstaller():
         assert os.path.exists(bindir), bindir
         sh("venv\\Scripts\\pyinstaller --upx-dir=%s pyinstaller.spec" % bindir)
 
-    def check_exe():
+    def test_exe():
         # Make sure the resulting .exe works.
         exe = os.path.join(ROOT_DIR, "dist", "%s.exe" % PRJNAME)
         assert os.path.exists(exe), exe
@@ -353,7 +356,7 @@ def pyinstaller():
     venv()
     install_deps()
     run_pyinstaller()
-    check_exe()
+    test_exe()
 
 
 def parse_cmdline():
