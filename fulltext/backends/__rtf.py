@@ -24,7 +24,7 @@ class Backend(BaseBackend):
     def handle_path(self, path):
         cmd = ['unrtf', '--text', '--nopict', path]
         if POSIX:
-            return self.strip(run(cmd))
+            return self.strip(run(*cmd))
         else:
             # On Windows unrtf.exe prints a lot of cruft to stderr.
             # We trim it out.
