@@ -220,7 +220,10 @@ def clean():
 def pydeps():
     """Install useful deps"""
     install_pip()
-    sh("%s -m pip install -U setuptools" % (PYTHON))
+    try:
+        import setuptools  # NOQA
+    except ImportError:
+        sh("%s -m pip install -U setuptools" % (PYTHON))
     sh("%s -m pip install -U -r %s" % (PYTHON, REQUIREMENTS_TXT))
 
 
@@ -304,8 +307,12 @@ def is_windows64():
 
 def venv():
     """Install venv + deps."""
-    sh("%s -m pip install virtualenv" % PYTHON)
-    sh("%s -m virtualenv venv" % PYTHON)
+    try:
+        import virtualenv  # NOQA
+    except ImportError:
+        sh("%s -m pip install virtualenv" % PYTHON)
+    if not os.path.isdir("venv"):
+        sh("%s -m virtualenv venv" % PYTHON)
     sh("venv\\Scripts\\pip install -r %s" % (REQUIREMENTS_TXT))
 
 
