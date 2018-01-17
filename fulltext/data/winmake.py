@@ -339,6 +339,9 @@ def pyinstaller():
         out = sh("%s extract %s" % (
             exe, os.path.join(ROOT_DIR, "fulltext/test/files/test.pdf")))
         assertMultiLineEqual(out.strip(), TEXT.strip())
+        out = sh("%s extract %s" % (
+            exe, os.path.join(ROOT_DIR, "fulltext/test/files/test.rtf")))
+        assertMultiLineEqual(out.strip(), TEXT.strip())
 
     venv()
     install_deps()
