@@ -31,6 +31,23 @@ DATA_DIR = os.path.join(ROOT_DIR, PRJNAME, "data")
 REQUIREMENTS_TXT = "requirements.txt"
 
 # --- others
+TEXT_WITH_NEWLINES = u"Lorem ipsum\ndolor sit amet, consectetur adipiscing e" \
+                     u"lit. Nunc ipsum augue, iaculis quis\nauctor eu, adipi" \
+                     u"scing non est. Nullam id sem diam, eget varius dui. E" \
+                     u"tiam\nsollicitudin sapien nec odio elementum sit amet" \
+                     u" luctus magna volutpat. Ut\ncommodo nulla neque. Aliq" \
+                     u"uam erat volutpat. Integer et nunc augue.\nPellentesq" \
+                     u"ue habitant morbi tristique senectus et netus et male" \
+                     u"suada fames\nac turpis egestas. Quisque at enim nulla" \
+                     u", vel tincidunt urna. Nam leo\naugue, elementum ut vi" \
+                     u"verra eget, scelerisque in purus. In arcu orci, porta" \
+                     u"\nnec aliquet quis, pretium a sem. In fermentum nisl " \
+                     u"id diam luctus viverra.\nNullam semper, metus at euis" \
+                     u"mod vulputate, orci odio dignissim urna, quis\niaculi" \
+                     u"s neque lacus ut tortor. Ut a justo non dolor venenat" \
+                     u"is accumsan.\nProin dolor eros, aliquam id condimentu" \
+                     u"m et, aliquam quis metus. Vivamus\neget purus diam."
+TEXT = TEXT_WITH_NEWLINES.replace('\n', ' ')
 PYTHON = sys.executable
 PY3 = sys.version_info[0] == 3
 _cmds = {}
@@ -66,10 +83,15 @@ def safe_print(text, file=sys.stdout, flush=False):
 def sh(cmd, nolog=False):
     if not nolog:
         safe_print("cmd: " + cmd)
-    p = subprocess.Popen(cmd, shell=True, env=os.environ, cwd=os.getcwd())
-    p.communicate()
+    p = subprocess.Popen(cmd, shell=True, env=os.environ, cwd=os.getcwd(),
+                         stdout=subprocess.PIPE)
+    out, _ = p.communicate()
+    if PY3:
+        out = out.decode(sys.stdout.encoding, sys.stdout.errors)
+    print(out)
     if p.returncode != 0:
         sys.exit(p.returncode)
+    return out
 
 
 def cmd(fun):
@@ -290,6 +312,11 @@ def venv():
 @cmd
 def pyinstaller():
     """Creates a stand alone Windows as dist/%s.exe.""" % PRJNAME
+    def assertMultiLineEqual(a, b):
+        import unittest
+        tc = unittest.TestCase('__init__')
+        tc.assertMultiLineEqual(a, b)
+
     def install_deps():
         sh("venv\\Scripts\\python -m pip install pyinstaller pypiwin32")
         sh("venv\\Scripts\\python -m pip install "
@@ -298,7 +325,7 @@ def pyinstaller():
         sh("venv\\Scripts\\python setup.py install")
 
     def run_pyinstaller():
-        rm(os.path.join(ROOT_DIR, "dist"), directory=True)
+        rm(os.path.join(ROOT_DIR, "dist"))
         bindir = os.path.join(
             DATA_DIR, "bin64" if is_windows64() else "bin32")
         assert os.path.exists(bindir), bindir
@@ -306,10 +333,12 @@ def pyinstaller():
 
     def check_exe():
         # Make sure the resulting .exe works.
-        path = os.path.join(ROOT_DIR, "dist", "%s.exe" % PRJNAME)
-        assert os.path.exists(path), path
-        out = sh("%s extract setup.py" % path)
-        safe_print(out)
+        exe = os.path.join(ROOT_DIR, "dist", "%s.exe" % PRJNAME)
+        assert os.path.exists(exe), exe
+        # Test those extensions for which we know we rely on external exes.
+        out = sh("%s extract %s" % (
+            exe, os.path.join(ROOT_DIR, "fulltext/test/files/test.pdf")))
+        assertMultiLineEqual(out.strip(), TEXT.strip())
 
     venv()
     install_deps()
