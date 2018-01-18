@@ -12,6 +12,7 @@ try:
 except ImportError:
     import mock  # NOQA - requires "pip install mock"
 
+from os.path import join as pathjoin
 import codecs
 import difflib
 import textwrap
@@ -48,6 +49,7 @@ TEXT_WITH_NEWLINES = u"Lorem ipsum\ndolor sit amet, consectetur adipiscing e" \
 TEXT = TEXT_WITH_NEWLINES.replace('\n', ' ')
 WINDOWS = is_windows()
 APPVEYOR = bool(os.environ.get('APPVEYOR'))
+HERE = os.path.abspath(os.path.dirname(__file__))
 
 logging.basicConfig(level=logging.WARNING)
 
@@ -134,6 +136,11 @@ class BaseTestCase(unittest.TestCase):
 unittest.TestCase = BaseTestCase
 
 
+# ===================================================================
+# --- Tests
+# ===================================================================
+
+
 class FullTextTestCase(BaseTestCase):
 
     def test_missing_default(self):
@@ -201,7 +208,8 @@ class TestCLI(BaseTestCase):
 
     def test_extract(self):
         subprocess.check_output(
-            "%s -m fulltext extract %s" % (sys.executable, "files/test.txt"),
+            "%s -m fulltext extract %s" % (
+                sys.executable, pathjoin(HERE, "files/test.txt")),
             shell=True)
 
     def test_check(self):
@@ -210,10 +218,27 @@ class TestCLI(BaseTestCase):
             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = p.communicate()
         if p.returncode != 0:
-            # On Windows we know there are many CLI tools which
-            # are not available.
             if not WINDOWS:
+                # Everything is supposed to work on Linux.
                 self.fail(err.decode())
+            else:
+                # On Windows we expect a bunch of backends not to work.
+                # XXX maybe this is too strict.
+                lines = [x.split(':')[0] for x in
+                         sorted(err.decode().splitlines())]
+                self.assertEqual(
+                    lines,
+                    ['fulltext.backends.__doc',
+                     'fulltext.backends.__hwp',
+                     'fulltext.backends.__ocr',
+                     'fulltext.backends.__ps'])
+
+    @unittest.skipIf(not WINDOWS, "windows only")
+    def test_which(self):
+        self.assertIsNotNone(which("pdftotext"))
+        self.assertIsNotNone(which("unrtf"))
+        self.assertIsNotNone(which("unrar"))
+        self.assertIsNotNone(which("exiftool"))
 
 
 class TestBackendInterface(BaseTestCase):
@@ -305,7 +330,7 @@ class PathAndFileTests(object):
     mime = None
 
     def test_file(self):
-        path = 'files/test.%s' % self.ext
+        path = pathjoin(HERE, 'files/test.%s' % self.ext)
         with open(path, 'rb') as f:
             text = fulltext.get(f, mime=self.mime)
             self.assertMultiLineEqual(self.text, text)
@@ -319,7 +344,7 @@ class PathAndFileTests(object):
             f.close()
 
     def test_file_text(self):
-        path = 'files/test.%s' % self.ext
+        path = pathjoin(HERE, 'files/test.%s' % self.ext)
         if PY3:
             with self.assertRaises(AssertionError):
                 self._handle_text(open(path, 'rt'))
@@ -327,12 +352,12 @@ class PathAndFileTests(object):
             self._handle_text(open(path, 'rt'))
 
     def test_file_codecs(self):
-        path = 'files/test.%s' % self.ext
+        path = pathjoin(HERE, 'files/test.%s' % self.ext)
         with self.assertRaises(AssertionError):
             self._handle_text(codecs.open(path, encoding='utf8'))
 
     def test_path(self):
-        path = 'files/test.%s' % self.ext
+        path = pathjoin(HERE, 'files/test.%s' % self.ext)
         text = fulltext.get(path, mime=self.mime)
         self.assertMultiLineEqual(self.text, text)
 
@@ -451,15 +476,15 @@ class GzTestCase(BaseTestCase, PathAndFileTests):
 
     def test_pdf(self):
         # See: https://github.com/btimby/fulltext/issues/56
-        text = fulltext.get("files/gz/test.pdf.gz")
+        text = fulltext.get(pathjoin(HERE, "files/gz/test.pdf.gz"))
         self.assertMultiLineEqual(self.text, text)
 
     def test_csv(self):
-        text = fulltext.get("files/gz/test.csv.gz")
+        text = fulltext.get(pathjoin(HERE, "files/gz/test.csv.gz"))
         self.assertMultiLineEqual(self.text.replace(',', ''), text)
 
     def test_txt(self):
-        text = fulltext.get("files/gz/test.txt.gz")
+        text = fulltext.get(pathjoin(HERE, "files/gz/test.txt.gz"))
         self.assertMultiLineEqual(self.text, text)
 
 
@@ -471,7 +496,7 @@ class FilesTestCase(BaseTestCase):
     @unittest.skipIf(WINDOWS, "not supported on Windows")
     def test_old_doc_file(self):
         "Antiword does not support older Word documents."
-        with open('files/test.old.doc', 'rb') as f:
+        with open(pathjoin(HERE, 'files/test.old.doc'), 'rb') as f:
             text = fulltext.get(f, backend='doc')
             self.assertStartsWith('eZ-Audit', text)
             self.assertIsInstance(text, u"".__class__)
@@ -479,7 +504,8 @@ class FilesTestCase(BaseTestCase):
     @unittest.skipIf(WINDOWS, "not supported on Windows")
     def test_old_doc_path(self):
         "Antiword does not support older Word documents."
-        text = fulltext.get('files/test.old.doc', backend='doc')
+        text = fulltext.get(pathjoin(HERE, 'files/test.old.doc'),
+                            backend='doc')
         self.assertStartsWith('eZ-Audit', text)
         self.assertIsInstance(text, u"".__class__)
 
@@ -620,7 +646,7 @@ class TestGuessingFromFileContent(BaseTestCase):
     @unittest.skipIf(WINDOWS and magic is None, "magic is not installed")
     def test_pdf(self):
         fname = "file-noext"
-        with open('files/test.pdf', 'rb') as f:
+        with open(pathjoin(HERE, 'files/test.pdf'), 'rb') as f:
             data = f.read()
         self.touch(fname, content=data)
         with mock.patch('fulltext.handle_path', return_value="") as m:
@@ -631,7 +657,8 @@ class TestGuessingFromFileContent(BaseTestCase):
     @unittest.skipIf(WINDOWS, "not supported on Windows")
     def test_html(self):
         fname = "file-noext"
-        self.touch(fname, content=open('files/test.html', 'rb').read())
+        self.touch(fname, content=open(
+            pathjoin(HERE, 'files/test.html'), 'rb').read())
         with mock.patch('fulltext.handle_path', return_value="") as m:
             fulltext.get(fname)
             klass = m.call_args[0][0]
@@ -694,20 +721,22 @@ class TestUnicodeBase(object):
         self.compare(ret, expected_txt)
 
     def test_italian(self):
-        self.doit("files/unicode/it.%s" % self.ext, self.italian)
+        self.doit(pathjoin(HERE, "files/unicode/it.%s" % self.ext),
+                  self.italian)
 
     def test_japanese(self):
-        self.doit("files/unicode/jp.%s" % self.ext, self.japanese)
+        self.doit(pathjoin(HERE, "files/unicode/jp.%s" % self.ext),
+                  self.japanese)
 
     def test_invalid_char(self):
-        fname = "files/unicode/invalid.%s" % self.ext
+        fname = pathjoin(HERE, "files/unicode/invalid.%s" % self.ext)
         if os.path.exists(fname):
             with self.assertRaises(UnicodeDecodeError):
                 fulltext.get(fname)
             ret = fulltext.get(fname, encoding_errors="ignore")
             self.assertEqual(ret, self.invalid)
         #
-        fname = "files/unicode/it.%s" % self.ext
+        fname = pathjoin(HERE, "files/unicode/it.%s" % self.ext)
         with self.assertRaises(UnicodeDecodeError):
             fulltext.get(fname, encoding='ascii')
         ret = fulltext.get(
@@ -741,7 +770,7 @@ class TestUnicodeOdt(BaseTestCase, TestUnicodeBase):
 class TestUnicodePs(BaseTestCase):
 
     def test_italian(self):
-        fname = "files/unicode/it.ps"
+        fname = pathjoin(HERE, "files/unicode/it.ps")
         with self.assertRaises(UnicodeDecodeError):
             fulltext.get(fname)
         ret = fulltext.get(fname, encoding_errors="ignore")
@@ -760,7 +789,7 @@ class TestUnicodeRtf(BaseTestCase):
     ext = "rtf"
 
     def test_italian(self):
-        fname = "files/unicode/it.rtf"
+        fname = pathjoin(HERE, "files/unicode/it.rtf")
         with self.assertRaises(UnicodeDecodeError):
             fulltext.get(fname)
         ret = fulltext.get(fname, encoding_errors="ignore")
@@ -839,66 +868,70 @@ class TestUnicodeMbox(BaseTestCase, TestUnicodeBase):
 class TestTitle(BaseTestCase):
 
     def test_html(self):
-        fname = "files/others/title.html"
+        fname = pathjoin(HERE, "files/others/title.html")
         self.assertEqual(
             fulltext.get_with_title(fname)[1], "Lorem ipsum")
 
     @unittest.skipIf(WINDOWS, "not supported on Windows")
     def test_pdf(self):
-        fname = "files/others/test.pdf"
+        fname = pathjoin(HERE, "files/others/test.pdf")
         self.assertEqual(
             fulltext.get_with_title(fname)[1], "This is a test PDF file")
 
     def test_odt(self):
-        fname = "files/others/pretty-ones.odt"
+        fname = pathjoin(HERE, "files/others/pretty-ones.odt")
         self.assertEqual(
             fulltext.get_with_title(fname)[1], "PRETTY ONES")
 
     @unittest.skipIf(WINDOWS, "not supported on Windows")
     def test_doc(self):
-        fname = "files/others/hello-world.doc"
+        fname = pathjoin(HERE, "files/others/hello-world.doc")
         fulltext.get_with_title(fname)
         self.assertEqual(
             fulltext.get_with_title(fname)[1], 'Lab 1: Hello World')
 
     def test_docx(self):
-        fname = "files/others/hello-world.docx"
+        fname = pathjoin(HERE, "files/others/hello-world.docx")
         self.assertEqual(
             fulltext.get_with_title(fname)[1], 'MPI example')
 
     @unittest.skipIf(TRAVIS, "fails on travis")
     def test_epub(self):
-        fname = "files/others/jquery.epub"
+        fname = pathjoin(HERE, "files/others/jquery.epub")
         self.assertEqual(
             fulltext.get_with_title(fname)[1], 'JQuery Hello World')
 
     def test_pptx(self):
-        fname = "files/others/test.pptx"
+        fname = pathjoin(HERE, "files/others/test.pptx")
         self.assertEqual(
             fulltext.get_with_title(fname)[1], 'lorem ipsum')
 
     @unittest.skipIf(WINDOWS, "not supported on Windows")
     def test_ps(self):
-        fname = "files/others/lecture.ps"
+        fname = pathjoin(HERE, "files/others/lecture.ps")
         self.assertEqual(
             fulltext.get_with_title(fname)[1], 'Hey there')
 
     @unittest.skipIf(WINDOWS, "not supported on Windows")
     def test_rtf(self):
-        fname = "files/others/test.rtf"
+        fname = pathjoin(HERE, "files/others/test.rtf")
         self.assertEqual(
             fulltext.get_with_title(fname)[1], 'hello there')
 
     def test_xls(self):
-        fname = "files/others/test.xls"
+        fname = pathjoin(HERE, "files/others/test.xls")
         self.assertEqual(
             fulltext.get_with_title(fname)[1], 'hey there')
 
     def test_xlsx(self):
-        fname = "files/others/test.xlsx"
+        fname = pathjoin(HERE, "files/others/test.xlsx")
         self.assertEqual(
             fulltext.get_with_title(fname)[1], 'yo man!')
 
 
-if __name__ == '__main__':
+def main():
     unittest.main(verbosity=2)
+
+
+if __name__ == '__main__':
+    main()

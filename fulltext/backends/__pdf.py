@@ -36,6 +36,14 @@ class Backend(BaseBackend):
             out = run(*unix_cmd(path, **self.kwargs))
             return self.decode(out)
 
+        def handle_title(self, f):
+            if is_file_path(f):
+                # Doesn't work with file objs.
+                bout = run("pdfinfo", f)
+                out = self.decode(bout)
+                for line in out.split("\n"):
+                    if line.startswith("Title:"):
+                        return line.partition("Title:")[2].strip()
     else:  # Windows
 
         def handle_path(self, path):
@@ -48,12 +56,3 @@ class Backend(BaseBackend):
             finally:
                 os.close(fd)
                 os.remove(outfile)
-
-    def handle_title(self, f):
-        if is_file_path(f):
-            # Doesn't work with file objs.
-            bout = run("pdfinfo", f)
-            out = self.decode(bout)
-            for line in out.split("\n"):
-                if line.startswith("Title:"):
-                    return line.partition("Title:")[2].strip()

@@ -1,19 +1,13 @@
 from __future__ import absolute_import
-import os
 
 import pptx
 from six import StringIO
 
 from fulltext.util import BaseBackend
-from fulltext.util import assert_cmd_exists
 from fulltext.util import exiftool_title
 
 
 class Backend(BaseBackend):
-
-    def setup(self):
-        if "FULLTEXT_TESTING" in os.environ:
-            assert_cmd_exists('pdfinfo')
 
     def handle_path(self, path):
         text, p = StringIO(), pptx.Presentation(path)

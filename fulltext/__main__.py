@@ -11,6 +11,7 @@ import logging
 from docopt import docopt
 
 import fulltext
+import fulltext.backends
 from fulltext.util import hilite
 
 
@@ -26,7 +27,7 @@ def check_backends(title):
     """Invoke test() for all backends and fail (raise) if some dep
     is missing.
     """
-    path = os.path.join(HERE, "backends")
+    path = os.path.dirname(fulltext.backends.__file__)
     errs = []
     for name in os.listdir(path):
         if not name.endswith('.py'):
