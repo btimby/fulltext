@@ -15,5 +15,6 @@ contextlib2
 mock
 rarfile
 flake8
+olefile
 
 git+https://github.com/smarnach/pyexiftool.git#egg=pyexiftool
