@@ -1,7 +1,7 @@
 import contextlib
 from six import StringIO
 
-from ExtractMsg import Message
+from fulltext.msgextractor import Message
 from fulltext.util import BaseBackend
 
 

@@ -1,9 +1,6 @@
 language: python
 python:
-  # XXX - commented because can't figure out how to install ExtractMsg
-  # on Python 2.7:
-  # https://travis-ci.org/btimby/fulltext/jobs/329810555
-  # - "2.7"
+  - "2.7"
   - "3.5"
 before_install:
   - make sysdeps

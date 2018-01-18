@@ -16,6 +16,4 @@ mock
 rarfile
 flake8
 
-git+https://github.com/mattgwwalker/msg-extractor.git@2a24c9950d34932ed5979693cb70d758d78715df#egg=ExtractMsg
-
 git+https://github.com/smarnach/pyexiftool.git#egg=pyexiftool
