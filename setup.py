@@ -29,6 +29,8 @@ with open('requirements.txt') as f:
             REQUIRED.append(line)
 
 
+packages = sorted(set(find_packages() + ['fulltext.data'] + ['fulltext.test']))
+
 setup(
     name=NAME,
     version=VERSION,
@@ -40,7 +42,7 @@ setup(
     maintainer_email='btimby@gmail.com',
     url='http://github.com/btimby/' + NAME + '/',
     license='GPLv3',
-    packages=find_packages() + ['fulltext.data'],
+    packages=packages,
     install_requires=REQUIRED,
     dependency_links=REQUIRED_URL,
     include_package_data=True,

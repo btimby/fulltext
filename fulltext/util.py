@@ -162,6 +162,11 @@ def get_data_dir():
     return path
 
 
+def assert_cmd_exists(cmd):
+    if not which(cmd):
+        raise MissingCommandException(cmd)
+
+
 if not is_windows():
     # On linux things are simpler. Linter disabled for next line since we
     # import here for export.
@@ -172,8 +177,11 @@ else:
         # bin/bin{32,64}.
         bindir = 'bin64' if is_windows64() else 'bin32'
         path = pathjoin(get_data_dir(), bindir)
-        assert os.path.isdir(path), path
         os.environ['PATH'] += os.pathsep + path
+        assert_cmd_exists("pdftotext")
+        assert_cmd_exists("unrtf")
+        assert_cmd_exists("exiftool")
+        assert_cmd_exists("unrar")
 
     _set_binpath()
 
@@ -196,11 +204,6 @@ else:
         return Magic(mime=True, magic_file=path)
 
     magic = _import_magic()
-
-
-def assert_cmd_exists(cmd):
-    if not which(cmd):
-        raise MissingCommandException(cmd)
 
 
 def memoize(fun):

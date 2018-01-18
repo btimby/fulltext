@@ -13,7 +13,7 @@ that they should be deemed illegal!
 
 from __future__ import print_function
 import errno
-import fnmatch
+import glob
 import functools
 import os
 import shutil
@@ -25,12 +25,29 @@ import sys
 # --- configurable
 PRJNAME = "fulltext"
 HERE = os.path.abspath(os.path.dirname(__file__))
-TEST_SCRIPT = 'tests.py'
+TEST_SCRIPT = 'fulltext\\test\\__init__.py'
 ROOT_DIR = os.path.realpath(os.path.join(HERE, "..", ".."))
 DATA_DIR = os.path.join(ROOT_DIR, PRJNAME, "data")
 REQUIREMENTS_TXT = "requirements.txt"
 
 # --- others
+TEXT_WITH_NEWLINES = u"Lorem ipsum\ndolor sit amet, consectetur adipiscing e" \
+                     u"lit. Nunc ipsum augue, iaculis quis\nauctor eu, adipi" \
+                     u"scing non est. Nullam id sem diam, eget varius dui. E" \
+                     u"tiam\nsollicitudin sapien nec odio elementum sit amet" \
+                     u" luctus magna volutpat. Ut\ncommodo nulla neque. Aliq" \
+                     u"uam erat volutpat. Integer et nunc augue.\nPellentesq" \
+                     u"ue habitant morbi tristique senectus et netus et male" \
+                     u"suada fames\nac turpis egestas. Quisque at enim nulla" \
+                     u", vel tincidunt urna. Nam leo\naugue, elementum ut vi" \
+                     u"verra eget, scelerisque in purus. In arcu orci, porta" \
+                     u"\nnec aliquet quis, pretium a sem. In fermentum nisl " \
+                     u"id diam luctus viverra.\nNullam semper, metus at euis" \
+                     u"mod vulputate, orci odio dignissim urna, quis\niaculi" \
+                     u"s neque lacus ut tortor. Ut a justo non dolor venenat" \
+                     u"is accumsan.\nProin dolor eros, aliquam id condimentu" \
+                     u"m et, aliquam quis metus. Vivamus\neget purus diam."
+TEXT = TEXT_WITH_NEWLINES.replace('\n', ' ')
 PYTHON = sys.executable
 PY3 = sys.version_info[0] == 3
 _cmds = {}
@@ -66,10 +83,15 @@ def safe_print(text, file=sys.stdout, flush=False):
 def sh(cmd, nolog=False):
     if not nolog:
         safe_print("cmd: " + cmd)
-    p = subprocess.Popen(cmd, shell=True, env=os.environ, cwd=os.getcwd())
-    p.communicate()
+    p = subprocess.Popen(cmd, shell=True, env=os.environ, cwd=os.getcwd(),
+                         stdout=subprocess.PIPE)
+    out, _ = p.communicate()
+    if PY3:
+        out = out.decode(sys.stdout.encoding, sys.stdout.errors)
+    print(out)
     if p.returncode != 0:
         sys.exit(p.returncode)
+    return out
 
 
 def cmd(fun):
@@ -81,86 +103,23 @@ def cmd(fun):
     return wrapper
 
 
-def rm(pattern, directory=False):
+def rm(pattern):
     """Recursively remove a file or dir by pattern."""
-    def safe_remove(path):
-        try:
-            os.remove(path)
-        except OSError as err:
-            if err.errno != errno.ENOENT:
-                raise
+    paths = glob.glob(pattern)
+    for path in paths:
+        if path.startswith('.git/'):
+            continue
+        if os.path.isdir(path):
+            def onerror(fun, path, excinfo):
+                exc = excinfo[1]
+                if exc.errno != errno.ENOENT:
+                    raise
+
+            safe_print("rmdir -f %s" % path)
+            shutil.rmtree(path, onerror=onerror)
         else:
             safe_print("rm %s" % path)
-
-    def safe_rmtree(path):
-        def onerror(fun, path, excinfo):
-            exc = excinfo[1]
-            if exc.errno != errno.ENOENT:
-                raise
-
-        existed = os.path.isdir(path)
-        shutil.rmtree(path, onerror=onerror)
-        if existed:
-            safe_print("rmdir -f %s" % path)
-
-    if "*" not in pattern:
-        if directory:
-            safe_rmtree(pattern)
-        else:
-            safe_remove(pattern)
-        return
-
-    for root, subdirs, subfiles in os.walk('.'):
-        root = os.path.normpath(root)
-        if root.startswith('.git/'):
-            continue
-        found = fnmatch.filter(subdirs if directory else subfiles, pattern)
-        for name in found:
-            path = os.path.join(root, name)
-            if directory:
-                safe_print("rmdir -f %s" % path)
-                safe_rmtree(path)
-            else:
-                safe_print("rm %s" % path)
-                safe_remove(path)
-
-
-def safe_remove(path):
-    try:
-        os.remove(path)
-    except OSError as err:
-        if err.errno != errno.ENOENT:
-            raise
-    else:
-        safe_print("rm %s" % path)
-
-
-def safe_rmtree(path):
-    def onerror(fun, path, excinfo):
-        exc = excinfo[1]
-        if exc.errno != errno.ENOENT:
-            raise
-
-    existed = os.path.isdir(path)
-    shutil.rmtree(path, onerror=onerror)
-    if existed:
-        safe_print("rmdir -f %s" % path)
-
-
-def recursive_rm(*patterns):
-    """Recursively remove a file or matching a list of patterns."""
-    for root, subdirs, subfiles in os.walk(u'.'):
-        root = os.path.normpath(root)
-        if root.startswith('.git/'):
-            continue
-        for file in subfiles:
-            for pattern in patterns:
-                if fnmatch.fnmatch(file, pattern):
-                    safe_remove(os.path.join(root, file))
-        for dir in subdirs:
-            for pattern in patterns:
-                if fnmatch.fnmatch(dir, pattern):
-                    safe_rmtree(os.path.join(root, dir))
+            os.remove(path)
 
 
 def test_setup():
@@ -174,6 +133,12 @@ def install_pip():
         sh("%s %s" % (PYTHON,
                       os.path.join(DATA_DIR, "get-pip.py")))
 
+
+def install_setuptools():
+    try:
+        import setuptools  # NOQA
+    except ImportError:
+        sh('%s -c "import setuptools"' % PYTHON)
 
 # ===================================================================
 # commands
@@ -195,7 +160,7 @@ def build():
     """Build / compile"""
     # Make sure setuptools is installed (needed for 'develop' /
     # edit mode).
-    sh('%s -c "import setuptools"' % PYTHON)
+    install_setuptools()
     sh("%s setup.py build" % PYTHON)
     sh("%s setup.py build_ext -i" % PYTHON)
     sh('%s -c "import %s"' % (PYTHON, PRJNAME))
@@ -225,46 +190,43 @@ def uninstall():
                 sh("%s -m pip uninstall -y %s" % (PYTHON, PRJNAME))
     finally:
         os.chdir(here)
-
-    for dir in site.getsitepackages():
-        for name in os.listdir(dir):
-            if name.startswith(PRJNAME):
-                rm(os.path.join(dir, name))
+        for dir in site.getsitepackages():
+            for name in os.listdir(dir):
+                if name.startswith(PRJNAME):
+                    rm(os.path.join(dir, name))
 
 
 @cmd
 def clean():
     """Deletes dev files"""
-    recursive_rm(
-        "$testfn*",
-        "*.bak",
-        "*.core",
-        "*.egg-info",
-        "*.orig",
-        "*.pyc",
-        "*.pyd",
-        "*.pyo",
-        "*.rej",
-        "*.so",
-        "*.~",
-        "*__pycache__",
-        ".coverage",
-        ".tox",
-    )
-    safe_rmtree(".coverage")
-    safe_rmtree("build")
-    safe_rmtree("dist")
-    safe_rmtree("docs/_build")
-    safe_rmtree("htmlcov")
-    safe_rmtree("tmp")
-    safe_rmtree("venv")
+    rm("$testfn*")
+    rm("*.bak")
+    rm("*.core")
+    rm("*.egg-info")
+    rm("*.orig")
+    rm("*.pyc")
+    rm("*.pyd")
+    rm("*.pyo")
+    rm("*.rej")
+    rm("*.so")
+    rm("*.~")
+    rm("*__pycache__")
+    rm(".coverage")
+    rm(".tox")
+    rm(".coverage")
+    rm("build")
+    rm("dist")
+    rm("docs/_build")
+    rm("htmlcov")
+    rm("tmp")
+    rm("venv")
 
 
 @cmd
 def pydeps():
     """Install useful deps"""
     install_pip()
-    sh("%s -m pip install -U setuptools" % (PYTHON))
+    install_setuptools()
     sh("%s -m pip install -U -r %s" % (PYTHON, REQUIREMENTS_TXT))
 
 
@@ -348,14 +310,23 @@ def is_windows64():
 
 def venv():
     """Install venv + deps."""
-    sh("%s -m pip install virtualenv" % PYTHON)
-    sh("%s -m virtualenv venv" % PYTHON)
+    try:
+        import virtualenv  # NOQA
+    except ImportError:
+        sh("%s -m pip install virtualenv" % PYTHON)
+    if not os.path.isdir("venv"):
+        sh("%s -m virtualenv venv" % PYTHON)
     sh("venv\\Scripts\\pip install -r %s" % (REQUIREMENTS_TXT))
 
 
 @cmd
 def pyinstaller():
     """Creates a stand alone Windows as dist/%s.exe.""" % PRJNAME
+    def assertMultiLineEqual(a, b):
+        import unittest
+        tc = unittest.TestCase('__init__')
+        tc.assertMultiLineEqual(a, b)
+
     def install_deps():
         sh("venv\\Scripts\\python -m pip install pyinstaller pypiwin32")
         sh("venv\\Scripts\\python -m pip install "
@@ -364,23 +335,28 @@ def pyinstaller():
         sh("venv\\Scripts\\python setup.py install")
 
     def run_pyinstaller():
-        rm(os.path.join(ROOT_DIR, "dist"), directory=True)
+        rm(os.path.join(ROOT_DIR, "dist"))
         bindir = os.path.join(
             DATA_DIR, "bin64" if is_windows64() else "bin32")
         assert os.path.exists(bindir), bindir
         sh("venv\\Scripts\\pyinstaller --upx-dir=%s pyinstaller.spec" % bindir)
 
-    def check_exe():
+    def test_exe():
         # Make sure the resulting .exe works.
-        path = os.path.join(ROOT_DIR, "dist", "%s.exe" % PRJNAME)
-        assert os.path.exists(path), path
-        out = sh("%s extract setup.py" % path)
-        safe_print(out)
+        exe = os.path.join(ROOT_DIR, "dist", "%s.exe" % PRJNAME)
+        assert os.path.exists(exe), exe
+        # Test those extensions for which we know we rely on external exes.
+        out = sh("%s extract %s" % (
+            exe, os.path.join(ROOT_DIR, "fulltext/test/files/test.pdf")))
+        assertMultiLineEqual(out.strip(), TEXT.strip())
+        out = sh("%s extract %s" % (
+            exe, os.path.join(ROOT_DIR, "fulltext/test/files/test.rtf")))
+        assertMultiLineEqual(out.strip(), TEXT.strip())
 
     venv()
     install_deps()
     run_pyinstaller()
-    check_exe()
+    test_exe()
 
 
 def parse_cmdline():
