@@ -555,9 +555,7 @@ class TestPickups(BaseTestCase):
     def test_by_unknown_mime(self):
         fname = self.touch('testfn.doc')
         with mock.patch('fulltext.handle_path', return_value="") as m:
-            with warnings.catch_warnings(record=True) as ws:
-                fulltext.get(fname, mime='application/yo!')
-            assert ws
+            fulltext.get(fname, mime='application/yo!')
             klass = m.call_args[0][0]
             self.assertEqual(klass.__module__, 'fulltext.backends.__bin')
 
@@ -575,9 +573,7 @@ class TestPickups(BaseTestCase):
         # Assume bin backend is picked up.
         fname = self.touch("woodstock-no-ext")
         with mock.patch('fulltext.handle_path', return_value="") as m:
-            with warnings.catch_warnings(record=True) as ws:
-                fulltext.get(fname, name=fname)
-            assert ws
+            fulltext.get(fname, name=fname)
             klass = m.call_args[0][0]
             self.assertEqual(klass.__module__, 'fulltext.backends.__bin')
 
