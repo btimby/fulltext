@@ -17,8 +17,8 @@ SYSDEPS = \
 	python3-dev \
 	python-pip \
 	python3-pip
-
 TEST_PREFIX = PYTHONWARNINGS=all FULLTEXT_TESTING=1
+PASSWORD =
 
 test:  ## Run tests.
 	${MAKE} install-git-hooks
@@ -88,6 +88,20 @@ sdist:  ## Create a tar.gz distribution.
 	venv/bin/pip install --upgrade --force-reinstall dist/*.tar.gz
 	venv/bin/pip install -r requirements.txt
 	venv/bin/python -m fulltext check
+
+priv-pypi-upload:  ## Upload src sdist on private PYPI repo.
+	# virtualenv -p $(PYTHON) venv
+	# venv/bin/pip install devpi-client
+	# ${MAKE} sdist
+ifndef PASSWORD
+	venv/bin/python -m devpi login root
+else
+	venv/bin/python -m devpi login root --password=$(PASSWORD)
+endif
+	# Create index (done once)
+	# venv/bin/python -m devpi index --create root/veristack-fulltext
+	venv/bin/python -m devpi use http://pypi.dev.veristack.com/root/veristack-fulltext
+	venv/bin/python -m devpi  upload -v dist/*.tar.gz
 
 publish:  ## Upload package on PYPI.
 	$(PYTHON) setup.py register
