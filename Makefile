@@ -106,3 +106,4 @@ endif
 publish:  ## Upload package on PYPI.
 	$(PYTHON) setup.py register
 	$(PYTHON) setup.py sdist upload
+
