@@ -18,12 +18,12 @@ if os.path.isdir('.git'):
         shell=True).strip().decode()
     _githash = subprocess.check_output(
         "git rev-parse --short HEAD", shell=True).strip().decode()
-    VERSION = "0.2.%s.%s" % (_gitcount, _githash)
+    VERSION = "0.8.%s.%s" % (_gitcount, _githash)
 else:
     # This is here mainly for testing the .tar.gz distribution which
     # has no .git directory.  Distros published on the PYPI repo are
     # supposed to use the above versioning notation.
-    VERSION = "0.1.0"
+    VERSION = "0.8.0"
 
 if os.name == 'nt' and not sys.maxsize > 2 ** 32:
     # https://github.com/btimby/fulltext/issues/79
