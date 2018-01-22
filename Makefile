@@ -101,9 +101,8 @@ endif
 	# Create index (done once)
 	# venv/bin/python -m devpi index --create root/veristack-fulltext
 	venv/bin/python -m devpi use http://pypi.dev.veristack.com/root/veristack-fulltext
-	venv/bin/python -m devpi  upload -v dist/*.tar.gz
+	venv/bin/python -m devpi upload -v dist/*.tar.gz
 
 publish:  ## Upload package on PYPI.
 	$(PYTHON) setup.py register
 	$(PYTHON) setup.py sdist upload
-
