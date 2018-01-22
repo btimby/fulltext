@@ -81,13 +81,8 @@ help: ## Display callable targets.
 # --- distribution
 
 sdist:  ## Create a tar.gz distribution.
-	virtualenv -p $(PYTHON) venv
-	rm -rf dist
-	venv/bin/python setup.py sdist
-	# Test installation from source.
-	venv/bin/pip install --upgrade --force-reinstall dist/*.tar.gz
-	venv/bin/pip install -r requirements.txt
-	venv/bin/python -m fulltext check
+	$(PYTHON) setup.py sdist
+	$(PYTHON) setup.py --version
 
 priv-pypi-upload:  ## Upload source distribution on private PYPI repo.
 	# Note: to reference the uploaded distribution, requirements.txt will
@@ -104,7 +99,7 @@ endif
 	# Create index (done once)
 	# venv/bin/python -m devpi index --create root/veristack-fulltext
 	venv/bin/python -m devpi use http://pypi.dev.veristack.com/root/veristack-fulltext
-	venv/bin/python -m devpi upload -v dist/*.tar.gz
+	venv/bin/python -m devpi upload -v dist/fulltext-`$(PYTHON) setup.py --version`.tar.gz
 
 publish:  ## Upload package on PYPI.
 	$(PYTHON) setup.py register
