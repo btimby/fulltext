@@ -47,10 +47,6 @@ sysdeps:  ## Install system deps (Ubuntu).
 	sudo apt-get install python
 	sudo pip2 install --pre --upgrade pyhwp
 
-publish:  ## Upload package on PYPI.
-	$(PYTHON) setup.py register
-	$(PYTHON) setup.py sdist upload
-
 clean:  ## Remove all build files.
 	rm -rf `find . -type d -name __pycache__ \
 		-o -type f -name \*.bak \
@@ -81,3 +77,18 @@ install-git-hooks:  ## Install GIT pre-commit hook.
 
 help: ## Display callable targets.
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
+
+# --- distribution
+
+sdist:  ## Create a tar.gz distribution.
+	virtualenv -p $(PYTHON) venv
+	rm -rf dist
+	venv/bin/python setup.py sdist
+	# Test installation from source.
+	venv/bin/pip install --upgrade --force-reinstall dist/*.tar.gz
+	venv/bin/pip install -r requirements.txt
+	venv/bin/python -m fulltext check
+
+publish:  ## Upload package on PYPI.
+	$(PYTHON) setup.py register
+	$(PYTHON) setup.py sdist upload
