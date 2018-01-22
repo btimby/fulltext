@@ -18,7 +18,7 @@ SYSDEPS = \
 	python-pip \
 	python3-pip
 TEST_PREFIX = PYTHONWARNINGS=all FULLTEXT_TESTING=1
-PASSWORD =
+PASSWORD ?=
 
 test:  ## Run tests.
 	${MAKE} install-git-hooks
