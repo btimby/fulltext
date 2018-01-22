@@ -90,9 +90,9 @@ sdist:  ## Create a tar.gz distribution.
 	venv/bin/python -m fulltext check
 
 priv-pypi-upload:  ## Upload src sdist on private PYPI repo.
-	# virtualenv -p $(PYTHON) venv
-	# venv/bin/pip install devpi-client
-	# ${MAKE} sdist
+	virtualenv -p $(PYTHON) venv
+	venv/bin/pip install devpi-client
+	${MAKE} sdist
 ifndef PASSWORD
 	venv/bin/python -m devpi login root
 else
