@@ -89,14 +89,13 @@ sdist:  ## Create a tar.gz distribution.
 	venv/bin/pip install -r requirements.txt
 	venv/bin/python -m fulltext check
 
-priv-pypi-upload:  ## Upload src sdist on private PYPI repo.
+priv-pypi-upload:  ## Upload source distribution on private PYPI repo.
 	# Note: to reference the uploaded distribution, requirements.txt will
 	# need an entry like this:
 	#   --extra-index-url http://pypi.dev.veristack.com/root/veristack-fulltext/+simple/
 	#   fulltext==0.8.315.b00117c
-	virtualenv -p $(PYTHON) venv
-	venv/bin/pip install devpi-client
 	${MAKE} sdist
+	venv/bin/pip install devpi-client
 ifndef PASSWORD
 	venv/bin/python -m devpi login root
 else
