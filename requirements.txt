@@ -9,12 +9,17 @@ pytesseract
 Pillow
 pycodestyle
 pyflakes
-python-magic
 ebooklib
 contextlib2
 mock
 rarfile
 flake8
+
+# On Windows use a specific version of python-magic
+https://pypi.python.org/packages/5a/5d/10b9ac745d9fd2f7151a2ab901e6bb6983dbd70e87c71111f54859d1ca2e/python_magic_bin-0.4.14-py2.py3-none-win32.whl; os_name == 'nt'
+
+# ...else use latest version
+python-magic; os_name != 'nt'
 
 git+https://github.com/mattgwwalker/msg-extractor.git@2a24c9950d34932ed5979693cb70d758d78715df#egg=ExtractMsg
 

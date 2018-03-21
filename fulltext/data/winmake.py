@@ -80,7 +80,15 @@ def safe_print(text, file=sys.stdout, flush=False):
     file.write("\n")
 
 
-def sh(cmd, nolog=False):
+def sh(cmd):
+    safe_print("cmd: " + cmd)
+    env = os.environ.copy()
+    ret = subprocess.call(cmd, shell=True, env=env)
+    if ret != 0:
+        raise RuntimeError("exit code = %s" % ret)
+
+
+def shout(cmd, nolog=False):
     if not nolog:
         safe_print("cmd: " + cmd)
     p = subprocess.Popen(cmd, shell=True, env=os.environ, cwd=os.getcwd(),
@@ -346,10 +354,10 @@ def pyinstaller():
         exe = os.path.join(ROOT_DIR, "dist", "%s.exe" % PRJNAME)
         assert os.path.exists(exe), exe
         # Test those extensions for which we know we rely on external exes.
-        out = sh("%s extract %s" % (
+        out = shout("%s extract %s" % (
             exe, os.path.join(ROOT_DIR, "fulltext/test/files/test.pdf")))
         assertMultiLineEqual(out.strip(), TEXT.strip())
-        out = sh("%s extract %s" % (
+        out = shout("%s extract %s" % (
             exe, os.path.join(ROOT_DIR, "fulltext/test/files/test.rtf")))
         assertMultiLineEqual(out.strip(), TEXT.strip())
 
