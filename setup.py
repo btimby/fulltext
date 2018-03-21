@@ -1,7 +1,5 @@
 #!/bin/env python
 
-import os
-import sys
 from os.path import dirname
 from os.path import join as pathjoin
 from setuptools import find_packages
@@ -10,9 +8,6 @@ from setuptools import setup
 
 NAME = 'fulltext'
 VERSION = '0.7'
-if os.name == 'nt' and not sys.maxsize > 2 ** 32:
-    # https://github.com/btimby/fulltext/issues/79
-    raise RuntimeError("Python 32 bit is not supported")
 
 
 with open(pathjoin(dirname(__file__), 'README.rst')) as f:

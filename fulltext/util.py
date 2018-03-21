@@ -10,6 +10,7 @@ import sys
 import functools
 import tempfile
 import shutil
+import platform
 
 from os.path import join as pathjoin
 
@@ -140,9 +141,17 @@ def is_windows():
 
 def is_windows64():
     """
-    Determine if platform is 64 bit Windows.
+    Determine if this is Python 64 bit.
     """
-    return is_windows() and 'PROGRAMFILES(X86)' in os.environ
+    if not is_windows():
+        return False
+    arch = platform.architecture()
+    if arch[0] == '64bit':
+        return True
+    elif arch[0] == '32bit':
+        return False
+    else:
+        raise ValueError("can't determine bitness from %s" % str(arch))
 
 
 def get_data_dir():
