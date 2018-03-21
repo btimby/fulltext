@@ -16,6 +16,7 @@ import errno
 import glob
 import functools
 import os
+import platform
 import shutil
 import site
 import subprocess
@@ -312,8 +313,17 @@ def set_python(s):
             "can't find any python installation matching %r" % orig)
 
 
-def is_windows64():
-    return 'PROGRAMFILES(X86)' in os.environ
+def is_python_64():
+    """
+    Determine if this is Python 64 bit.
+    """
+    arch = platform.architecture()
+    if arch[0] == '64bit':
+        return True
+    elif arch[0] == '32bit':
+        return False
+    else:
+        raise ValueError("can't determine bitness from %s" % str(arch))
 
 
 def venv():
@@ -345,7 +355,7 @@ def pyinstaller():
     def run_pyinstaller():
         rm(os.path.join(ROOT_DIR, "dist"))
         bindir = os.path.join(
-            DATA_DIR, "bin64" if is_windows64() else "bin32")
+            DATA_DIR, "bin64" if is_python_64() else "bin32")
         assert os.path.exists(bindir), bindir
         sh("venv\\Scripts\\pyinstaller --upx-dir=%s pyinstaller.spec" % bindir)
 

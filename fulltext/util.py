@@ -139,12 +139,10 @@ def is_windows():
     return 'win' in sys.platform
 
 
-def is_windows64():
+def is_python_64():
     """
     Determine if this is Python 64 bit.
     """
-    if not is_windows():
-        return False
     arch = platform.architecture()
     if arch[0] == '64bit':
         return True
@@ -184,7 +182,7 @@ else:
     def _set_binpath():
         # Help the magic wrapper locate magic1.dll, we include it in
         # bin/bin{32,64}.
-        bindir = 'bin64' if is_windows64() else 'bin32'
+        bindir = 'bin64' if is_python_64() else 'bin32'
         path = pathjoin(get_data_dir(), bindir)
         os.environ['PATH'] += os.pathsep + path
         assert_cmd_exists("pdftotext")
