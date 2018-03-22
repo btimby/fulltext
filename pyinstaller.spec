@@ -8,7 +8,6 @@ a = Analysis(['fulltext\\__main__.py'],
              datas=[
                 ('fulltext/*', 'fulltext/'),
                 ('fulltext/backends/*', 'fulltext/backends'),
-                ('fulltext/data/magic*', 'fulltext/data/'),
                 ('fulltext/data/bin32', 'fulltext/data/bin32'),
              ],
              hiddenimports=[],

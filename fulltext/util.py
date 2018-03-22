@@ -152,18 +152,19 @@ def is_python_64():
         raise ValueError("can't determine bitness from %s" % str(arch))
 
 
-def get_data_dir():
+def get_bin_dir():
     # When running under PyInstaller things are a bit different.
+    basename = 'bin64' if is_python_64() else 'bin32'
     if hasattr(sys, '_MEIPASS'):
-        path = pathjoin(sys._MEIPASS, 'fulltext', 'data')
+        path = pathjoin(sys._MEIPASS, 'fulltext', 'data', basename)
         # XXX: this absolutely ugly hack is needed in order to build
         # duster with pyinstaller.
         if not os.path.isdir(path):
             print(">>> WARN: assuming you're using pyinstaller from duster",
                   file=sys.stderr)
-            path = pathjoin(sys._MEIPASS, 'duster', 'data')
+            path = pathjoin(sys._MEIPASS, 'duster', 'data', basename)
     else:
-        path = pathjoin(HERE, 'data')
+        path = pathjoin(HERE, 'data', basename)
 
     assert os.path.isdir(path), path
     return path
@@ -182,8 +183,8 @@ else:
     def _set_binpath():
         # Help the magic wrapper locate magic1.dll, we include it in
         # bin/bin{32,64}.
-        bindir = 'bin64' if is_python_64() else 'bin32'
-        path = pathjoin(get_data_dir(), bindir)
+        path = pathjoin(get_bin_dir())
+        assert os.path.isdir(path), path
         os.environ['PATH'] += os.pathsep + path
         assert_cmd_exists("pdftotext")
         assert_cmd_exists("unrtf")
@@ -191,26 +192,7 @@ else:
         assert_cmd_exists("unrar")
 
     _set_binpath()
-
-    def _import_magic():
-        # Instantiate our own Magic instance so we can tell it where the
-        # magic file lives.
-        from magic import Magic as _Magic
-
-        class Magic(_Magic):
-            # Overridden because differently from the UNIX version
-            # the Windows version does not provide mime kwarg.
-            def from_file(self, filename, mime=True):
-                return _Magic.from_file(self, filename)
-
-            def from_buffer(self, buf, mime=True):
-                return _Magic.from_buffer(self, buf)
-
-        path = pathjoin(get_data_dir(), 'magic')
-        assert os.path.isfile(path), path
-        return Magic(mime=True, magic_file=path)
-
-    magic = _import_magic()
+    magic = None
 
 
 def memoize(fun):
