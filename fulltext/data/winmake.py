@@ -16,6 +16,7 @@ import errno
 import glob
 import functools
 import os
+import platform
 import shutil
 import site
 import subprocess
@@ -80,7 +81,15 @@ def safe_print(text, file=sys.stdout, flush=False):
     file.write("\n")
 
 
-def sh(cmd, nolog=False):
+def sh(cmd):
+    safe_print("cmd: " + cmd)
+    env = os.environ.copy()
+    ret = subprocess.call(cmd, shell=True, env=env)
+    if ret != 0:
+        raise RuntimeError("exit code = %s" % ret)
+
+
+def shout(cmd, nolog=False):
     if not nolog:
         safe_print("cmd: " + cmd)
     p = subprocess.Popen(cmd, shell=True, env=os.environ, cwd=os.getcwd(),
@@ -304,8 +313,17 @@ def set_python(s):
             "can't find any python installation matching %r" % orig)
 
 
-def is_windows64():
-    return 'PROGRAMFILES(X86)' in os.environ
+def is_python_64():
+    """
+    Determine if this is Python 64 bit.
+    """
+    arch = platform.architecture()
+    if arch[0] == '64bit':
+        return True
+    elif arch[0] == '32bit':
+        return False
+    else:
+        raise ValueError("can't determine bitness from %s" % str(arch))
 
 
 def venv():
@@ -337,7 +355,7 @@ def pyinstaller():
     def run_pyinstaller():
         rm(os.path.join(ROOT_DIR, "dist"))
         bindir = os.path.join(
-            DATA_DIR, "bin64" if is_windows64() else "bin32")
+            DATA_DIR, "bin64" if is_python_64() else "bin32")
         assert os.path.exists(bindir), bindir
         sh("venv\\Scripts\\pyinstaller --upx-dir=%s pyinstaller.spec" % bindir)
 
@@ -346,10 +364,10 @@ def pyinstaller():
         exe = os.path.join(ROOT_DIR, "dist", "%s.exe" % PRJNAME)
         assert os.path.exists(exe), exe
         # Test those extensions for which we know we rely on external exes.
-        out = sh("%s extract %s" % (
+        out = shout("%s extract %s" % (
             exe, os.path.join(ROOT_DIR, "fulltext/test/files/test.pdf")))
         assertMultiLineEqual(out.strip(), TEXT.strip())
-        out = sh("%s extract %s" % (
+        out = shout("%s extract %s" % (
             exe, os.path.join(ROOT_DIR, "fulltext/test/files/test.rtf")))
         assertMultiLineEqual(out.strip(), TEXT.strip())
 
