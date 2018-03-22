@@ -357,7 +357,7 @@ def pyinstaller():
         bindir = os.path.join(
             DATA_DIR, "bin64" if is_python_64() else "bin32")
         assert os.path.exists(bindir), bindir
-        sh("venv\\Scripts\\pyinstaller --noupx --upx-dir=%s pyinstaller.spec" % bindir)
+        sh("venv\\Scripts\\pyinstaller --upx-dir=%s pyinstaller.spec" % bindir)
 
     def test_exe():
         # Make sure the resulting .exe works.
