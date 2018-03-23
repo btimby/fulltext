@@ -225,7 +225,8 @@ class TestCLI(BaseTestCase):
                 # On Windows we expect a bunch of backends not to work.
                 # XXX maybe this is too strict.
                 lines = [x.split(':')[0] for x in
-                         sorted(err.decode().splitlines())]
+                         sorted(err.decode().splitlines())
+                         if x.split(':')[0].startswith('fulltext.')]
                 self.assertEqual(
                     lines,
                     ['fulltext.backends.__doc',
@@ -302,6 +303,7 @@ class TestInstalledDeps(BaseTestCase):
     """Make sure certain deps are installed."""
 
     @unittest.skipIf(APPVEYOR, "AppVeyor can't detect magic")
+    @unittest.skipIf(WINDOWS, "libmagic not supported on win")
     def test_magic(self):
         self.assertIsNotNone(magic)
 
