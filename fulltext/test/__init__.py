@@ -303,6 +303,7 @@ class TestInstalledDeps(BaseTestCase):
     """Make sure certain deps are installed."""
 
     @unittest.skipIf(APPVEYOR, "AppVeyor can't detect magic")
+    @unittest.skipIf(WINDOWS, "libmagic not supported on win")
     def test_magic(self):
         self.assertIsNotNone(magic)
 
