@@ -252,6 +252,7 @@ register_backend(
 # We just come up with a custom mime name.
 for ext in _TEXT_EXTS:
     register_backend(
-        '[custom-fulltext-mime]/%s' % ext,
+        'text/plain',
         'fulltext.backends.__text',
         extensions=[ext])
+
