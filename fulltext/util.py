@@ -213,6 +213,7 @@ else:
 
     # magic = _import_magic()
 
+
 def memoize(fun):
     """A simple memoize decorator for functions supporting (hashable)
     positional arguments.
