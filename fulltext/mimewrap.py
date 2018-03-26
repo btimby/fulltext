@@ -6,6 +6,11 @@ import mimetypes
 from fulltext.util import warn
 
 
+# =====================================================================
+# --- constants
+# =====================================================================
+
+
 mimetypes.init()
 _MIMETYPE_TO_BACKENDS = {}
 _EXTS_TO_MIMETYPES = {}
@@ -75,6 +80,11 @@ _TEXT_EXTS = set((
 ))
 
 
+# =====================================================================
+# --- public API
+# =====================================================================
+
+
 def register_backend(mimetype, module, extensions=None):
     """Register a backend.
     `mimetype`: a mimetype string (e.g. 'text/plain')
@@ -108,6 +118,11 @@ def ext_to_mimetype(ext, default=None):
 
 def mimetype_to_backend(mime, default=None):
     return _MIMETYPE_TO_BACKENDS[mime]
+
+
+# =====================================================================
+# --- register backends
+# =====================================================================
 
 
 register_backend(
