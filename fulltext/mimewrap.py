@@ -118,6 +118,7 @@ def ext_to_mimetype(ext, default=None):
     ret = _EXTS_TO_MIMETYPES.get(ext, default)
     return ret
 
+
 def mimetype_to_backend(mime, default=None):
     return _MIMETYPE_TO_BACKENDS[mime]
 

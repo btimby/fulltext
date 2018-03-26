@@ -47,6 +47,10 @@ class PuremagicWrapper:
                     ret = DEFAULT_MIME
         return ret
 
+    def from_buffer(self, buffer, mime=True):
+        assert mime, "mime=False arg is not supported"
+        return puremagic.from_string(buffer, mime=True)
+
 
 if WINDOWS:
     magic = PuremagicWrapper()

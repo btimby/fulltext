@@ -1021,11 +1021,10 @@ class TestPureMagicFromFileExt(BaseTestCase, _BaseExtTests):
 # ===================================================================
 
 
-class TestMagicFromFileContent(BaseTestCase):
+class _BaseFromFileContentTests(object):
 
-    def magic_from_buffer(self, buffer):
-        magic = MagicWrapper()
-        return magic.from_buffer(buffer, mime=True)
+    def magic_from_buffer(self, fname):
+        raise NotImplementedError("must be implemented in subclass")
 
     def doit(self, basename, mime):
         fname = pathjoin(HERE, "files", basename)
@@ -1102,6 +1101,21 @@ class TestMagicFromFileContent(BaseTestCase):
 
     def test_zip(self):
         self.doit("test.zip", "application/zip")
+
+
+@unittest.skipIf(WINDOWS, "libmagic not available on Windows")
+class TestMagicFromFileContent(BaseTestCase, _BaseFromFileContentTests):
+
+    def magic_from_buffer(self, buffer):
+        magic = MagicWrapper()
+        return magic.from_buffer(buffer, mime=True)
+
+
+# class TestPuremagicFromFileContent(BaseTestCase, _BaseFromFileContentTests):
+
+#     def magic_from_buffer(self, buffer):
+#         magic = PuremagicWrapper()
+#         return magic.from_buffer(buffer, mime=True)
 
 
 def main():
