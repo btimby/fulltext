@@ -1,3 +1,7 @@
+"""
+Mime types machinery.
+"""
+
 import mimetypes
 from fulltext.util import warn
 

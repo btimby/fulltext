@@ -10,9 +10,7 @@ from os.path import splitext
 
 from six import string_types
 from six import PY3
-from fulltext.mimewrap import EXTS_TO_MIMETYPES
-from fulltext.mimewrap import MIMETYPE_TO_BACKENDS
-from fulltext.mimewrap import register_backend
+import fulltext.mimewrap
 from fulltext.util import fobj_to_tempfile
 from fulltext.util import is_file_path
 from fulltext.util import is_windows
@@ -36,6 +34,7 @@ LOGGER.addHandler(logging.NullHandler())
 STRIP_WHITE = re.compile(r'[ \t\v\f\r\n]+')
 SENTINAL = object()
 MAGIC_BUFFER_SIZE = 1024
+register_backend = fulltext.mimewrap.register_backend
 
 # XXX: dirty hack for pyinstaller so that it includes these modules.
 # TODO: find a way to do this in pyinstaller.spec instead.
@@ -65,11 +64,6 @@ if is_windows() and hasattr(sys, '_MEIPASS'):
     from fulltext.backends import __xlsx  # NOQA
     from fulltext.backends import __xml  # NOQA
     from fulltext.backends import __zip  # NOQA
-
-
-# =====================================================================
-# --- backends
-# =====================================================================
 
 
 # =====================================================================
@@ -179,7 +173,7 @@ def import_mod(mod_name):
 def backend_from_mime(mime):
     """Determine backend module object from a mime string."""
     try:
-        mod_name = MIMETYPE_TO_BACKENDS[mime]
+        mod_name = fulltext.mimewrap.MIMETYPE_TO_BACKENDS[mime]
 
     except KeyError:
         msg = "No handler for %r, defaulting to %r" % (mime, DEFAULT_MIME)
@@ -188,7 +182,7 @@ def backend_from_mime(mime):
         else:
             LOGGER.debug(msg)
 
-        mod_name = MIMETYPE_TO_BACKENDS[DEFAULT_MIME]
+        mod_name = fulltext.mimewrap.MIMETYPE_TO_BACKENDS[DEFAULT_MIME]
     mod = import_mod(mod_name)
     return mod
 
@@ -198,7 +192,7 @@ def backend_from_fname(name):
     ext = splitext(name)[1]
 
     try:
-        mime = EXTS_TO_MIMETYPES[ext]
+        mime = fulltext.mimewrap.EXTS_TO_MIMETYPES[ext]
 
     except KeyError:
         try:
@@ -217,14 +211,14 @@ def backend_from_fname(name):
             else:
                 LOGGER.debug(msg)
 
-            mod_name = MIMETYPE_TO_BACKENDS[DEFAULT_MIME]
+            mod_name = fulltext.mimewrap.MIMETYPE_TO_BACKENDS[DEFAULT_MIME]
 
         else:
             with f:
                 return backend_from_fobj(f)
 
     else:
-        mod_name = MIMETYPE_TO_BACKENDS[mime]
+        mod_name = fulltext.mimewrap.MIMETYPE_TO_BACKENDS[mime]
 
     mod = import_mod(mod_name)
     return mod
@@ -302,7 +296,7 @@ def _get(path_or_file, default, mime, name, backend, encoding,
     else:
         if isinstance(backend, string_types):
             try:
-                mime = EXTS_TO_MIMETYPES['.' + backend]
+                mime = fulltext.mimewrap.EXTS_TO_MIMETYPES['.' + backend]
             except KeyError:
                 raise ValueError("invalid backend %r" % backend)
             backend_mod = backend_from_mime(mime)
