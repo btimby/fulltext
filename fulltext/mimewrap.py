@@ -3,7 +3,6 @@ Mime types machinery.
 """
 
 import mimetypes
-from fulltext.util import warn
 
 
 # =====================================================================
@@ -15,6 +14,7 @@ mimetypes.init()
 _MIMETYPE_TO_BACKENDS = {}
 _EXTS_TO_MIMETYPES = {}
 _MIMETYPES_TO_EXT = dict([(v, k) for k, v in mimetypes.types_map.items()])
+
 # A list of extensions which will be treated as pure text.
 # This takes precedence over register_backend().
 # https://www.openoffice.org/dev_docs/source/file_extensions.html
@@ -91,8 +91,8 @@ def register_backend(mimetype, module, extensions=None):
     `module`: an import string (e.g. path.to.my.module)
     `extensions`: a list of extensions (e.g. ['txt', 'text'])
     """
-    if mimetype in _MIMETYPE_TO_BACKENDS:
-        warn("overwriting %r mimetype which was already set" % mimetype)
+    # if mimetype in _MIMETYPE_TO_BACKENDS:
+    #     warn("overwriting %r mimetype which was already set" % mimetype)
     _MIMETYPE_TO_BACKENDS[mimetype] = module
     if extensions is None:
         try:
@@ -113,8 +113,8 @@ def register_backend(mimetype, module, extensions=None):
 
 
 def ext_to_mimetype(ext, default=None):
-    return _EXTS_TO_MIMETYPES.get(ext, default)
-
+    ret = _EXTS_TO_MIMETYPES.get(ext, default)
+    return ret
 
 def mimetype_to_backend(mime, default=None):
     return _MIMETYPE_TO_BACKENDS[mime]
@@ -223,7 +223,7 @@ register_backend(
     'fulltext.backends.__doc',
     extensions=['.doc'])
 
-for mt in ('text/csv', 'text/tsv', 'text/psv'):
+for mt in ('text/tsv', 'text/psv', 'text/csv'):
     register_backend(
         mt,
         'fulltext.backends.__csv',

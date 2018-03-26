@@ -22,11 +22,11 @@ SYSDEPS = \
 TEST_PREFIX = PYTHONWARNINGS=all FULLTEXT_TESTING=1
 
 test:  ## Run tests.
-	${MAKE} install-git-hooks
+	${MAKE} install
 	$(TEST_PREFIX) $(PYTHON) fulltext/test/__init__.py
 
 test-by-name:  ## Run a specific test by name.
-	${MAKE} install-git-hooks
+	${MAKE} install
 	$(TEST_PREFIX) $(PYTHON) -m unittest -v $(ARGS)
 
 ci:  ## Run CI tests.

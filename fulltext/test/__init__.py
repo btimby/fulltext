@@ -16,11 +16,11 @@ from os.path import join as pathjoin
 import codecs
 import difflib
 import textwrap
-import warnings
 
 import fulltext
 from fulltext.util import is_windows
-from fulltext.util import magic
+from fulltext.magicwrap import MagicWrapper
+from fulltext.magicwrap import PuremagicWrapper
 from fulltext.util import exiftool
 from fulltext.compat import which
 
@@ -301,22 +301,6 @@ class TestBackendInterface(BaseTestCase):
 
 class TestInstalledDeps(BaseTestCase):
     """Make sure certain deps are installed."""
-
-    @unittest.skipIf(APPVEYOR, "AppVeyor can't detect magic")
-    @unittest.skipIf(WINDOWS, "libmagic not supported on win")
-    def test_magic(self):
-        self.assertIsNotNone(magic)
-
-    @unittest.skipIf(WINDOWS and magic is None, "magic lib not installed")
-    def test_no_magic(self):
-        # Emulate a case where magic lib is not installed.
-        f = self.touch_fobj(content=b"hello world")
-        f.seek(0)
-        with mock.patch("fulltext.magic", None):
-            with warnings.catch_warnings(record=True) as ws:
-                mod = fulltext.backend_from_fobj(f)
-            self.assertIn("magic lib is not installed", str(ws[0].message))
-            self.assertEqual(mod.__name__, 'fulltext.backends.__bin')
 
     def test_exiftool(self):
         self.assertIsNotNone(exiftool)
@@ -641,7 +625,6 @@ class TestGuessingFromFileContent(BaseTestCase):
     from its content.
     """
 
-    @unittest.skipIf(WINDOWS and magic is None, "magic is not installed")
     def test_pdf(self):
         fname = "file-noext"
         with open(pathjoin(HERE, 'files/test.pdf'), 'rb') as f:
@@ -650,7 +633,10 @@ class TestGuessingFromFileContent(BaseTestCase):
         with mock.patch('fulltext.handle_path', return_value="") as m:
             fulltext.get(fname)
             klass = m.call_args[0][0]
-            self.assertEqual(klass.__module__, 'fulltext.backends.__pdf')
+            if WINDOWS:
+                self.assertEqual(klass.__module__, 'fulltext.backends.__bin')
+            else:
+                self.assertEqual(klass.__module__, 'fulltext.backends.__pdf')
 
     @unittest.skipIf(WINDOWS, "not supported on Windows")
     def test_html(self):
@@ -925,6 +911,111 @@ class TestTitle(BaseTestCase):
         fname = pathjoin(HERE, "files/others/test.xlsx")
         self.assertEqual(
             fulltext.get_with_title(fname)[1], 'yo man!')
+
+
+# ===================================================================
+# --- Test magic
+# ===================================================================
+
+
+class _BaseExtTests(object):
+
+    def doit(self, basename, mime):
+        fname = pathjoin(HERE, "files", basename)
+        magic_mime = self.magic_from_file(fname)
+        if isinstance(mime, str):
+            self.assertEqual(magic_mime, mime)
+        elif isinstance(mime, (list, tuple, set, frozenset)):
+            self.assertIn(magic_mime, mime)
+        else:
+            raise TypeError(repr(mime))
+
+    def test_csv(self):
+        self.doit("test.csv", "text/csv")
+
+    def test_doc(self):
+        self.doit("test.doc", "application/msword")
+
+    def test_docx(self):
+        self.doit(
+            "test.docx",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document")  # NOQA
+
+    def test_eml(self):
+        self.doit("test.eml", "message/rfc822")
+
+    def test_epub(self):
+        self.doit("test.epub", "application/epub+zip")
+
+    def test_gz(self):
+        self.doit("test.gz", "application/gzip")
+
+    def test_html(self):
+        self.doit("test.html", "text/xhtml")
+
+    def test_hwp(self):
+        self.doit("test.hwp", "application/x-hwp")
+
+    def test_json(self):
+        self.doit("test.json", "application/json")
+
+    def test_mbox(self):
+        self.doit("test.mbox", "application/mbox")
+
+    def test_ods(self):
+        self.doit("test.ods", "application/vnd.oasis.opendocument.spreadsheet")
+
+    def test_odt(self):
+        self.doit("test.ods", "application/vnd.oasis.opendocument.spreadsheet")
+
+    def test_pptx(self):
+        self.doit(
+            "others/test.pptx",
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation")  # NOQA
+
+    def test_pdf(self):
+        self.doit("test.pdf", "application/pdf")
+
+    def test_psv(self):
+        self.doit("test.psv", "text/csv")
+
+    def test_rar(self):
+        self.doit("test.rar", "application/x-rar-compressed")
+
+    def test_rtf(self):
+        self.doit("test.rtf", "application/rtf")
+
+    def test_tsv(self):
+        self.doit("test.tsv", "text/csv")
+
+    def test_xls(self):
+        self.doit("test.xls", "application/vnd.ms-excel")
+
+    def test_xlsx(self):
+        self.doit(
+            "test.xlsx",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")  # NOQA
+
+    def test_xml(self):
+        self.doit("test.xml", "application/x-xml")
+
+    def test_zip(self):
+        self.doit("test.zip", "application/zip")
+
+
+@unittest.skipIf(WINDOWS, "libmagic not available on Windows")
+class TestMagicFromFile(BaseTestCase, _BaseExtTests):
+
+    def magic_from_file(self, fname):
+        magic = MagicWrapper()
+        return magic.from_file(fname, mime=True)
+
+
+class TestPureMagicFromFile(BaseTestCase, _BaseExtTests):
+
+    def magic_from_file(self, fname):
+        magic = PuremagicWrapper()
+        return magic.from_file(fname, mime=True)
 
 
 def main():

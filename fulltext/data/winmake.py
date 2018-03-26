@@ -21,6 +21,7 @@ import shutil
 import site
 import subprocess
 import sys
+import traceback
 
 
 # --- configurable
@@ -185,24 +186,19 @@ def install():
 @cmd
 def uninstall():
     """Uninstall %s""" % PRJNAME
-    clean()
-    install_pip()
-    here = os.getcwd()
     try:
-        os.chdir('C:\\')
-        while True:
-            try:
-                __import__(PRJNAME, fromlist=[' '])
-            except ImportError:
-                break
-            else:
-                sh("%s -m pip uninstall -y %s" % (PYTHON, PRJNAME))
-    finally:
-        os.chdir(here)
-        for dir in site.getsitepackages():
-            for name in os.listdir(dir):
-                if name.startswith(PRJNAME):
-                    rm(os.path.join(dir, name))
+        sh('%s -m pip uninstall -y fulltext' % PYTHON)
+    except RuntimeError:
+        traceback.print_exc()
+
+    locations = [site.getusersitepackages()]
+    locations.extend(site.getsitepackages())
+    for root in locations:
+        if os.path.isdir(root):
+            for name in os.listdir(root):
+                if 'fulltext' in name:
+                    abspath = os.path.join(root, name)
+                    rm(abspath)
 
 
 @cmd

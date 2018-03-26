@@ -15,6 +15,7 @@ mock
 rarfile
 flake8
 python-magic; os_name != 'nt'
+puremagic==1.3
 
 git+https://github.com/mattgwwalker/msg-extractor.git@2a24c9950d34932ed5979693cb70d758d78715df#egg=ExtractMsg
 
