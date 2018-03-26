@@ -914,21 +914,19 @@ class TestTitle(BaseTestCase):
 
 
 # ===================================================================
-# --- Test magic
+# --- Test magic from file ext
 # ===================================================================
 
 
 class _BaseExtTests(object):
 
+    def magic_from_file(self, fname):
+        raise NotImplementedError("must be implemented in subclass")
+
     def doit(self, basename, mime):
         fname = pathjoin(HERE, "files", basename)
         magic_mime = self.magic_from_file(fname)
-        if isinstance(mime, str):
-            self.assertEqual(magic_mime, mime)
-        elif isinstance(mime, (list, tuple, set, frozenset)):
-            self.assertIn(magic_mime, mime)
-        else:
-            raise TypeError(repr(mime))
+        self.assertEqual(magic_mime, mime)
 
     def test_csv(self):
         self.doit("test.csv", "text/csv")
@@ -1004,18 +1002,106 @@ class _BaseExtTests(object):
 
 
 @unittest.skipIf(WINDOWS, "libmagic not available on Windows")
-class TestMagicFromFile(BaseTestCase, _BaseExtTests):
+class TestMagicFromFileExt(BaseTestCase, _BaseExtTests):
 
     def magic_from_file(self, fname):
         magic = MagicWrapper()
         return magic.from_file(fname, mime=True)
 
 
-class TestPureMagicFromFile(BaseTestCase, _BaseExtTests):
+class TestPureMagicFromFileExt(BaseTestCase, _BaseExtTests):
 
     def magic_from_file(self, fname):
         magic = PuremagicWrapper()
         return magic.from_file(fname, mime=True)
+
+
+# ===================================================================
+# --- Test magic from file content
+# ===================================================================
+
+
+class TestMagicFromFileContent(BaseTestCase):
+
+    def magic_from_buffer(self, buffer):
+        magic = MagicWrapper()
+        return magic.from_buffer(buffer, mime=True)
+
+    def doit(self, basename, mime):
+        fname = pathjoin(HERE, "files", basename)
+        with open(fname, "rb") as f:
+            chunk = f.read(2048)
+        magic_mime = self.magic_from_buffer(chunk)
+        self.assertEqual(magic_mime, mime)
+
+    def test_csv(self):
+        self.doit("test.csv", "text/plain")
+
+    def test_doc(self):
+        self.doit("test.doc", "application/CDFV2-unknown")
+
+    def test_docx(self):
+        self.doit(
+            "test.docx", "application/zip")  # NOQA
+
+    def test_eml(self):
+        self.doit("test.eml", "text/plain")
+
+    def test_epub(self):
+        self.doit("test.epub", "application/epub+zip")
+
+    def test_gz(self):
+        self.doit("test.gz", "application/gzip")
+
+    def test_html(self):
+        self.doit("test.html", "text/html")
+
+    def test_hwp(self):
+        self.doit("test.hwp", "application/CDFV2-unknown")
+
+    def test_json(self):
+        self.doit("test.json", "text/plain")
+
+    def test_mbox(self):
+        self.doit("test.mbox", "text/plain")
+
+    def test_ods(self):
+        self.doit("test.ods", "application/vnd.oasis.opendocument.spreadsheet")
+
+    def test_odt(self):
+        self.doit("test.ods", "application/vnd.oasis.opendocument.spreadsheet")
+
+    def test_pptx(self):
+        self.doit(
+            "others/test.pptx",
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation")  # NOQA
+
+    def test_pdf(self):
+        self.doit("test.pdf", "application/pdf")
+
+    def test_psv(self):
+        self.doit("test.psv", "text/plain")
+
+    def test_rar(self):
+        self.doit("test.rar", "application/x-rar")
+
+    def test_rtf(self):
+        self.doit("test.rtf", "text/rtf")
+
+    def test_tsv(self):
+        self.doit("test.tsv", "text/plain")
+
+    def test_xls(self):
+        self.doit("test.xls", "application/CDFV2-unknown")
+
+    def test_xlsx(self):
+        self.doit("test.xlsx", "application/octet-stream")
+
+    def test_xml(self):
+        self.doit("test.xml", "application/xml")
+
+    def test_zip(self):
+        self.doit("test.zip", "application/zip")
 
 
 def main():

@@ -6,7 +6,7 @@ from fulltext.compat import WINDOWS
 from fulltext.mimewrap import ext_to_mimetype
 
 if os.name == 'posix':
-    import magic as _magic
+    import magic as _magic  # NOQA
 
 
 def _mime_from_fname(fname):
@@ -26,9 +26,9 @@ class MagicWrapper:
             ret = _magic.from_file(fname, mime=True)
         return ret
 
-    # def from_buffer(self, buffer, mime=True):
-    #     assert mime, "mime=False arg is not supported"
-    #     return _magic.from_buffer(buffer, mime=True)
+    def from_buffer(self, buffer, mime=True):
+        assert mime, "mime=False arg is not supported"
+        return _magic.from_buffer(buffer, mime=True)
 
 
 class PuremagicWrapper:
