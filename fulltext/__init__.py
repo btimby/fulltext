@@ -11,6 +11,8 @@ from os.path import splitext
 from six import string_types
 from six import PY3
 import fulltext.mimewrap
+from fulltext.mimewrap import ext_to_mimetype
+from fulltext.mimewrap import mimetype_to_backend
 from fulltext.util import fobj_to_tempfile
 from fulltext.util import is_file_path
 from fulltext.util import is_windows
@@ -173,7 +175,7 @@ def import_mod(mod_name):
 def backend_from_mime(mime):
     """Determine backend module object from a mime string."""
     try:
-        mod_name = fulltext.mimewrap.MIMETYPE_TO_BACKENDS[mime]
+        mod_name = mimetype_to_backend(mime)
 
     except KeyError:
         msg = "No handler for %r, defaulting to %r" % (mime, DEFAULT_MIME)
@@ -182,7 +184,7 @@ def backend_from_mime(mime):
         else:
             LOGGER.debug(msg)
 
-        mod_name = fulltext.mimewrap.MIMETYPE_TO_BACKENDS[DEFAULT_MIME]
+        mod_name = mimetype_to_backend(DEFAULT_MIME)
     mod = import_mod(mod_name)
     return mod
 
@@ -191,10 +193,8 @@ def backend_from_fname(name):
     """Determine backend module object from a file name."""
     ext = splitext(name)[1]
 
-    try:
-        mime = fulltext.mimewrap.EXTS_TO_MIMETYPES[ext]
-
-    except KeyError:
+    mime = ext_to_mimetype(ext)
+    if mime is None:
         try:
             f = open(name, 'rb')
 
@@ -211,14 +211,14 @@ def backend_from_fname(name):
             else:
                 LOGGER.debug(msg)
 
-            mod_name = fulltext.mimewrap.MIMETYPE_TO_BACKENDS[DEFAULT_MIME]
+            mod_name = mimetype_to_backend(DEFAULT_MIME)
 
         else:
             with f:
                 return backend_from_fobj(f)
 
     else:
-        mod_name = fulltext.mimewrap.MIMETYPE_TO_BACKENDS[mime]
+        mod_name = mimetype_to_backend(mime)
 
     mod = import_mod(mod_name)
     return mod
@@ -295,9 +295,8 @@ def _get(path_or_file, default, mime, name, backend, encoding,
                     backend_mod = backend_from_fobj(path_or_file)
     else:
         if isinstance(backend, string_types):
-            try:
-                mime = fulltext.mimewrap.EXTS_TO_MIMETYPES['.' + backend]
-            except KeyError:
+            mime = ext_to_mimetype('.' + backend)
+            if mime is None:
                 raise ValueError("invalid backend %r" % backend)
             backend_mod = backend_from_mime(mime)
         else:

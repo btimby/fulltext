@@ -7,8 +7,8 @@ from fulltext.util import warn
 
 
 mimetypes.init()
-MIMETYPE_TO_BACKENDS = {}
-EXTS_TO_MIMETYPES = {}
+_MIMETYPE_TO_BACKENDS = {}
+_EXTS_TO_MIMETYPES = {}
 _MIMETYPES_TO_EXT = dict([(v, k) for k, v in mimetypes.types_map.items()])
 # A list of extensions which will be treated as pure text.
 # This takes precedence over register_backend().
@@ -81,9 +81,9 @@ def register_backend(mimetype, module, extensions=None):
     `module`: an import string (e.g. path.to.my.module)
     `extensions`: a list of extensions (e.g. ['txt', 'text'])
     """
-    if mimetype in MIMETYPE_TO_BACKENDS:
+    if mimetype in _MIMETYPE_TO_BACKENDS:
         warn("overwriting %r mimetype which was already set" % mimetype)
-    MIMETYPE_TO_BACKENDS[mimetype] = module
+    _MIMETYPE_TO_BACKENDS[mimetype] = module
     if extensions is None:
         try:
             ext = _MIMETYPES_TO_EXT[mimetype]
@@ -92,14 +92,22 @@ def register_backend(mimetype, module, extensions=None):
                 "mimetypes module has no extension associated "
                 "with %r mimetype; use 'extensions' arg yourself" % mimetype)
         assert ext, ext
-        EXTS_TO_MIMETYPES[ext] = mimetype
+        _EXTS_TO_MIMETYPES[ext] = mimetype
     else:
         if not isinstance(extensions, (list, tuple, set, frozenset)):
             raise TypeError("invalid extensions type (got %r)" % extensions)
         for ext in set(extensions):
             ext = ext if ext.startswith('.') else '.' + ext
             assert ext, ext
-            EXTS_TO_MIMETYPES[ext] = mimetype
+            _EXTS_TO_MIMETYPES[ext] = mimetype
+
+
+def ext_to_mimetype(ext, default=None):
+    return _EXTS_TO_MIMETYPES.get(ext, default)
+
+
+def mimetype_to_backend(mime, default=None):
+    return _MIMETYPE_TO_BACKENDS[mime]
 
 
 register_backend(
@@ -248,6 +256,7 @@ register_backend(
     'fulltext.backends.__bin',
     extensions=['.a', '.bin'])
 
+
 # Extensions which will be treated as pure text.
 # We just come up with a custom mime name.
 for ext in _TEXT_EXTS:
@@ -255,4 +264,3 @@ for ext in _TEXT_EXTS:
         'text/plain',
         'fulltext.backends.__text',
         extensions=[ext])
-
