@@ -15,6 +15,8 @@ _MIMETYPE_TO_BACKENDS = {}
 _EXTS_TO_MIMETYPES = {}
 _MIMETYPES_TO_EXT = dict([(v, k) for k, v in mimetypes.types_map.items()])
 
+DEFAULT_MIME = 'application/octet-stream'
+
 # A list of extensions which will be treated as pure text.
 # This takes precedence over register_backend().
 # https://www.openoffice.org/dev_docs/source/file_extensions.html

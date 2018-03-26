@@ -3,6 +3,7 @@ import os
 import puremagic
 
 from fulltext.compat import WINDOWS
+from fulltext.mimewrap import DEFAULT_MIME
 from fulltext.mimewrap import ext_to_mimetype
 
 if os.name == 'posix':
@@ -37,7 +38,13 @@ class PuremagicWrapper:
         assert mime, "mime=False arg is not supported"
         ret = _mime_from_fname(fname)
         if not ret:
-            ret = puremagic.from_file(fname, mime=mime)
+            try:
+                ret = puremagic.from_file(fname, mime=mime)
+            except puremagic.PureError:
+                return DEFAULT_MIME
+            else:
+                if not ret:
+                    ret = DEFAULT_MIME
         return ret
 
 
