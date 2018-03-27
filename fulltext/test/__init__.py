@@ -633,10 +633,7 @@ class TestGuessingFromFileContent(BaseTestCase):
         with mock.patch('fulltext.handle_path', return_value="") as m:
             fulltext.get(fname)
             klass = m.call_args[0][0]
-            if WINDOWS:
-                self.assertEqual(klass.__module__, 'fulltext.backends.__bin')
-            else:
-                self.assertEqual(klass.__module__, 'fulltext.backends.__pdf')
+            self.assertEqual(klass.__module__, 'fulltext.backends.__pdf')
 
     @unittest.skipIf(WINDOWS, "not supported on Windows")
     def test_html(self):
