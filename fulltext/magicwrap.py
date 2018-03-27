@@ -30,10 +30,12 @@ def guess_header(header):
         return head.startswith(b"<!doctype html") or \
             head.startswith(b"<!doctype xhtml")
 
+    def is_empty():
+        return not header.strip()
+
     if is_html():
         return "text/html"
-
-    if not header.strip():
+    if is_empty():
         return "text/plain"
 
     return DEFAULT_MIME
