@@ -1103,7 +1103,7 @@ class _TestMagicFromFileContentBase(object):
 
     def test_ods(self):
         if not self.puremagic:
-            self.doit("test.ods", "application/vnd.oasis.opendocument.spreadsheet")
+            self.doit("test.ods", "application/vnd.oasis.opendocument.spreadsheet")  # NOQA
         else:
             self.doit("test.ods", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")  # NOQA
 
@@ -1177,7 +1177,8 @@ class TestMagicFromFileContent(_TestMagicFromFileContentBase, BaseTestCase):
     puremagic = False
 
 
-class TestPureMagicFromFileContent(_TestMagicFromFileContentBase, BaseTestCase):
+class TestPureMagicFromFileContent(_TestMagicFromFileContentBase,
+                                   BaseTestCase):
     puremagic = True
 
 
