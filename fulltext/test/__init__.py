@@ -1034,7 +1034,7 @@ class _BaseFromFileContentTests(object):
         if isinstance(mime, str):
             self.assertEqual(magic_mime, mime)
         elif isinstance(mime, (list, tuple)):
-            self.assertEqual(magic_mime, mime)
+            self.assertIn(magic_mime, mime)
         else:
             raise TypeError(str(mime))
 
