@@ -33,6 +33,9 @@ def guess_header(header):
     if is_html():
         return "text/html"
 
+    if not header.strip():
+        return "text/plain"
+
     return DEFAULT_MIME
 
 
@@ -75,6 +78,9 @@ class PuremagicWrapper:
     def from_buffer(header, mime=True):
         if not mime:
             raise ValueError("mime=False arg is not supported")
+        if not header:
+            # ...or else puremagic throws ValueError
+            return "text/plain"
         try:
             ret = puremagic.from_string(header, mime=True)
         except puremagic.PureError:

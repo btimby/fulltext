@@ -1119,6 +1119,7 @@ class _TestMagicFromFileContentBase(object):
         else:
             self.doit("others/test.pptx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")  # NOQA
 
+    @unittest.skipIf(APPVEYOR, "fails on appveyor")
     def test_pdf(self):
         self.doit("test.pdf", "application/pdf")
 
