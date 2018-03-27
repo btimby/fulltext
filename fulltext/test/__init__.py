@@ -1077,10 +1077,7 @@ class _TestMagicFromFileContentBase(object):
         self.doit("test.gz", ["application/gzip", "application/x-gzip"])
 
     def test_html(self):
-        if not self.puremagic:
-            self.doit("test.html", "text/html")
-        else:
-            self.doit("test.html", "application/octet-stream")
+        self.doit("test.html", "text/html")
 
     def test_hwp(self):
         if not self.puremagic:

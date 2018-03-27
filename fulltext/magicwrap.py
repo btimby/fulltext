@@ -10,12 +10,30 @@ if os.name == 'posix':
     import magic as _magic  # NOQA
 
 
-def _mime_from_fname(fname):
-    ext = os.path.splitext(fname)[1]
+def mime_from_fname(fname):
+    """Return mime type depending on file extension. Returns None
+    if unknown.
+    """
+    ext = os.path.splitext(fname)[1].strip().lower()
     if ext:
         # If we have an extension don't use magic and rely on our
         # internal mapping instead.
         return ext_to_mimetype(ext)
+
+
+def guess_header(header):
+    """Guess mime type by header content.
+    Return "application/octet-stream" if unknown.
+    """
+    def is_html():
+        head = header[:50].strip().lower()
+        return head.startswith(b"<!doctype html") or \
+            head.startswith(b"<!doctype xhtml")
+
+    if is_html():
+        return "text/html"
+
+    return DEFAULT_MIME
 
 
 class MagicWrapper:
@@ -24,7 +42,7 @@ class MagicWrapper:
     def from_file(fname, mime=True):
         if not mime:
             raise ValueError("mime=False arg is not supported")
-        ret = _mime_from_fname(fname)
+        ret = mime_from_fname(fname)
         if not ret:
             ret = _magic.from_file(fname, mime=True)
         return ret
@@ -39,20 +57,10 @@ class MagicWrapper:
 class PuremagicWrapper:
 
     @staticmethod
-    def _is_html(header):
-        return header[:50].strip().lower().startswith(b"<!doctype html")
-
-    @staticmethod
-    def _guess_it(header):
-        if PuremagicWrapper._is_html(header):
-            return "text/html"
-        return DEFAULT_MIME
-
-    @staticmethod
     def from_file(fname, mime=True):
         if not mime:
             raise ValueError("mime=False arg is not supported")
-        ret = _mime_from_fname(fname)
+        ret = mime_from_fname(fname)
         if not ret:
             try:
                 ret = puremagic.from_file(fname, mime=mime)
@@ -70,12 +78,9 @@ class PuremagicWrapper:
         try:
             ret = puremagic.from_string(header, mime=True)
         except puremagic.PureError:
-            ret = PuremagicWrapper._guess_it(header)
-        else:
-            if not ret:
-                ret = PuremagicWrapper._guess_it(header)
-        if ret == "application/octet-stream":
-            ret = PuremagicWrapper._guess_it(header)
+            return guess_header(header)
+        if not ret or ret == "application/octet-stream":
+            ret = guess_header(header)
         return ret
 
 
