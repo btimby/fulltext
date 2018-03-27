@@ -1031,13 +1031,19 @@ class _BaseFromFileContentTests(object):
         with open(fname, "rb") as f:
             chunk = f.read(2048)
         magic_mime = self.magic_from_buffer(chunk)
-        self.assertEqual(magic_mime, mime)
+        if isinstance(mime, str):
+            self.assertEqual(magic_mime, mime)
+        elif isinstance(mime, (list, tuple)):
+            self.assertEqual(magic_mime, mime)
+        else:
+            raise TypeError(str(mime))
 
     def test_csv(self):
         self.doit("test.csv", "text/plain")
 
     def test_doc(self):
-        self.doit("test.doc", "application/CDFV2-unknown")
+        self.doit("test.doc", ["application/CDFV2-unknown",
+                               "application/CDFV2-corrupt"])
 
     def test_docx(self):
         self.doit(
@@ -1056,7 +1062,8 @@ class _BaseFromFileContentTests(object):
         self.doit("test.html", "text/html")
 
     def test_hwp(self):
-        self.doit("test.hwp", "application/CDFV2-unknown")
+        self.doit("test.hwp", ["application/CDFV2-unknown",
+                               "application/CDFV2-corrupt"])
 
     def test_json(self):
         self.doit("test.json", "text/plain")
@@ -1073,7 +1080,7 @@ class _BaseFromFileContentTests(object):
     def test_pptx(self):
         self.doit(
             "others/test.pptx",
-            "application/vnd.openxmlformats-officedocument.presentationml.presentation")  # NOQA
+            ["application/vnd.openxmlformats-officedocument.presentationml.presentation", "application/zip"])  # NOQA
 
     def test_pdf(self):
         self.doit("test.pdf", "application/pdf")
@@ -1091,13 +1098,14 @@ class _BaseFromFileContentTests(object):
         self.doit("test.tsv", "text/plain")
 
     def test_xls(self):
-        self.doit("test.xls", "application/CDFV2-unknown")
+        self.doit("test.xls", ["application/CDFV2-unknown",
+                               "application/CDFV2-corrupt"])
 
     def test_xlsx(self):
         self.doit("test.xlsx", "application/octet-stream")
 
     def test_xml(self):
-        self.doit("test.xml", "application/xml")
+        self.doit("test.xml", ["application/xml", "application/zip"])
 
     def test_zip(self):
         self.doit("test.zip", "application/zip")
