@@ -33,6 +33,7 @@ class MagicWrapper:
         assert mime, "mime=False arg is not supported"
         return _magic.from_buffer(buffer, mime=True)
 
+
 class PuremagicWrapper:
 
     @staticmethod
