@@ -1077,6 +1077,7 @@ class _TestMagicFromFileContentBase(object):
         self.doit("test.gz", ["application/gzip", "application/x-gzip"])
 
     def test_html(self):
+        # Note: puremagic fails here. We determined it manually in python.
         self.doit("test.html", "text/html")
 
     def test_hwp(self):
