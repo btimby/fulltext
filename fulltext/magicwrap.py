@@ -30,13 +30,8 @@ def guess_header(header):
         return head.startswith(b"<!doctype html") or \
             head.startswith(b"<!doctype xhtml")
 
-    def is_empty():
-        return not header.strip()
-
     if is_html():
         return "text/html"
-    if is_empty():
-        return "text/plain"
 
     return DEFAULT_MIME
 
@@ -82,7 +77,7 @@ class PuremagicWrapper:
             raise ValueError("mime=False arg is not supported")
         if not header:
             # ...or else puremagic throws ValueError
-            return "text/plain"
+            return "application/octet-stream"
         try:
             ret = puremagic.from_string(header, mime=True)
         except puremagic.PureError:
