@@ -175,14 +175,9 @@ def assert_cmd_exists(cmd):
         raise MissingCommandException(cmd)
 
 
-if not is_windows():
-    # On linux things are simpler. Linter disabled for next line since we
-    # import here for export.
-    import magic  # NOQA
-else:
+if is_windows():
     def _set_binpath():
-        # Help the magic wrapper locate magic1.dll, we include it in
-        # bin/bin{32,64}.
+        # Add bin32|64 dir within .exe files to PATH.
         path = get_bin_dir()
         os.environ['PATH'] += os.pathsep + path
         assert_cmd_exists("pdftotext")
@@ -191,27 +186,6 @@ else:
         assert_cmd_exists("unrar")
 
     _set_binpath()
-    magic = None
-
-    # def _import_magic():
-    #     # Instantiate our own Magic instance so we can tell it where the
-    #     # magic file lives.
-    #     from magic import Magic as _Magic
-
-    #     class Magic(_Magic):
-    #         # Overridden because differently from the UNIX version
-    #         # the Windows version does not provide mime kwarg.
-    #         def from_file(self, filename, mime=True):
-    #             return _Magic.from_file(self, filename)
-
-    #         def from_buffer(self, buf, mime=True):
-    #             return _Magic.from_buffer(self, buf)
-
-    #     path = pathjoin(get_bin_dir(), 'magic')
-    #     assert os.path.isfile(path), path
-    #     return Magic(mime=True, magic_file=path)
-
-    # magic = _import_magic()
 
 
 def memoize(fun):
