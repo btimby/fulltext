@@ -22,23 +22,36 @@ class MagicWrapper:
 
     @staticmethod
     def from_file(fname, mime=True):
-        assert mime, "mime=False arg is not supported"
+        if not mime:
+            raise ValueError("mime=False arg is not supported")
         ret = _mime_from_fname(fname)
         if not ret:
             ret = _magic.from_file(fname, mime=True)
         return ret
 
     @staticmethod
-    def from_buffer(buffer, mime=True):
-        assert mime, "mime=False arg is not supported"
-        return _magic.from_buffer(buffer, mime=True)
+    def from_buffer(header, mime=True):
+        if not mime:
+            raise ValueError("mime=False arg is not supported")
+        return _magic.from_buffer(header, mime=True)
 
 
 class PuremagicWrapper:
 
     @staticmethod
+    def _is_html(header):
+        return header[:50].strip().lower().startswith(b"<!doctype html")
+
+    @staticmethod
+    def _guess_it(header):
+        if PuremagicWrapper._is_html(header):
+            return "text/html"
+        return DEFAULT_MIME
+
+    @staticmethod
     def from_file(fname, mime=True):
-        assert mime, "mime=False arg is not supported"
+        if not mime:
+            raise ValueError("mime=False arg is not supported")
         ret = _mime_from_fname(fname)
         if not ret:
             try:
@@ -51,15 +64,18 @@ class PuremagicWrapper:
         return ret
 
     @staticmethod
-    def from_buffer(buffer, mime=True):
-        assert mime, "mime=False arg is not supported"
+    def from_buffer(header, mime=True):
+        if not mime:
+            raise ValueError("mime=False arg is not supported")
         try:
-            ret = puremagic.from_string(buffer, mime=True)
+            ret = puremagic.from_string(header, mime=True)
         except puremagic.PureError:
-            return DEFAULT_MIME
+            ret = PuremagicWrapper._guess_it(header)
         else:
             if not ret:
-                ret = DEFAULT_MIME
+                ret = PuremagicWrapper._guess_it(header)
+        if ret == "application/octet-stream":
+            ret = PuremagicWrapper._guess_it(header)
         return ret
 
 
