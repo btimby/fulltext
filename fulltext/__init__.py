@@ -11,12 +11,12 @@ from os.path import splitext
 from six import string_types
 from six import PY3
 import fulltext.mimewrap
+from fulltext.magicwrap import magic
 from fulltext.mimewrap import ext_to_mimetype
 from fulltext.mimewrap import mimetype_to_backend
 from fulltext.util import fobj_to_tempfile
 from fulltext.util import is_file_path
 from fulltext.util import is_windows
-from fulltext.util import magic
 from fulltext.util import warn
 
 
