@@ -918,10 +918,15 @@ class TestTitle(BaseTestCase):
 # ===================================================================
 
 
-class _BaseExtTests(object):
+class TestMagicFromFileExt(object):
+    puremagic = False
 
     def magic_from_file(self, fname):
-        raise NotImplementedError("must be implemented in subclass")
+        if self.puremagic:
+            magic = PuremagicWrapper()
+        else:
+            magic = MagicWrapper()
+        return magic.from_file(fname, mime=True)
 
     def doit(self, basename, mime):
         fname = pathjoin(HERE, "files", basename)
@@ -1002,18 +1007,12 @@ class _BaseExtTests(object):
 
 
 @unittest.skipIf(WINDOWS, "libmagic not available on Windows")
-class TestMagicFromFileExt(BaseTestCase, _BaseExtTests):
-
-    def magic_from_file(self, fname):
-        magic = MagicWrapper()
-        return magic.from_file(fname, mime=True)
+class TestMagicFromFileExt(TestMagicFromFileExt, BaseTestCase):
+    puremagic = False
 
 
-class TestPureMagicFromFileExt(BaseTestCase, _BaseExtTests):
-
-    def magic_from_file(self, fname):
-        magic = PuremagicWrapper()
-        return magic.from_file(fname, mime=True)
+class TestPureMagicFromFileExt(TestMagicFromFileExt, BaseTestCase):
+    puremagic = True
 
 
 # ===================================================================
