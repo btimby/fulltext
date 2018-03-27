@@ -20,21 +20,23 @@ def _mime_from_fname(fname):
 
 class MagicWrapper:
 
-    def from_file(self, fname, mime=True):
+    @staticmethod
+    def from_file(fname, mime=True):
         assert mime, "mime=False arg is not supported"
         ret = _mime_from_fname(fname)
         if not ret:
             ret = _magic.from_file(fname, mime=True)
         return ret
 
-    def from_buffer(self, buffer, mime=True):
+    @staticmethod
+    def from_buffer(buffer, mime=True):
         assert mime, "mime=False arg is not supported"
         return _magic.from_buffer(buffer, mime=True)
 
-
 class PuremagicWrapper:
 
-    def from_file(self, fname, mime=True):
+    @staticmethod
+    def from_file(fname, mime=True):
         assert mime, "mime=False arg is not supported"
         ret = _mime_from_fname(fname)
         if not ret:
@@ -47,7 +49,8 @@ class PuremagicWrapper:
                     ret = DEFAULT_MIME
         return ret
 
-    def from_buffer(self, buffer, mime=True):
+    @staticmethod
+    def from_buffer(buffer, mime=True):
         assert mime, "mime=False arg is not supported"
         try:
             ret = puremagic.from_string(buffer, mime=True)

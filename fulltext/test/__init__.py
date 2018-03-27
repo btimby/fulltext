@@ -1043,85 +1043,142 @@ class _TestMagicFromFileContentBase(object):
             raise TypeError(str(mime))
 
     def test_csv(self):
-        self.doit("test.csv", "text/plain")
+        if not self.puremagic:
+            self.doit("test.csv", "text/plain")
+        else:
+            self.doit("test.csv", "application/octet-stream")
 
     def test_doc(self):
-        self.doit("test.doc", ["application/CDFV2-unknown",
-                               "application/CDFV2-corrupt"])
+        if not self.puremagic:
+            self.doit("test.doc", ["application/CDFV2-unknown",
+                                   "application/CDFV2-corrupt"])
+        else:
+            self.doit("test.doc", "application/msword")
 
     def test_docx(self):
-        self.doit(
-            "test.docx", "application/zip")  # NOQA
+        if not self.puremagic:
+            self.doit("test.docx", "application/zip")
+        else:
+            self.doit("test.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")  # NOQA
 
     def test_eml(self):
-        self.doit("test.eml", "text/plain")
+        if not self.puremagic:
+            self.doit("test.eml", "text/plain")
+        else:
+            self.doit("test.eml", "application/octet-stream")
 
     def test_epub(self):
-        self.doit("test.epub", "application/epub+zip")
+        if not self.puremagic:
+            self.doit("test.epub", "application/epub+zip")
+        else:
+            self.doit("test.epub", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")  # NOQA
 
     def test_gz(self):
-        self.doit("test.gz", "application/gzip")
+        self.doit("test.gz", ["application/gzip", "application/x-gzip"])
 
     def test_html(self):
-        self.doit("test.html", "text/html")
+        if not self.puremagic:
+            self.doit("test.html", "text/html")
+        else:
+            self.doit("test.html", "application/octet-stream")
 
     def test_hwp(self):
-        self.doit("test.hwp", ["application/CDFV2-unknown",
-                               "application/CDFV2-corrupt"])
+        if not self.puremagic:
+            self.doit("test.hwp", ["application/CDFV2-unknown",
+                                   "application/CDFV2-corrupt"])
+        else:
+            self.doit("test.hwp", "application/msword")
 
     def test_json(self):
-        self.doit("test.json", "text/plain")
+        if not self.puremagic:
+            self.doit("test.json", "text/plain")
+        else:
+            self.doit("test.json", "application/octet-stream")
 
     def test_mbox(self):
-        self.doit("test.mbox", "text/plain")
+        if not self.puremagic:
+            self.doit("test.mbox", "text/plain")
+        else:
+            self.doit("test.mbox", "application/mbox")
 
     def test_ods(self):
-        self.doit("test.ods", "application/vnd.oasis.opendocument.spreadsheet")
+        if not self.puremagic:
+            self.doit("test.ods", "application/vnd.oasis.opendocument.spreadsheet")
+        else:
+            self.doit("test.ods", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")  # NOQA
 
     def test_odt(self):
-        self.doit("test.ods", "application/vnd.oasis.opendocument.spreadsheet")
+        if not self.puremagic:
+            self.doit("test.odt", "application/vnd.oasis.opendocument.text")
+        else:
+            self.doit("test.odt", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")  # NOQA
 
     def test_pptx(self):
-        self.doit(
-            "others/test.pptx",
-            ["application/vnd.openxmlformats-officedocument.presentationml.presentation", "application/zip"])  # NOQA
+        if not self.puremagic:
+            self.doit(
+                "others/test.pptx",
+                ["application/vnd.openxmlformats-officedocument.presentationml.presentation", "application/zip"])  # NOQA
+        else:
+            self.doit("others/test.pptx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")  # NOQA
 
     def test_pdf(self):
         self.doit("test.pdf", "application/pdf")
 
     def test_psv(self):
-        self.doit("test.psv", "text/plain")
+        if not self.puremagic:
+            self.doit("test.psv", "text/plain")
+        else:
+            self.doit("test.psv", "application/octet-stream")
 
     def test_rar(self):
-        self.doit("test.rar", "application/x-rar")
+        self.doit("test.rar", ["application/x-rar",
+                               "application/x-rar-compressed"])
 
     def test_rtf(self):
-        self.doit("test.rtf", "text/rtf")
+        if not self.puremagic:
+            self.doit("test.rtf", "text/rtf")
+        else:
+            self.doit("test.rtf", "application/x-ipynb+json")
 
     def test_tsv(self):
-        self.doit("test.tsv", "text/plain")
+        if not self.puremagic:
+            self.doit("test.tsv", "text/plain")
+        else:
+            self.doit("test.tsv", "application/octet-stream")
 
     def test_xls(self):
-        self.doit("test.xls", ["application/CDFV2-unknown",
-                               "application/CDFV2-corrupt"])
+        if not self.puremagic:
+            self.doit("test.xls", ["application/CDFV2-unknown",
+                                   "application/CDFV2-corrupt"])
+        else:
+            self.doit("test.xls", "application/msword")
 
     def test_xlsx(self):
-        self.doit("test.xlsx", "application/octet-stream")
+        if not self.puremagic:
+            self.doit("test.xlsx", "application/octet-stream")  # NOQA
+        else:
+            self.doit("test.xlsx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")  # NOQA
 
     def test_xml(self):
-        self.doit("test.xml", ["application/xml", "application/zip"])
+        if not self.puremagic:
+            self.doit("test.xml", ["application/xml", "application/zip"])
+        else:
+            self.doit("test.xml", "application/octet-stream")
 
     def test_zip(self):
-        self.doit("test.zip", "application/zip")
+        if not self.puremagic:
+            self.doit("test.zip", "application/zip")
+        else:
+            self.doit("test.zip", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")  # NOQA
 
 
 @unittest.skipIf(WINDOWS, "libmagic not available on Windows")
-class TestMagicFromFileContent(_TestMagicFromFileExtBase, BaseTestCase):
+class TestMagicFromFileContent(_TestMagicFromFileContentBase, BaseTestCase):
     puremagic = False
 
 
-# class TestPureMagicFromFileContent(_TestMagicFromFileExtBase, BaseTestCase):
-#     puremagic = True
+class TestPureMagicFromFileContent(_TestMagicFromFileContentBase, BaseTestCase):
+    puremagic = True
 
 
 def main():
