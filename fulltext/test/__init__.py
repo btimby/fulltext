@@ -1155,7 +1155,8 @@ class _TestMagicFromFileContentBase(object):
 
     def test_xlsx(self):
         if not self.puremagic:
-            self.doit("test.xlsx", "application/octet-stream")  # NOQA
+            self.doit("test.xlsx", ["application/octet-stream",
+                                    "application/zip"])
         else:
             self.doit("test.xlsx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")  # NOQA
 
