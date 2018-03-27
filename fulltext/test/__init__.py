@@ -918,7 +918,7 @@ class TestTitle(BaseTestCase):
 # ===================================================================
 
 
-class TestMagicFromFileExt(object):
+class _TestMagicFromFileExtBase(object):
     puremagic = False
 
     def magic_from_file(self, fname):
@@ -1007,11 +1007,11 @@ class TestMagicFromFileExt(object):
 
 
 @unittest.skipIf(WINDOWS, "libmagic not available on Windows")
-class TestMagicFromFileExt(TestMagicFromFileExt, BaseTestCase):
+class TestMagicFromFileExt(_TestMagicFromFileExtBase, BaseTestCase):
     puremagic = False
 
 
-class TestPureMagicFromFileExt(TestMagicFromFileExt, BaseTestCase):
+class TestPureMagicFromFileExt(_TestMagicFromFileExtBase, BaseTestCase):
     puremagic = True
 
 
@@ -1020,7 +1020,7 @@ class TestPureMagicFromFileExt(TestMagicFromFileExt, BaseTestCase):
 # ===================================================================
 
 
-class _BaseFromFileContentTests(object):
+class _TestMagicFromFileContentBase(object):
     puremagic = False
 
     def magic_from_buffer(self, chunk):
@@ -1116,15 +1116,12 @@ class _BaseFromFileContentTests(object):
 
 
 @unittest.skipIf(WINDOWS, "libmagic not available on Windows")
-class TestMagicFromFileContent(BaseTestCase, _BaseFromFileContentTests):
+class TestMagicFromFileContent(_TestMagicFromFileExtBase, BaseTestCase):
     puremagic = False
 
 
-# class TestPuremagicFromFileContent(BaseTestCase, _BaseFromFileContentTests):
-
-#     def magic_from_buffer(self, buffer):
-#         magic = PuremagicWrapper()
-#         return magic.from_buffer(buffer, mime=True)
+# class TestPureMagicFromFileContent(_TestMagicFromFileExtBase, BaseTestCase):
+#     puremagic = True
 
 
 def main():
