@@ -135,7 +135,10 @@ def warn(msg):
 
 def is_windows():
     """True if the platform is Windows."""
-    return 'win' in sys.platform
+    if sys.platform != 'darwin':  # aplle osx is not windows
+        return 'win' in sys.platform
+    else:
+        return False
 
 
 def is_windows64():
