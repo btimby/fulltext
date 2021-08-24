@@ -136,7 +136,7 @@ def warn(msg):
 
 def is_windows():
     """True if the platform is Windows."""
-    return 'win' in sys.platform
+    return os.name == 'nt'
 
 
 def is_python_64():
