@@ -688,7 +688,7 @@ class TestEncodingGeneric(BaseTestCase):
 @unittest.skipIf(WINDOWS, "not supported on Windows")
 class TestUnicodeBase(object):
     ext = None
-    italian = u"ciao bella àèìòù "
+    italian = u"ciao bella àèìòù"
     japanese = u"かいおうせい海王星"
     invalid = u"helloworld"
 

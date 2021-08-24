@@ -20,7 +20,6 @@ RUN apt-get update && \
 COPY . $HOME
 RUN pip install -r $HOME/requirements.txt && pip install $HOME/.
 
-#COPY . $HOME
 
 EXPOSE 8000
 EXPOSE 8080

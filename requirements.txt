@@ -13,6 +13,8 @@ contextlib2~=21.6.0
 mock~=4.0.3
 rarfile~=4.0
 openpyxl~=3.0.7
+requests~=2.25.1
+
 
 git+https://github.com/mattgwwalker/msg-extractor.git@2a24c9950d34932ed5979693cb70d758d78715df#egg=ExtractMsg
 

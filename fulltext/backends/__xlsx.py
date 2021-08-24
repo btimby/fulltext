@@ -28,11 +28,10 @@ class Backend(BaseBackend):
                         text.write(u'\t')
                 text.write(u'\n')
         return text.getvalue()
-    
+
     def handle_path(self, path):
         with open(path, 'rb') as fin:
             return self.handle_fobj(fin)
 
     def handle_title(self, f):
         return exiftool_title(f, self.encoding, self.encoding_errors)
-    

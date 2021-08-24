@@ -6,13 +6,18 @@ import logging
 import os
 import mimetypes
 import sys
+import tempfile
 
 from os.path import splitext
 
 from six import string_types
 from six import PY3
+from six.moves.urllib.parse import urlparse, unquote_plus
+import requests
 from fulltext.util import warn
 from fulltext.util import magic
+from fulltext.util import is_url
+from fulltext.util import URLHandleError
 from fulltext.util import is_file_path
 from fulltext.util import fobj_to_tempfile
 from fulltext.util import is_windows
@@ -24,7 +29,8 @@ __all__ = ["get", "register_backend"]
 
 ENCODING = sys.getfilesystemencoding()
 ENCODING_ERRORS = "strict"
-DEFAULT_MIME = 'application/octet-stream'
+# DEFAULT_MIME = 'application/octet-stream'
+DEFAULT_MIME = '[custome-fulltext-mime]/null'
 
 # --- others
 
@@ -35,6 +41,7 @@ SENTINAL = object()
 MIMETYPE_TO_BACKENDS = {}
 EXTS_TO_MIMETYPES = {}
 MAGIC_BUFFER_SIZE = 1024
+MAX_URL_CONTENT_LENGTH = 1024 * 1024 * 100  # 100MB
 
 mimetypes.init()
 _MIMETYPES_TO_EXT = dict([(v, k) for k, v in mimetypes.types_map.items()])
@@ -127,7 +134,7 @@ if is_windows() and hasattr(sys, '_MEIPASS'):
     from fulltext.backends import __rar  # NOQA
     from fulltext.backends import __rtf  # NOQA
     from fulltext.backends import __text  # NOQA
-    from fulltext.backends import __xls  # NOQA    
+    from fulltext.backends import __xls  # NOQA
     from fulltext.backends import __xlsx  # NOQA
     from fulltext.backends import __xml  # NOQA
     from fulltext.backends import __zip  # NOQA
@@ -296,10 +303,15 @@ register_backend(
     extensions=['.json'])
 
 # default backend.
+# register_backend(
+#     'application/octet-stream',
+#     'fulltext.backends.__bin',
+#     extensions=['.a', '.bin'])
 register_backend(
-    'application/octet-stream',
-    'fulltext.backends.__bin',
-    extensions=['.a', '.bin'])
+    '[custome-fulltext-mime]/null',
+    'fulltext.backends.__null',
+    extensions=['.ppt'])
+
 
 # Extensions which will be treated as pure text.
 # We just come up with a custom mime name.
@@ -384,7 +396,6 @@ def handle_fobj(backend, f, **kwargs):
     backend's `handle_fobj()` if one is provided. Otherwise, it will write the
     data to a temporary file and call `handle_path()`.
     """
-    print(f)
     if not is_binary(f):
         raise AssertionError('File must be opened in binary mode.')
 
@@ -404,7 +415,6 @@ def handle_fobj(backend, f, **kwargs):
         if 'ext' in kwargs:
             ext = '.' + kwargs['ext']
         with fobj_to_tempfile(f, suffix=ext) as fname:
-            print('!!!!!!!!!!!!!', ext, fname)
             return backend.handle_path(fname, **kwargs)
     else:
         raise AssertionError(
@@ -509,6 +519,47 @@ def backend_inst_from_mod(mod, encoding, encoding_errors, kwargs):
     return inst
 
 
+def get_url_info(url):
+    url = url.strip()
+    try:
+        res = requests.head(url)
+    except Exception as e:
+        warn("can't read %r. " % url)
+        raise URLHandleError(url, msg=(
+            'cannot get the header information from %(url)s.'
+        ) % {'url': url})
+    if res.status_code // 100 != 2:
+        warn("can't read %r" % url)
+        raise URLHandleError(url, msg=(
+            'cannot get the header information from %(url)s.'
+            '%(reason)s'
+        ) % {'url': url, 'reason': res.reason})
+    headers = {key.lower(): val for key, val in res.headers.items()}
+    content_type = headers.get('content-type')
+    if content_type:
+        mime = content_type.split(';')[0].strip()
+    else:
+        mime = None
+    content_length = headers.get('content-length')
+    content_length = int(content_length) if isinstance(content_length, str) else None
+    if content_length is not None and content_length >= MAX_URL_CONTENT_LENGTH:
+        raise URLHandleError(url, msg='content length %d is too long (>= %d)' % (
+            content_length, MAX_URL_CONTENT_LENGTH
+        ))
+    parsed = urlparse(url)
+    if parsed.path.endswith('/'):
+        name = None
+    else:
+        name = unquote_plus(parsed.path.split('/')[-1])
+    content = requests.get(url).content
+    return {
+        'content-type': mime,
+        'content-length': content_length,
+        'name': name,
+        'content': content,
+    }
+
+
 # =====================================================================
 # --- public API
 # =====================================================================
@@ -572,13 +623,13 @@ def _get(path_or_file, default, mime, name, backend, encoding,
     return (text, title)
 
 
-def get(path_or_file, default=SENTINAL, mime=None, name=None, backend=None,
+def get(path_or_file_or_url, default=SENTINAL, mime=None, name=None, backend=None,
         encoding=None, encoding_errors=None, kwargs=None,
         _wtitle=False):
     """
     Get document full text.
 
-    Accepts a path or file-like object.
+    Accepts a path, file-like object or url.
      * If given, `default` is returned instead of an error.
      * `backend` is either a module object or a string specifying which
        default backend to use (e.g. "doc"); take a look at backends
@@ -592,20 +643,40 @@ def get(path_or_file, default=SENTINAL, mime=None, name=None, backend=None,
        Default to "utf8" and "strict" respectively.
      * `kwargs` are passed to the underlying backend.
     """
-    try:
-        text, title = _get(
-            path_or_file, default=default, mime=mime, name=name,
-            backend=backend, kwargs=kwargs, encoding=encoding,
-            encoding_errors=encoding_errors, _wtitle=_wtitle)
-        if _wtitle:
-            return (text, title)
-        else:
-            return text
-    except Exception as e:
-        if default is not SENTINAL:
-            LOGGER.exception(e)
-            return default
-        raise
+
+    def process(path_or_file, mime):
+        try:
+            text, title = _get(
+                path_or_file, default=default, mime=mime, name=name,
+                backend=backend, kwargs=kwargs, encoding=encoding,
+                encoding_errors=encoding_errors, _wtitle=_wtitle)
+            if _wtitle:
+                return (text, title)
+            else:
+                return text
+        except Exception as e:
+            if default is not SENTINAL:
+                LOGGER.exception(e)
+                return default
+            raise
+
+    if is_url(path_or_file_or_url):
+        url = path_or_file_or_url
+        info = get_url_info(url)
+        content = info.get('content')
+        if mime is None:
+            mime = info.get('content-type')
+        _, temp_file = tempfile.mkstemp()
+        try:
+            with open(temp_file, 'wb') as fin:
+                fin.write(content)
+            with open('/home/foo.pdf', 'wb') as fin:
+                fin.write(content)
+            return process(temp_file, mime)
+        finally:
+            os.remove(temp_file)
+    else:
+        return process(path_or_file_or_url, mime)
 
 
 def get_with_title(*args, **kwargs):
