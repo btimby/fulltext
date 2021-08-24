@@ -16,11 +16,11 @@ from os.path import join as pathjoin
 import codecs
 import difflib
 import textwrap
-import warnings
 
 import fulltext
 from fulltext.util import is_windows
-from fulltext.util import magic
+from fulltext.magicwrap import MagicWrapper
+from fulltext.magicwrap import PuremagicWrapper
 from fulltext.util import exiftool
 from fulltext.compat import which
 
@@ -225,7 +225,8 @@ class TestCLI(BaseTestCase):
                 # On Windows we expect a bunch of backends not to work.
                 # XXX maybe this is too strict.
                 lines = [x.split(':')[0] for x in
-                         sorted(err.decode().splitlines())]
+                         sorted(err.decode().splitlines())
+                         if x.split(':')[0].startswith('fulltext.')]
                 self.assertEqual(
                     lines,
                     ['fulltext.backends.__doc',
@@ -300,21 +301,6 @@ class TestBackendInterface(BaseTestCase):
 
 class TestInstalledDeps(BaseTestCase):
     """Make sure certain deps are installed."""
-
-    @unittest.skipIf(APPVEYOR, "AppVeyor can't detect magic")
-    def test_magic(self):
-        self.assertIsNotNone(magic)
-
-    @unittest.skipIf(WINDOWS and magic is None, "magic lib not installed")
-    def test_no_magic(self):
-        # Emulate a case where magic lib is not installed.
-        f = self.touch_fobj(content=b"hello world")
-        f.seek(0)
-        with mock.patch("fulltext.magic", None):
-            with warnings.catch_warnings(record=True) as ws:
-                mod = fulltext.backend_from_fobj(f)
-            self.assertIn("magic lib is not installed", str(ws[0].message))
-            self.assertEqual(mod.__name__, 'fulltext.backends.__bin')
 
     def test_exiftool(self):
         self.assertIsNotNone(exiftool)
@@ -639,7 +625,6 @@ class TestGuessingFromFileContent(BaseTestCase):
     from its content.
     """
 
-    @unittest.skipIf(WINDOWS and magic is None, "magic is not installed")
     def test_pdf(self):
         fname = "file-noext"
         with open(pathjoin(HERE, 'files/test.pdf'), 'rb') as f:
@@ -923,6 +908,275 @@ class TestTitle(BaseTestCase):
         fname = pathjoin(HERE, "files/others/test.xlsx")
         self.assertEqual(
             fulltext.get_with_title(fname)[1], 'yo man!')
+
+
+# ===================================================================
+# --- Test magic from file ext
+# ===================================================================
+
+
+class _TestMagicFromFileExtBase(object):
+    puremagic = False
+
+    def magic_from_file(self, fname):
+        if self.puremagic:
+            magic = PuremagicWrapper()
+        else:
+            magic = MagicWrapper()
+        return magic.from_file(fname, mime=True)
+
+    def doit(self, basename, mime):
+        fname = pathjoin(HERE, "files", basename)
+        magic_mime = self.magic_from_file(fname)
+        self.assertEqual(magic_mime, mime)
+
+    def test_csv(self):
+        self.doit("test.csv", "text/csv")
+
+    def test_doc(self):
+        self.doit("test.doc", "application/msword")
+
+    def test_docx(self):
+        self.doit(
+            "test.docx",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document")  # NOQA
+
+    def test_eml(self):
+        self.doit("test.eml", "message/rfc822")
+
+    def test_epub(self):
+        self.doit("test.epub", "application/epub+zip")
+
+    def test_gz(self):
+        self.doit("test.gz", "application/gzip")
+
+    def test_html(self):
+        self.doit("test.html", "text/xhtml")
+
+    def test_hwp(self):
+        self.doit("test.hwp", "application/x-hwp")
+
+    def test_json(self):
+        self.doit("test.json", "application/json")
+
+    def test_mbox(self):
+        self.doit("test.mbox", "application/mbox")
+
+    def test_ods(self):
+        self.doit("test.ods", "application/vnd.oasis.opendocument.spreadsheet")
+
+    def test_odt(self):
+        self.doit("test.ods", "application/vnd.oasis.opendocument.spreadsheet")
+
+    def test_pptx(self):
+        self.doit(
+            "others/test.pptx",
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation")  # NOQA
+
+    def test_pdf(self):
+        self.doit("test.pdf", "application/pdf")
+
+    def test_psv(self):
+        self.doit("test.psv", "text/csv")
+
+    def test_rar(self):
+        self.doit("test.rar", "application/x-rar-compressed")
+
+    def test_rtf(self):
+        self.doit("test.rtf", "application/rtf")
+
+    def test_tsv(self):
+        self.doit("test.tsv", "text/csv")
+
+    def test_xls(self):
+        self.doit("test.xls", "application/vnd.ms-excel")
+
+    def test_xlsx(self):
+        self.doit(
+            "test.xlsx",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")  # NOQA
+
+    def test_xml(self):
+        self.doit("test.xml", "application/x-xml")
+
+    def test_zip(self):
+        self.doit("test.zip", "application/zip")
+
+
+@unittest.skipIf(WINDOWS, "libmagic not available on Windows")
+class TestMagicFromFileExt(_TestMagicFromFileExtBase, BaseTestCase):
+    puremagic = False
+
+
+class TestPureMagicFromFileExt(_TestMagicFromFileExtBase, BaseTestCase):
+    puremagic = True
+
+
+# ===================================================================
+# --- Test magic from file content
+# ===================================================================
+
+
+class _TestMagicFromFileContentBase(object):
+    puremagic = False
+
+    def magic_from_buffer(self, chunk):
+        if self.puremagic:
+            magic = PuremagicWrapper()
+        else:
+            magic = MagicWrapper()
+        return magic.from_buffer(chunk, mime=True)
+
+    def doit(self, basename, mime):
+        fname = pathjoin(HERE, "files", basename)
+        with open(fname, "rb") as f:
+            chunk = f.read(2048)
+        magic_mime = self.magic_from_buffer(chunk)
+        if isinstance(mime, str):
+            self.assertEqual(magic_mime, mime)
+        elif isinstance(mime, (list, tuple)):
+            self.assertIn(magic_mime, mime)
+        else:
+            raise TypeError(str(mime))
+
+    def test_csv(self):
+        if not self.puremagic:
+            self.doit("test.csv", "text/plain")
+        else:
+            self.doit("test.csv", "application/octet-stream")
+
+    def test_doc(self):
+        if not self.puremagic:
+            self.doit("test.doc", ["application/CDFV2-unknown",
+                                   "application/CDFV2-corrupt"])
+        else:
+            self.doit("test.doc", "application/msword")
+
+    def test_docx(self):
+        if not self.puremagic:
+            self.doit("test.docx", "application/zip")
+        else:
+            self.doit("test.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")  # NOQA
+
+    def test_eml(self):
+        if not self.puremagic:
+            self.doit("test.eml", "text/plain")
+        else:
+            self.doit("test.eml", "application/octet-stream")
+
+    def test_epub(self):
+        if not self.puremagic:
+            self.doit("test.epub", "application/epub+zip")
+        else:
+            self.doit("test.epub", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")  # NOQA
+
+    def test_gz(self):
+        self.doit("test.gz", ["application/gzip", "application/x-gzip"])
+
+    def test_html(self):
+        # Note: puremagic fails here. We determined it manually in python.
+        self.doit("test.html", "text/html")
+
+    def test_hwp(self):
+        if not self.puremagic:
+            self.doit("test.hwp", ["application/CDFV2-unknown",
+                                   "application/CDFV2-corrupt"])
+        else:
+            self.doit("test.hwp", "application/msword")
+
+    def test_json(self):
+        if not self.puremagic:
+            self.doit("test.json", "text/plain")
+        else:
+            self.doit("test.json", "application/octet-stream")
+
+    def test_mbox(self):
+        if not self.puremagic:
+            self.doit("test.mbox", "text/plain")
+        else:
+            self.doit("test.mbox", "application/mbox")
+
+    def test_ods(self):
+        if not self.puremagic:
+            self.doit("test.ods", "application/vnd.oasis.opendocument.spreadsheet")  # NOQA
+        else:
+            self.doit("test.ods", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")  # NOQA
+
+    def test_odt(self):
+        if not self.puremagic:
+            self.doit("test.odt", "application/vnd.oasis.opendocument.text")
+        else:
+            self.doit("test.odt", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")  # NOQA
+
+    def test_pptx(self):
+        if not self.puremagic:
+            self.doit(
+                "others/test.pptx",
+                ["application/vnd.openxmlformats-officedocument.presentationml.presentation", "application/zip"])  # NOQA
+        else:
+            self.doit("others/test.pptx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")  # NOQA
+
+    @unittest.skipIf(APPVEYOR, "fails on appveyor")
+    def test_pdf(self):
+        self.doit("test.pdf", "application/pdf")
+
+    def test_psv(self):
+        if not self.puremagic:
+            self.doit("test.psv", "text/plain")
+        else:
+            self.doit("test.psv", "application/octet-stream")
+
+    def test_rar(self):
+        self.doit("test.rar", ["application/x-rar",
+                               "application/x-rar-compressed"])
+
+    def test_rtf(self):
+        if not self.puremagic:
+            self.doit("test.rtf", "text/rtf")
+        else:
+            self.doit("test.rtf", "application/x-ipynb+json")
+
+    def test_tsv(self):
+        if not self.puremagic:
+            self.doit("test.tsv", "text/plain")
+        else:
+            self.doit("test.tsv", "application/octet-stream")
+
+    def test_xls(self):
+        if not self.puremagic:
+            self.doit("test.xls", ["application/CDFV2-unknown",
+                                   "application/CDFV2-corrupt"])
+        else:
+            self.doit("test.xls", "application/msword")
+
+    def test_xlsx(self):
+        if not self.puremagic:
+            self.doit("test.xlsx", ["application/octet-stream",
+                                    "application/zip"])
+        else:
+            self.doit("test.xlsx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")  # NOQA
+
+    def test_xml(self):
+        if not self.puremagic:
+            self.doit("test.xml", ["application/xml", "application/zip"])
+        else:
+            self.doit("test.xml", "application/octet-stream")
+
+    def test_zip(self):
+        if not self.puremagic:
+            self.doit("test.zip", "application/zip")
+        else:
+            self.doit("test.zip", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")  # NOQA
+
+
+@unittest.skipIf(WINDOWS, "libmagic not available on Windows")
+class TestMagicFromFileContent(_TestMagicFromFileContentBase, BaseTestCase):
+    puremagic = False
+
+
+class TestPureMagicFromFileContent(_TestMagicFromFileContentBase,
+                                   BaseTestCase):
+    puremagic = True
 
 
 def main():
