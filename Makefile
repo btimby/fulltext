@@ -27,6 +27,7 @@ test:  ## Run tests.
 ci:  ## Run CI tests.
 	${MAKE} sysdeps
 	${MAKE} pydeps
+	${MAKE} install
 	${MAKE} test
 	${MAKE} lint
 
