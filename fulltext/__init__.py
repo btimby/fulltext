@@ -213,6 +213,11 @@ register_backend(
     extensions=['.pptx'])
 
 register_backend(
+    'application/vnd.ms-powerpoint',
+    'fulltext.backends.__null',
+    extensions=['.ppt'])
+
+register_backend(
     'application/pdf',
     'fulltext.backends.__pdf',
     extensions=['.pdf'])
@@ -523,7 +528,11 @@ def get_url_info(url):
             '%(reason)s'
         ) % {'url': url, 'reason': res.reason})
     headers = {key.lower(): val for key, val in res.headers.items()}
-    mime = headers.get('content-type')
+    content_type = headers.get('content-type')
+    if content_type:
+        mime = content_type.split(';')[0].strip()
+    else:
+        mime = None
     content_length = headers.get('content-length')
     content_length = int(content_length) if isinstance(content_length, str) else None
     if content_length is not None and content_length >= MAX_URL_CONTENT_LENGTH:
