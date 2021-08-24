@@ -17,8 +17,8 @@ SYSDEPS = \
 	python3-dev \
 	python-pip \
 	python3-pip
-
 TEST_PREFIX = PYTHONWARNINGS=all FULLTEXT_TESTING=1
+PASSWORD ?=
 
 test:  ## Run tests.
 	${MAKE} install-git-hooks
@@ -46,10 +46,6 @@ sysdeps:  ## Install system deps (Ubuntu).
 	sudo apt-get install -y $(SYSDEPS)
 	sudo apt-get install python
 	sudo pip2 install --pre --upgrade pyhwp
-
-publish:  ## Upload package on PYPI.
-	$(PYTHON) setup.py register
-	$(PYTHON) setup.py sdist upload
 
 clean:  ## Remove all build files.
 	rm -rf `find . -type d -name __pycache__ \
@@ -81,3 +77,30 @@ install-git-hooks:  ## Install GIT pre-commit hook.
 
 help: ## Display callable targets.
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
+
+# --- distribution
+
+sdist:  ## Create a tar.gz distribution.
+	$(PYTHON) setup.py sdist
+	$(PYTHON) setup.py --version
+
+priv-pypi-upload:  ## Upload source distribution on private PYPI repo.
+	# Note: to reference the uploaded distribution, requirements.txt will
+	# need an entry like this:
+	#   --extra-index-url http://pypi.dev.veristack.com/root/veristack-fulltext/+simple/
+	#   fulltext==0.8.315.b00117c
+	${MAKE} sdist
+	venv/bin/pip install devpi-client
+ifndef PASSWORD
+	venv/bin/python -m devpi login root
+else
+	venv/bin/python -m devpi login root --password=$(PASSWORD)
+endif
+	# Create index (done once)
+	# venv/bin/python -m devpi index --create root/veristack-fulltext
+	venv/bin/python -m devpi use http://pypi.dev.veristack.com/root/veristack-fulltext
+	venv/bin/python -m devpi upload -v dist/fulltext-`$(PYTHON) setup.py --version`.tar.gz
+
+publish:  ## Upload package on PYPI.
+	$(PYTHON) setup.py register
+	$(PYTHON) setup.py sdist upload

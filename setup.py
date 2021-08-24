@@ -2,6 +2,7 @@
 
 import os
 import sys
+import subprocess
 from os.path import dirname
 from os.path import join as pathjoin
 from setuptools import find_packages
@@ -9,7 +10,21 @@ from setuptools import setup
 
 
 NAME = 'fulltext'
-VERSION = '0.7'
+if os.path.isdir('.git'):
+    # Version is "0.X.{num-commits}.{short-git-hash}",
+    # e.g. "pkg-0.2.102.3de9bd2".
+    _gitcount = subprocess.check_output(
+        "git rev-list --count --first-parent HEAD",
+        shell=True).strip().decode()
+    _githash = subprocess.check_output(
+        "git rev-parse --short HEAD", shell=True).strip().decode()
+    VERSION = "0.8+0.%s.%s" % (_gitcount, _githash)
+else:
+    # This is here mainly for testing the .tar.gz distribution which
+    # has no .git directory.  Distros published on the PYPI repo are
+    # supposed to use the above versioning notation.
+    VERSION = "0.8.0"
+
 if os.name == 'nt' and not sys.maxsize > 2 ** 32:
     # https://github.com/btimby/fulltext/issues/79
     raise RuntimeError("Python 32 bit is not supported")
