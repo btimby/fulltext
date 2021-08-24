@@ -229,9 +229,8 @@ class TestCLI(BaseTestCase):
                 self.assertEqual(
                     lines,
                     ['fulltext.backends.__doc',
-                     'fulltext.backends.__hwp',
                      'fulltext.backends.__ocr',
-                     'fulltext.backends.__ps'])
+                     ])
 
     @unittest.skipIf(not WINDOWS, "windows only")
     def test_which(self):
@@ -445,11 +444,6 @@ class EpubTestCase(BaseTestCase, PathAndFileTests):
     ext = "epub"
 
 
-@unittest.skipIf(WINDOWS, "not supported on Windows")
-class PsTestCase(BaseTestCase, PathAndFileTests):
-    ext = "ps"
-
-
 class EmlTestCase(BaseTestCase, PathAndFileTests):
     ext = "eml"
 
@@ -464,11 +458,6 @@ class MsgTestCase(BaseTestCase, PathAndFileTests):
 
 class JsonTestCase(BaseTestCase, PathAndFileTests):
     ext = "json"
-
-
-@unittest.skipIf(not which('pyhwp'), "pyhwp not installed")
-class HwpTestCase(BaseTestCase, PathAndFileTests):
-    ext = "hwp"
 
 
 class GzTestCase(BaseTestCase, PathAndFileTests):
@@ -550,7 +539,7 @@ class TestPickups(BaseTestCase):
         with mock.patch('fulltext.handle_path', return_value="") as m:
             fulltext.get(fname, mime='application/vnd.ms-excel')
             klass = m.call_args[0][0]
-            self.assertEqual(klass.__module__, 'fulltext.backends.__xlsx')
+            self.assertEqual(klass.__module__, 'fulltext.backends.__xls')
 
     def test_by_unknown_mime(self):
         fname = self.touch('testfn.doc')
@@ -759,20 +748,6 @@ class TestUnicodeOdt(BaseTestCase, TestUnicodeBase):
         pass
 
 
-# ps backend uses `pstotext` CLI tool, which does not correctly
-# handle unicode. Just make sure we don't crash if passed the
-# error handler.
-@unittest.skipIf(WINDOWS, "not supported on Windows")
-class TestUnicodePs(BaseTestCase):
-
-    def test_italian(self):
-        fname = pathjoin(HERE, "files/unicode/it.ps")
-        with self.assertRaises(UnicodeDecodeError):
-            fulltext.get(fname)
-        ret = fulltext.get(fname, encoding_errors="ignore")
-        assert ret.startswith("ciao bella")  # the rest is garbage
-
-
 class TestUnicodeHtml(BaseTestCase, TestUnicodeBase):
     ext = "html"
 
@@ -901,12 +876,6 @@ class TestTitle(BaseTestCase):
         fname = pathjoin(HERE, "files/others/test.pptx")
         self.assertEqual(
             fulltext.get_with_title(fname)[1], 'lorem ipsum')
-
-    @unittest.skipIf(WINDOWS, "not supported on Windows")
-    def test_ps(self):
-        fname = pathjoin(HERE, "files/others/lecture.ps")
-        self.assertEqual(
-            fulltext.get_with_title(fname)[1], 'Hey there')
 
     @unittest.skipIf(WINDOWS, "not supported on Windows")
     def test_rtf(self):
