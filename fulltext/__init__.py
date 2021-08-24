@@ -115,7 +115,6 @@ if is_windows() and hasattr(sys, '_MEIPASS'):
     from fulltext.backends import __epub  # NOQA
     from fulltext.backends import __gz  # NOQA
     from fulltext.backends import __html  # NOQA
-    from fulltext.backends import __hwp  # NOQA
     from fulltext.backends import __json  # NOQA
     from fulltext.backends import __mbox  # NOQA
     # XXX couldn't find a way to install ExtractMessage lib with
@@ -125,10 +124,10 @@ if is_windows() and hasattr(sys, '_MEIPASS'):
     from fulltext.backends import __odt  # NOQA
     from fulltext.backends import __pdf  # NOQA
     from fulltext.backends import __pptx  # NOQA
-    from fulltext.backends import __ps  # NOQA
     from fulltext.backends import __rar  # NOQA
     from fulltext.backends import __rtf  # NOQA
     from fulltext.backends import __text  # NOQA
+    from fulltext.backends import __xls  # NOQA    
     from fulltext.backends import __xlsx  # NOQA
     from fulltext.backends import __xml  # NOQA
     from fulltext.backends import __zip  # NOQA
@@ -184,8 +183,8 @@ for mt in ("text/xml", "application/xml", "application/x-xml"):
 
 register_backend(
     'application/vnd.ms-excel',
-    'fulltext.backends.__xlsx',
-    extensions=['.xls', '.xlsx'])
+    'fulltext.backends.__xls',
+    extensions=['.xls'])
 
 register_backend(
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -243,11 +242,6 @@ register_backend(
     'fulltext.backends.__ocr',
     extensions=['.gif'])
 
-register_backend(
-    'application/x-hwp',
-    'fulltext.backends.__hwp',
-    extensions=['.hwp'])
-
 for mt in ('text/html', 'application/html', 'text/xhtml'):
     register_backend(
         mt,
@@ -275,11 +269,6 @@ for mt in ("application/epub", "application/epub+zip"):
         mt,
         'fulltext.backends.__epub',
         extensions=[".epub"])
-
-register_backend(
-    'application/postscript',
-    'fulltext.backends.__ps',
-    extensions=[".ps", ".eps", ".ai"])
 
 register_backend(
     'message/rfc822',
@@ -395,6 +384,7 @@ def handle_fobj(backend, f, **kwargs):
     backend's `handle_fobj()` if one is provided. Otherwise, it will write the
     data to a temporary file and call `handle_path()`.
     """
+    print(f)
     if not is_binary(f):
         raise AssertionError('File must be opened in binary mode.')
 
@@ -413,8 +403,8 @@ def handle_fobj(backend, f, **kwargs):
         ext = ''
         if 'ext' in kwargs:
             ext = '.' + kwargs['ext']
-
         with fobj_to_tempfile(f, suffix=ext) as fname:
+            print('!!!!!!!!!!!!!', ext, fname)
             return backend.handle_path(fname, **kwargs)
     else:
         raise AssertionError(
