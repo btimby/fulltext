@@ -29,7 +29,8 @@ __all__ = ["get", "register_backend"]
 
 ENCODING = sys.getfilesystemencoding()
 ENCODING_ERRORS = "strict"
-DEFAULT_MIME = 'application/octet-stream'
+# DEFAULT_MIME = 'application/octet-stream'
+DEFAULT_MIME = '[custome-fulltext-mime]/null'
 
 # --- others
 
@@ -213,11 +214,6 @@ register_backend(
     extensions=['.pptx'])
 
 register_backend(
-    'application/vnd.ms-powerpoint',
-    'fulltext.backends.__null',
-    extensions=['.ppt'])
-
-register_backend(
     'application/pdf',
     'fulltext.backends.__pdf',
     extensions=['.pdf'])
@@ -307,10 +303,15 @@ register_backend(
     extensions=['.json'])
 
 # default backend.
+# register_backend(
+#     'application/octet-stream',
+#     'fulltext.backends.__bin',
+#     extensions=['.a', '.bin'])
 register_backend(
-    'application/octet-stream',
-    'fulltext.backends.__bin',
-    extensions=['.a', '.bin'])
+    '[custome-fulltext-mime]/null',
+    'fulltext.backends.__null',
+    extensions=['.ppt'])
+
 
 # Extensions which will be treated as pure text.
 # We just come up with a custom mime name.
@@ -520,7 +521,13 @@ def backend_inst_from_mod(mod, encoding, encoding_errors, kwargs):
 
 def get_url_info(url):
     url = url.strip()
-    res = requests.head(url)
+    try:
+        res = requests.head(url)
+    except Exception as e:
+        warn("can't read %r. " % url)
+        raise URLHandleError(url, msg=(
+            'cannot get the header information from %(url)s.'
+        ) % {'url': url})
     if res.status_code // 100 != 2:
         warn("can't read %r" % url)
         raise URLHandleError(url, msg=(

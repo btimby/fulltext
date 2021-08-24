@@ -87,12 +87,12 @@ class ShellError(CommandLineError):
 class URLHandleError(Exception):
 
     def __init__(self, url, msg=''):
-        self.url
+        self.url = url
         self.msg = msg
 
     def __str__(self):
         return (
-            "Error occurs during handling url %(url)d\n"
+            "Error occurs during handling url %(url)s\n"
             "%(msg)s"
         ) % vars(self)
 
