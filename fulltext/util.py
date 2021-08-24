@@ -10,6 +10,7 @@ import sys
 import functools
 import tempfile
 import shutil
+import re
 
 from os.path import join as pathjoin
 
@@ -27,6 +28,8 @@ LOGGER = logging.getLogger(__file__)
 LOGGER.addHandler(logging.NullHandler())
 TEMPDIR = os.environ.get('FULLTEXT_TEMP', tempfile.gettempdir())
 HERE = os.path.abspath(os.path.dirname(__file__))
+URL_LIKE = re.compile(
+    r'https?:(\\)?/(\\)?/[a-zA-Z0-9_\\/:%#\$&\?\(\)~\.=\+\-]+')
 
 
 class BackendError(AssertionError):
@@ -79,6 +82,19 @@ class ShellError(CommandLineError):
 
     def __str__(self):
         return self.failed_message()
+
+
+class URLHandleError(Exception):
+
+    def __init__(self, url, msg=''):
+        self.url
+        self.msg = msg
+
+    def __str__(self):
+        return (
+            "Error occurs during handling url %(url)d\n"
+            "%(msg)s"
+        ) % vars(self)
 
 
 def run(*cmd, **kwargs):
@@ -265,6 +281,10 @@ def hilite(s, ok=True, bold=False):
     if bold:
         attr.append('1')
     return '\x1b[%sm%s\x1b[0m' % (';'.join(attr), s)
+
+
+def is_url(obj):
+    return isinstance(obj, six.string_types) and (URL_LIKE.match(obj) is not None)
 
 
 def is_file_path(obj):
