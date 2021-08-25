@@ -670,8 +670,6 @@ def get(path_or_file_or_url, default=SENTINAL, mime=None, name=None, backend=Non
         try:
             with open(temp_file, 'wb') as fin:
                 fin.write(content)
-            with open('/home/foo.pdf', 'wb') as fin:
-                fin.write(content)
             return process(temp_file, mime)
         finally:
             os.remove(temp_file)
