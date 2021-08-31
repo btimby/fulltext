@@ -303,10 +303,6 @@ register_backend(
     extensions=['.json'])
 
 # default backend.
-# register_backend(
-#     'application/octet-stream',
-#     'fulltext.backends.__bin',
-#     extensions=['.a', '.bin'])
 register_backend(
     '[custome-fulltext-mime]/null',
     'fulltext.backends.__null',
@@ -510,7 +506,7 @@ def backend_inst_from_mod(mod, encoding, encoding_errors, kwargs):
     try:
         inst.check(title=False)
     except Exception as err:
-        bin_mod = "fulltext.backends.__bin"
+        bin_mod = "fulltext.backends.__null"
         warn("can't use %r due to %r; use %r backend instead" % (
              mod, str(err), bin_mod))
         inst = import_mod(bin_mod).Backend(**kw)
@@ -524,7 +520,8 @@ def get_url_info(url):
     try:
         res = requests.head(url)
     except Exception as e:
-        warn("can't read %r. " % url)
+        msg = '\n'.join(["can't read %r. " % url, str(e)])
+        warn(msg)
         raise URLHandleError(url, msg=(
             'cannot get the header information from %(url)s.'
         ) % {'url': url})
@@ -541,9 +538,9 @@ def get_url_info(url):
     else:
         mime = None
     content_length = headers.get('content-length')
-    content_length = int(content_length) if isinstance(content_length, str) else None
+    content_length = int(content_length) if isinstance(content_length, str) else None  # noqa
     if content_length is not None and content_length >= MAX_URL_CONTENT_LENGTH:
-        raise URLHandleError(url, msg='content length %d is too long (>= %d)' % (
+        raise URLHandleError(url, msg='content length %d is too long (>= %d)' % (  # noqa
             content_length, MAX_URL_CONTENT_LENGTH
         ))
     parsed = urlparse(url)
@@ -623,7 +620,7 @@ def _get(path_or_file, default, mime, name, backend, encoding,
     return (text, title)
 
 
-def get(path_or_file_or_url, default=SENTINAL, mime=None, name=None, backend=None,
+def get(path_or_file_or_url, default=SENTINAL, mime=None, name=None, backend=None,  # noqa
         encoding=None, encoding_errors=None, kwargs=None,
         _wtitle=False):
     """

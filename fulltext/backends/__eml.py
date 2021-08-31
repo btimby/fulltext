@@ -1,6 +1,4 @@
-from email import message_from_file
-
-import codecs
+from email import message_from_bytes
 
 from six import StringIO
 from fulltext.util import BaseBackend
@@ -9,13 +7,10 @@ from fulltext.util import BaseBackend
 # This is used by other modules, hence it's here.
 def handle_fobj(f, encoding, errors):
     text = StringIO()
-    encf = codecs.getreader(encoding)(f, errors=errors)
-    m = message_from_file(encf)
-
+    m = message_from_bytes(f.read())
     for part in m.walk():
         if part.get_content_type().startswith('text/plain'):
-            text.write(part.get_payload())
-
+            text.write(part.get_payload(decode=True).decode(encoding, errors=errors))  # noqa
     return text.getvalue()
 
 

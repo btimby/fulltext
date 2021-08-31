@@ -284,7 +284,7 @@ def hilite(s, ok=True, bold=False):
 
 
 def is_url(obj):
-    return isinstance(obj, six.string_types) and (URL_LIKE.match(obj) is not None)
+    return isinstance(obj, six.string_types) and (URL_LIKE.match(obj) is not None)  # noqa
 
 
 def is_file_path(obj):
