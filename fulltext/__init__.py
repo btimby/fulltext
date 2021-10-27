@@ -583,7 +583,7 @@ def _get(path_or_file, default, mime, name, backend, encoding,
         inst.teardown()
 
     assert text is not None, "backend function returned None"
-    text = STRIP_WHITE.sub(' ', text)
+    # text = STRIP_WHITE.sub(' ', text)
     text = text.strip()
     return (text, title)
 

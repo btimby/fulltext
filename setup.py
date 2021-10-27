@@ -9,7 +9,7 @@ from setuptools import setup
 
 
 NAME = 'fulltext'
-VERSION = '0.9'
+VERSION = '0.10'
 if os.name == 'nt' and not sys.maxsize > 2 ** 32:
     # https://github.com/btimby/fulltext/issues/79
     raise RuntimeError("Python 32 bit is not supported")
