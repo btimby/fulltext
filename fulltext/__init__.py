@@ -113,6 +113,7 @@ if is_windows() and hasattr(sys, '_MEIPASS'):
     from fulltext.backends import __docx  # NOQA
     from fulltext.backends import __eml  # NOQA
     from fulltext.backends import __epub  # NOQA
+    from fulltext.backends import __fb2  # NOQA
     from fulltext.backends import __gz  # NOQA
     from fulltext.backends import __html  # NOQA
     from fulltext.backends import __hwp  # NOQA
@@ -275,6 +276,11 @@ for mt in ("application/epub", "application/epub+zip"):
         mt,
         'fulltext.backends.__epub',
         extensions=[".epub"])
+
+register_backend(
+    "application/fb2",
+    'fulltext.backends.__fb2',
+    extensions=[".fb2"])
 
 register_backend(
     'application/postscript',
@@ -577,7 +583,7 @@ def _get(path_or_file, default, mime, name, backend, encoding,
         inst.teardown()
 
     assert text is not None, "backend function returned None"
-    text = STRIP_WHITE.sub(' ', text)
+    # text = STRIP_WHITE.sub(' ', text)
     text = text.strip()
     return (text, title)
 

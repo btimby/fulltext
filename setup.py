@@ -9,7 +9,7 @@ from setuptools import setup
 
 
 NAME = 'fulltext'
-VERSION = '0.7'
+VERSION = '0.11'
 if os.name == 'nt' and not sys.maxsize > 2 ** 32:
     # https://github.com/btimby/fulltext/issues/79
     raise RuntimeError("Python 32 bit is not supported")
@@ -36,8 +36,8 @@ setup(
     version=VERSION,
     description='Convert binary files to plain text for indexing.',
     long_description=DESCRIPTION,
-    author='Ben Timby',
-    author_email='btimby@gmail.com',
+    author='Ben Timby, alekssamos',
+    author_email='btimby@gmail.com, aleks-samos@yandex.ru',
     maintainer='Ben Timby',
     maintainer_email='btimby@gmail.com',
     url='http://github.com/btimby/' + NAME + '/',
