@@ -373,10 +373,10 @@ class BaseBackend(object):
 
     def decode(self, s):
         """Decode string."""
-        import chardet
+        from charset_normalizer import detect
         r = ""
         try: r = s.decode(self.encoding, self.encoding_errors)
-        except UnicodeDecodeError: r = s.decode(chardet.detect(s)["encoding"], self.encoding_errors)
+        except UnicodeDecodeError: r = s.decode(detect(s)["encoding"], self.encoding_errors)
         return r
 
     def handle_title(self, path_or_file):
